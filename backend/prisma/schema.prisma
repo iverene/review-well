@@ -8,85 +8,115 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  googleId  String   @unique
-  email     String   @unique
-  name      String
-  avatar    String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(uuid())
+  googleId    String   @unique
+  email       String   @unique
+  displayName String
+  avatarUrl   String?
+  school      String?
+  program     String?
+  major       String?
+  yearLevel   String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @map("updated_at")
 
-  reviewers Reviewer[]
+  reviewers   Reviewer[]
+  aiQuotas    AiQuota[]
+  likes       Like[]
+  follows     Follow[]    @relation("following")
+  followers   Follow[]    @relation("follower")
+  notifications Notification[] @relation("recipient")
+  actorNotifications Notification[] @relation("actor")
+
+  @@map("users")
 }
 
 model Reviewer {
-  id          String   @id @default(uuid())
-  userId      String
-  title       String
-  description String?
-  isPublic    Boolean  @default(true)
-  sourceType  String   // "upload" | "youtube" | "url"
-  sourceUrl   String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                String   @id @default(uuid())
+  authorId          String   @map("author_id")
+  title             String
+  courseCode        String   @map("course_code")
+  courseDescription String   @map("course_description")
+  semester          String
+  examType          String   @map("exam_type")
+  thumbnailIcon     String?  @map("thumbnail_icon")
+  colorPalette      Json     @map("color_palette")
+  visibility        String   @default("private")
+  isDraft           Boolean  @default(true) @map("is_draft")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @default(now()) @map("updated_at")
 
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  blocks Block[]
+  user          User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  blocks        Block[]
+  likes         Like[]
+  notifications Notification[]
+
+  @@map("reviewers")
 }
 
 model Block {
-  id         String   @id @default(uuid())
-  reviewerId String
-  type       String   // "qa" | "cloze" | "truefalse" | "mcq" | "ai"
-  question   String
-  answer     String
-  options    Json?    // For MCQ options
-  order      Int
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id          String @id @default(uuid())
+  reviewerId  String @map("reviewer_id")
+  blockType   String @map("block_type")
+  columnIndex Int    @default(1) @map("column_index")
+  sortOrder   Int    @map("sort_order")
+  contentData Json   @map("content_data")
+  createdAt   DateTime @default(now()) @map("created_at")
 
   reviewer Reviewer @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
 
-  @@index([reviewerId, order])
+  @@index([reviewerId, columnIndex, sortOrder])
+  @@map("reviewer_blocks")
 }
 
-model ReviewSession {
-  id         String   @id @default(uuid())
-  userId     String
-  reviewerId String
-  startedAt  DateTime @default(now())
-  endedAt    DateTime?
-  score      Int?
-  totalCards Int?
+model AiQuota {
+  id               String   @id @default(uuid())
+  userId           String   @map("user_id")
+  generationsUsed  Int      @default(0) @map("generations_used")
+  windowResetAt    DateTime @map("window_reset_at")
+  updatedAt        DateTime @default(now()) @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, windowResetAt])
+  @@map("ai_quotas")
+}
+
+model Like {
+  userId     String @map("user_id")
+  reviewerId String @map("reviewer_id")
 
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   reviewer Reviewer @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+
+  @@id([userId, reviewerId])
+  @@map("likes")
 }
 
-model ReviewerAnalytics {
-  id         String   @id @default(uuid())
-  reviewerId String
-  date       DateTime @default(now())
-  views      Int      @default(0)
-  remixes    Int      @default(0)
-  clones     Int      @default(0)
+model Follow {
+  followerId  String @map("follower_id")
+  followingId String @map("following_id")
 
-  reviewer Reviewer @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+  follower  User @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
 
-  @@unique([reviewerId, date])
+  @@id([followerId, followingId])
+  @@map("follows")
 }
 
-model AiExtractionJob {
-  id         String   @id @default(uuid())
-  userId     String
-  status     String   @default("pending") // "pending" | "processing" | "complete" | "failed"
-  inputType  String   // "upload" | "youtube" | "url"
-  inputUrl   String?
-  inputText  String?
-  result     Json?
-  error      String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+model Notification {
+  id          String   @id @default(uuid())
+  recipientId String   @map("recipient_id")
+  actorId     String   @map("actor_id")
+  actionType  String   @map("action_type")
+  reviewerId  String?  @map("reviewer_id")
+  isRead      Boolean  @default(false) @map("is_read")
+  createdAt   DateTime @default(now()) @map("created_at")
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipient User     @relation("recipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  actor     User     @relation("actor", fields: [actorId], references: [id], onDelete: Cascade)
+  reviewer  Reviewer? @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+
+  @@index([recipientId, isRead, createdAt(sort: Desc)])
+  @@map("notifications")
 }
