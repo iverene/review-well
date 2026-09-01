@@ -17,7 +17,7 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
-      - run: npm run lint --workspaces
+      - run: npm run lint --workspaces --if-present
 
   test:
     name: Test
@@ -29,7 +29,7 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
-      - run: npm test --workspaces
+      - run: npm test --workspaces --if-present
 
   build:
     name: Build
@@ -41,4 +41,4 @@ jobs:
           node-version: '20'
           cache: 'npm'
       - run: npm ci
-      - run: npm run build --workspaces
+      - run: npm run build --workspaces --if-present
