@@ -10,13 +10,14 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:studio": "prisma studio"
+    "prisma:migrate": "prisma migrate dev --schema prisma/schema.prisma",
+    "prisma:studio": "prisma studio --schema prisma/schema.prisma"
   },
   "dependencies": {
-    "@prisma/client": "^5.0.0",
+    "@prisma/client": "^5.22.0",
     "cookie-session": "^2.1.0",
     "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
     "express": "^4.18.2",
     "express-rate-limit": "^7.1.0",
     "helmet": "^7.1.0",
@@ -27,7 +28,7 @@
   "devDependencies": {
     "@vitest/coverage-v8": "^1.0.0",
     "nodemon": "^3.0.0",
-    "prisma": "^5.0.0",
+    "prisma": "^5.22.0",
     "supertest": "^6.3.0",
     "vitest": "^1.0.0"
   }
