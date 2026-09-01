@@ -19,6 +19,12 @@ app.use(express.urlencoded({ extended: true }))
 // Session
 app.use(sessionConfig)
 
+// Routes
+app.use('/api/auth', require('./routes/authRoutes'))
+app.use('/api/reviewers', require('./routes/reviewerRoutes'))
+app.use('/api/reviewers', require('./routes/remixRoutes'))
+app.use('/api/ai', require('./routes/aiRoutes'))
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
