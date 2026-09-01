@@ -31,6 +31,7 @@ app.use('/api/auth', require('./routes/authRoutes'))
 app.use('/api/reviewers', require('./routes/reviewerRoutes'))
 app.use('/api/ai', require('./routes/aiRoutes'))
 app.use('/api/social', require('./routes/socialRoutes'))
+app.use('/api/email', require('./routes/emailRoutes'))
 
 // Health check
 app.get('/api/health', (req, res) => {
