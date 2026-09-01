@@ -9,6 +9,8 @@ import Login from './pages/Login'
 import AuthCallback from './pages/AuthCallback'
 import Workspace from './pages/Workspace'
 import Notifications from './pages/Notifications'
+import Profile from './pages/Profile'
+import Settings from './pages/Settings'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 
 function App() {
@@ -43,6 +45,23 @@ function App() {
               element={
                 <ProtectedRoute>
                   <Notifications />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/profile/:userId" element={<Profile />} />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <Settings />
                 </ProtectedRoute>
               }
             />

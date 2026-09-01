@@ -32,6 +32,7 @@ app.use('/api/reviewers', require('./routes/reviewerRoutes'))
 app.use('/api/ai', require('./routes/aiRoutes'))
 app.use('/api/social', require('./routes/socialRoutes'))
 app.use('/api/email', require('./routes/emailRoutes'))
+app.use('/api/profile', require('./routes/profileRoutes'))
 
 // Health check
 app.get('/api/health', (req, res) => {
