@@ -8,6 +8,7 @@ import Review from './pages/Review'
 import Login from './pages/Login'
 import AuthCallback from './pages/AuthCallback'
 import Workspace from './pages/Workspace'
+import Notifications from './pages/Notifications'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 
 function App() {
@@ -37,6 +38,14 @@ function App() {
               }
             />
             <Route path="/review/:id" element={<Review />} />
+            <Route
+              path="/notifications"
+              element={
+                <ProtectedRoute>
+                  <Notifications />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </Layout>
       </AuthProvider>
