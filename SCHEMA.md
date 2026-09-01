@@ -13,8 +13,7 @@ The persistent data layer for **Review Well** is built on **PostgreSQL (via Supa
 * **`reviewers` 1 : N `reviewer_blocks`** (A reviewer is composed of modular structured blocks)
 * **`users` M : N `reviewers` (via `likes`)** (Users can like multiple reviewers)
 * **`users` M : N `users` (via `follows`)** (Users can follow other users)
-* **`reviewers` 1 : 1 `reviewer_lineage`** (Tracks remix/clone origin references)
-* **`users`1 : N `notifications`** (Tracks user notifications for likes, follows, and remixes)
+* **`users`1 : N `notifications`** (Tracks user notifications for likes and follows)
 
 ---
 
@@ -52,7 +51,6 @@ Stores metadata and configuration for study guides and review sheets.
 | `thumbnail_icon` | TEXT | NULL | Optional icon URL or emoji string |
 | `color_palette` | JSONB | NOT NULL | Semantic 3-4 color scheme codes |
 | `visibility` | VARCHAR(20) | DEFAULT `'private'` | Access state (`'public'`, `'unlisted'`, `'private'`) |
-| `allow_remix` | BOOLEAN | DEFAULT `TRUE` | Creator permission toggle for cloning |
 | `is_draft` | BOOLEAN | DEFAULT `TRUE` | Auto-save draft status indicator |
 | `created_at` | TIMESTAMPTZ | DEFAULT `NOW()` | Initial creation timestamp |
 | `updated_at` | TIMESTAMPTZ | DEFAULT `NOW()` | Last auto-save or edit timestamp |
@@ -70,18 +68,7 @@ Stores modular structural components enforcing the strict two-column A4 layout.
 | `content_data` | JSONB | NOT NULL | Structured text, headings, or table items |
 | `created_at` | TIMESTAMPTZ | DEFAULT `NOW()` | Block creation timestamp |
 
-### 3.4 `reviewer_lineage` (Remix / Clone Tracking)
-Maintains attribution chains for cloned documents.
-
-| Column Name | Data Type | Constraints | Description |
-| :--- | :--- | :--- | :--- |
-| `id` | UUID | PRIMARY KEY, DEFAULT `gen_random_uuid()` | Lineage record ID |
-| `cloned_reviewer_id` | UUID | REFERENCES `reviewers(id) ON DELETE CASCADE` | New derivative reviewer ID |
-| `original_reviewer_id` | UUID | REFERENCES `reviewers(id) ON DELETE SET NULL` | Source reviewer being remixed |
-| `original_author_id` | UUID | REFERENCES `users(id) ON DELETE SET NULL` | Original author reference for attribution |
-| `created_at` | TIMESTAMPTZ | DEFAULT `NOW()` | Timestamp when clone was executed |
-
-### 3.5 `ai_quotas`
+### 3.4 `ai_quotas`
 Manages rolling rate limits for AI file extractions (max 3 per week).
 
 | Column Name | Data Type | Constraints | Description |
@@ -104,15 +91,15 @@ Manages rolling rate limits for AI file extractions (max 3 per week).
   * `following_id` (UUID, FK `users`)
   * `PRIMARY KEY (follower_id, following_id)`
 
-### 3.7 `notifications`
-Stores social event triggers (likes, follows, and remixes) for user notification bells.
+### 3.6 `notifications`
+Stores social event triggers (likes and follows) for user notification bells.
 
 | Column Name | Data Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
 | `id` | UUID | PRIMARY KEY, DEFAULT `gen_random_uuid()` | Unique notification identifier |
 | `recipient_id` | UUID | REFERENCES `users(id) ON DELETE CASCADE` | User receiving the notification |
 | `actor_id` | UUID | REFERENCES `users(id) ON DELETE CASCADE` | User who triggered the action |
-| `action_type` | VARCHAR(50) | NOT NULL | Type of event (`'like'`, `'follow'`, `'remix'`) |
+| `action_type` | VARCHAR(50) | NOT NULL | Type of event (`'like'`, `'follow'`) |
 | `reviewer_id` | UUID | REFERENCES `reviewers(id) ON DELETE CASCADE` (NULLABLE) | Target reviewer ID if applicable |
 | `is_read` | BOOLEAN | DEFAULT `FALSE` | Read status indicator |
 | `created_at` | TIMESTAMPTZ | DEFAULT `NOW()` | Notification generation timestamp |

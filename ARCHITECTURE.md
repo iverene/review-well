@@ -50,7 +50,7 @@ The backend is built with Node.js and Express, utilizing **Prisma ORM** connecte
 
 ### 3.1 Models & Database Management (`/backend/prisma/schema.prisma`)
 * Prisma schema definitions handling relational mappings for Users, Reviewers, Modular Blocks, Follows, Likes, AI Token Usage quotas, and Notifications.
-* Enforces data integrity for public/private visibility flags, email verification states, and remix permissions.
+* Enforces data integrity for public/private visibility flags and email verification states.
 
 ### 3.2 Views (`/backend/views/` or API Serializers)
 * Since the application is a decoupled SPA, "Views" translate directly to structured JSON response payloads serialization objects for the frontend client (e.g., reviewer payload, block arrays, user profile data).
@@ -58,7 +58,6 @@ The backend is built with Node.js and Express, utilizing **Prisma ORM** connecte
 ### 3.3 Controllers (`/backend/controllers/`)
 * **Auth Controller:** Manages Google OAuth token verification, session lifecycle management, and first-time profile onboarding completion.
 * **Reviewer Controller:** Handles CRUD operations for study guides, auto-saving draft states, handling version history, and managing publication visibility (Public, Unlisted, Private).
-* **Remix Controller:** Manages the cloning pipeline, duplicating modular blocks into a target user's workspace and stamping the immutable *"Remixed from [Author]"* reference tag.
 * **AI Extraction Controller:** Interacts with external LLM endpoints to parse uploaded PDF/PPTX lecture files, extracting terms and definitions into structured JSON blocks while verifying the user's weekly rolling quota (max 3/week).
 
 ---
@@ -85,7 +84,7 @@ The testing architecture ensures absolute reliability across unit logic, databas
 ### 5.2 Frontend Testing Suite
 * **Unit Testing (`Vitest` + `@testing-library/react`):** Verifies individual workspace components, toolbars, and layout rendering rules in isolation.
 * **Integration Testing (`Vitest`):** Tests context state providers (Auth, Workspace sync state) and multi-step onboarding wizard progression.
-* **End-to-End Testing (`Playwright`):** Automates real browser execution to test critical user journeys: Google authentication entry, drafting a two-column reviewer, uploading PDF slides for AI extraction, and cloning a public reviewer via remix permissions.
+* **End-to-End Testing (`Playwright`):** Automates real browser execution to test critical user journeys: Google authentication entry, drafting a two-column reviewer, uploading PDF slides for AI extraction.
 
 ### 5.3 CI/CD Automation (`GitHub Actions`)
 * **Automated Workflow Triggers:** GitHub Actions workflows (`.github/workflows/test.yml`) are configured to execute automatically on every pull request and push to the main branch.
@@ -101,4 +100,3 @@ The testing architecture ensures absolute reliability across unit logic, databas
 
 1. **Authentication Flow:** Client initiates Google Sign-In -> Google OAuth returns token -> Backend verifies token, checks if user profile exists -> If new, prompts 3-step onboarding wizard; if returning, issues secure HttpOnly session cookie.
 2. **AI Extraction Flow:** User uploads PDF/PPTX in workspace -> File sent to backend service -> Sanitized and parsed -> LLM extracts structured term-definition pairs -> Backend checks token quota -> Returns JSON block array to frontend workspace editor.
-3. **Remix Flow:** User clicks "Clone" on public reviewer -> Remix controller duplicates record and maps original ID lineage -> New reviewer instance opens instantly in user's workspace.

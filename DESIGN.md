@@ -55,7 +55,6 @@ The workspace adapts the ergonomic utility of a familiar document toolbar layout
 
 ---
 
-## 5. Social Interactions & Remix UX
+## 5. Social Interactions
 
 * **Long-Press Preview:** On mobile and desktop hover states, interacting with a reviewer triggers an iOS-style preview modal for rapid browsing without full navigation.
-* **Remix / Clone Workflow:** Public reviewers configured with remix permissions display a distinct `Clone to Workspace` action button. Cloned documents automatically inherit an immutable footer/header attribution tag: *"Remixed from [Original Author]"*.
