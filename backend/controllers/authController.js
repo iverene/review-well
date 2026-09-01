@@ -1,16 +1,47 @@
-const googleAuth = async (req, res) => {
-  // TODO: Verify Google token, create/find user, establish session
-  res.status(501).json({ error: 'Not implemented' })
+const passport = require('passport')
+const userModel = require('../models/userModel')
+
+const googleAuth = (req, res, next) => {
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    prompt: 'select_account',
+  })(req, res, next)
 }
 
-const logout = async (req, res) => {
-  // TODO: Destroy session
-  res.status(501).json({ error: 'Not implemented' })
+const googleCallback = (req, res, next) => {
+  passport.authenticate('google', {
+    failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login`,
+    failureMessage: true,
+  })(req, res, next)
+}
+
+const googleCallbackHandler = (req, res) => {
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
+  res.redirect(`${frontendUrl}/auth/callback`)
+}
+
+const logout = (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      return res.status(500).json({ error: 'Failed to logout' })
+    }
+    req.session = null
+    res.json({ message: 'Logged out successfully' })
+  })
 }
 
 const getMe = async (req, res) => {
-  // TODO: Return current user from session
-  res.status(501).json({ error: 'Not implemented' })
+  if (!req.user) {
+    return res.status(401).json({ error: 'Not authenticated' })
+  }
+
+  try {
+    const user = await userModel.getProfile(req.user.id)
+    res.json({ user })
+  } catch (error) {
+    console.error('Get user error:', error)
+    res.status(500).json({ error: 'Failed to get user' })
+  }
 }
 
-module.exports = { googleAuth, logout, getMe }
+module.exports = { googleAuth, googleCallback, googleCallbackHandler, logout, getMe }

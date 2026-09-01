@@ -2,7 +2,9 @@ const express = require('express')
 const helmet = require('helmet')
 const cors = require('cors')
 const hpp = require('hpp')
+const passport = require('passport')
 const { sessionConfig } = require('./config/session')
+const { configurePassport } = require('./config/googleOAuth')
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -18,6 +20,11 @@ app.use(express.urlencoded({ extended: true }))
 
 // Session
 app.use(sessionConfig)
+
+// Passport middleware
+app.use(passport.initialize())
+app.use(passport.session())
+configurePassport()
 
 // Routes
 app.use('/api/auth', require('./routes/authRoutes'))

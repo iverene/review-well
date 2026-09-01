@@ -1,12 +1,21 @@
-const requireAuth = (req, res, next) => {
-  if (!req.session?.userId) {
+const userModel = require('../models/userModel')
+
+const requireAuth = async (req, res, next) => {
+  if (!req.user) {
     return res.status(401).json({ error: 'Authentication required' })
   }
   next()
 }
 
-const optionalAuth = (req, res, next) => {
-  // Attach user if session exists, but don't block
+const optionalAuth = async (req, res, next) => {
+  if (req.user) {
+    try {
+      const user = await userModel.getProfile(req.user.id)
+      req.userProfile = user
+    } catch (error) {
+      console.error('Error fetching user profile:', error)
+    }
+  }
   next()
 }
 
