@@ -7,6 +7,7 @@ import Create from './pages/Create'
 import Review from './pages/Review'
 import Login from './pages/Login'
 import AuthCallback from './pages/AuthCallback'
+import Workspace from './pages/Workspace'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 
 function App() {
@@ -19,6 +20,14 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="/reviewer/:id" element={<Reviewer />} />
+            <Route
+              path="/workspace/:id"
+              element={
+                <ProtectedRoute>
+                  <Workspace />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/create"
               element={
