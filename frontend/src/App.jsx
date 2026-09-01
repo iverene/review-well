@@ -1,71 +1,83 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import Layout from './components/Layout'
-import Home from './pages/Home'
-import Reviewer from './pages/Reviewer'
-import Create from './pages/Create'
-import Review from './pages/Review'
-import Login from './pages/Login'
-import AuthCallback from './pages/AuthCallback'
-import Workspace from './pages/Workspace'
-import Notifications from './pages/Notifications'
-import Profile from './pages/Profile'
-import Settings from './pages/Settings'
 import ProtectedRoute from './components/auth/ProtectedRoute'
+
+// Lazy load pages for code splitting
+const Home = lazy(() => import('./pages/Home'))
+const Reviewer = lazy(() => import('./pages/Reviewer'))
+const Create = lazy(() => import('./pages/Create'))
+const Review = lazy(() => import('./pages/Review'))
+const Login = lazy(() => import('./pages/Login'))
+const AuthCallback = lazy(() => import('./pages/AuthCallback'))
+const Workspace = lazy(() => import('./pages/Workspace'))
+const Notifications = lazy(() => import('./pages/Notifications'))
+const Profile = lazy(() => import('./pages/Profile'))
+const Settings = lazy(() => import('./pages/Settings'))
+
+// Loading component
+const PageLoader = () => (
+  <div className="flex min-h-screen items-center justify-center bg-paper">
+    <div className="text-muted">Loading...</div>
+  </div>
+)
 
 function App() {
   return (
     <Router>
       <AuthProvider>
         <Layout>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/reviewer/:id" element={<Reviewer />} />
-            <Route
-              path="/workspace/:id"
-              element={
-                <ProtectedRoute>
-                  <Workspace />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/create"
-              element={
-                <ProtectedRoute>
-                  <Create />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/review/:id" element={<Review />} />
-            <Route
-              path="/notifications"
-              element={
-                <ProtectedRoute>
-                  <Notifications />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <ProtectedRoute>
-                  <Profile />
-                </ProtectedRoute>
-              }
-            />
-            <Route path="/profile/:userId" element={<Profile />} />
-            <Route
-              path="/settings"
-              element={
-                <ProtectedRoute>
-                  <Settings />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/reviewer/:id" element={<Reviewer />} />
+              <Route
+                path="/workspace/:id"
+                element={
+                  <ProtectedRoute>
+                    <Workspace />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/create"
+                element={
+                  <ProtectedRoute>
+                    <Create />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/review/:id" element={<Review />} />
+              <Route
+                path="/notifications"
+                element={
+                  <ProtectedRoute>
+                    <Notifications />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/profile/:userId" element={<Profile />} />
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute>
+                    <Settings />
+                  </ProtectedRoute>
+                }
+              />
+            </Routes>
+          </Suspense>
         </Layout>
       </AuthProvider>
     </Router>
