@@ -50,18 +50,6 @@ model Block {
   @@index([reviewerId, order])
 }
 
-model ReviewerRemix {
-  id          String   @id @default(uuid())
-  userId      String
-  sourceId    String
-  remixType   String   // "clone" | "build"
-  createdAt   DateTime @default(now())
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, sourceId])
-}
-
 model ReviewSession {
   id         String   @id @default(uuid())
   userId     String
