@@ -4,7 +4,6 @@ import * as userModel from '../models/userModel.js'
 const googleAuth = (req, res, next) => {
   passport.authenticate('google', {
     scope: ['profile', 'email'],
-    prompt: 'select_account',
   })(req, res, next)
 }
 

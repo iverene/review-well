@@ -102,6 +102,7 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
           name="school"
           value={formData.school}
           onChange={handleChange}
+          required
           className="w-full rounded border border-stone px-4 py-2 text-ink focus:border-ink focus:outline-none"
           placeholder="e.g., MIT, Stanford, etc."
         />
@@ -118,6 +119,7 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
           name="program"
           value={formData.program}
           onChange={handleChange}
+          required
           className="w-full rounded border border-stone px-4 py-2 text-ink focus:border-ink focus:outline-none"
           placeholder="e.g., Computer Science, Biology, etc."
         />
@@ -134,6 +136,7 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
           name="major"
           value={formData.major}
           onChange={handleChange}
+          required
           className="w-full rounded border border-stone px-4 py-2 text-ink focus:border-ink focus:outline-none"
           placeholder="e.g., Software Engineering, etc."
         />
@@ -149,6 +152,7 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
           name="yearLevel"
           value={formData.yearLevel}
           onChange={handleChange}
+          required
           className="w-full rounded border border-stone px-4 py-2 text-ink focus:border-ink focus:outline-none"
         >
           <option value="">Select year level</option>

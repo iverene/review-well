@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../contexts/AuthContext'
 import EditProfile from '../components/profile/EditProfile'
@@ -9,6 +9,7 @@ import { getApiErrorMessage } from '../utils/apiError'
 const Settings = () => {
   const { user, refreshUser } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -79,7 +80,14 @@ const Settings = () => {
   return (
     <div className="min-h-screen bg-paper">
       <div className="mx-auto max-w-2xl px-4 py-8">
-        <h1 className="mb-8 text-2xl font-bold text-ink">Settings</h1>
+        <h1 className="mb-2 text-2xl font-bold text-ink">
+          {location.state?.onboarding ? 'Complete your profile' : 'Settings'}
+        </h1>
+        {location.state?.onboarding && (
+          <p className="mb-8 text-sm text-muted">
+            Add your academic information before you continue.
+          </p>
+        )}
 
         {error && (
           <ErrorAlert className="mb-4">{error}</ErrorAlert>

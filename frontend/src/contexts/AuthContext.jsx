@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.get('/api/auth/me', { withCredentials: true })
       if (response.data.user) {
         login(response.data.user)
-        return true
+        return response.data.user
       }
       return false
     } catch (error) {

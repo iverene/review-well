@@ -15,6 +15,7 @@ const Workspace = lazy(() => import('./pages/Workspace'))
 const Notifications = lazy(() => import('./pages/Notifications'))
 const Profile = lazy(() => import('./pages/Profile'))
 const Settings = lazy(() => import('./pages/Settings'))
+const Onboarding = lazy(() => import('./pages/Onboarding'))
 
 // Loading component
 const PageLoader = () => (
@@ -33,6 +34,14 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route
+                path="/onboarding"
+                element={
+                  <ProtectedRoute>
+                    <Onboarding />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="/reviewer/:id" element={<Reviewer />} />
               <Route
                 path="/workspace/:id"

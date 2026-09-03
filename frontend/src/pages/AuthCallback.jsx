@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import ErrorAlert from '../components/common/ErrorAlert'
+import { isProfileComplete } from '../utils/profile'
 
 const AuthCallback = () => {
   const { refreshUser, loading } = useAuth()
@@ -12,7 +13,10 @@ const AuthCallback = () => {
     const handleCallback = async () => {
       const authenticated = await refreshUser()
       if (authenticated) {
-        navigate('/', { replace: true })
+        navigate(isProfileComplete(authenticated) ? '/' : '/onboarding', {
+          replace: true,
+          state: { onboarding: !isProfileComplete(authenticated) },
+        })
       } else {
         setError('We could not complete Google sign-in. Please try again.')
       }
