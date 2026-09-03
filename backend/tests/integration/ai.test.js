@@ -35,7 +35,8 @@ describe('AI Routes', () => {
     })
 
     it('should return 400 when no file uploaded', async () => {
-      const app = createApp()
+      const app = express()
+      app.use(express.json())
       app.post('/api/ai/extract', (req, res, next) => {
         req.user = { id: 'user-123' }
         next()

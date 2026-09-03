@@ -1,7 +1,7 @@
-const likeModel = require('../models/likeModel')
-const followModel = require('../models/followModel')
-const notificationModel = require('../models/notificationModel')
-const reviewerModel = require('../models/reviewerModel')
+import * as likeModel from '../models/likeModel.js'
+import * as followModel from '../models/followModel.js'
+import * as notificationModel from '../models/notificationModel.js'
+import * as reviewerModel from '../models/reviewerModel.js'
 
 // Like endpoints
 const likeReviewer = async (req, res) => {
@@ -185,7 +185,7 @@ const getUnreadCount = async (req, res) => {
   }
 }
 
-module.exports = {
+export {
   likeReviewer,
   unlikeReviewer,
   getLikeStatus,

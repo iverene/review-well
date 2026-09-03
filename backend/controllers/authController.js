@@ -1,5 +1,5 @@
-const passport = require('passport')
-const userModel = require('../models/userModel')
+import passport from 'passport'
+import * as userModel from '../models/userModel.js'
 
 const googleAuth = (req, res, next) => {
   passport.authenticate('google', {
@@ -44,4 +44,4 @@ const getMe = async (req, res) => {
   }
 }
 
-module.exports = { googleAuth, googleCallback, googleCallbackHandler, logout, getMe }
+export { googleAuth, googleCallback, googleCallbackHandler, logout, getMe }

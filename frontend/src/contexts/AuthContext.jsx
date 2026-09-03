@@ -14,7 +14,7 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
-  const { user, isAuthenticated, login, logout } = useAuthStore()
+  const { user, isAuthenticated, isGuest, login, enterGuest, logout } = useAuthStore()
 
   useEffect(() => {
     checkAuth()
@@ -38,6 +38,11 @@ export const AuthProvider = ({ children }) => {
   }
 
   const handleLogout = async () => {
+    if (isGuest) {
+      logout()
+      return
+    }
+
     try {
       await axios.post('/api/auth/logout', {}, { withCredentials: true })
       logout()
@@ -49,8 +54,10 @@ export const AuthProvider = ({ children }) => {
   const value = {
     user,
     isAuthenticated,
+    isGuest,
     loading,
     signInWithGoogle,
+    continueAsGuest: enterGuest,
     logout: handleLogout,
     refreshUser: checkAuth,
   }

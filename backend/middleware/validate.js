@@ -55,4 +55,4 @@ const validateQuery = (schema) => {
   }
 }
 
-module.exports = { validateBody, validateParams, validateQuery }
+export { validateBody, validateParams, validateQuery }

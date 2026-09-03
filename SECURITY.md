@@ -2,8 +2,7 @@
 
 ## 1. Authentication & Session Security
 
-* **Google OAuth 2.0:** Secure identity verification mapping Google subject IDs (`google_id`) directly to internal user records.
-* **Email Verification Pipeline:** Mandatory cryptographic email verification token dispatch upon registration. Accounts remain unverified until the user validates their email address via a secure link, restricting full publishing and AI features until verification is complete.
+* **Google OAuth 2.0:** Authentication is handled exclusively by Google OAuth, mapping Google subject IDs (`google_id`) directly to internal user records.
 * **HttpOnly Session Cookies:** JWT tokens are managed via secure, HttpOnly, SameSite=Strict cookies to mitigate XSS and CSRF vectors.
 * **Session Lifecycle & Invalidation:** Tokens include strict expiration limits accompanied by a silent refresh mechanism, with an explicit endpoint to revoke session tokens upon sign-out or account termination.
 * **Guest Isolation:** Unauthenticated sessions are restricted strictly to read-only endpoints (`GET /api/reviewers/public`), preventing unauthorized data mutations or access to private drafting spaces.
@@ -16,7 +15,7 @@
 * **Visibility Enforcement:**
   * `public`: Readable by all authenticated users and guests.
   * `unlisted`: Accessible strictly via a unique, non-indexed URL token.
-  * `private`: Restricted exclusively to the verified author ID.
+  * `private`: Restricted exclusively to the author ID.
 * **Remix Permissions:** Document cloning checks the creator's `allow_remix` boolean flag before duplicating blocks and establishing linkage records.
 
 ---

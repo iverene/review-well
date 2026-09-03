@@ -1,32 +1,22 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { extractStudyBlocks, getMockExtraction, isConfigured } from '../../../services/openaiService.js'
+import { describe, it, expect, vi } from 'vitest'
 
-vi.mock('openai', () => ({
-  default: vi.fn().mockImplementation(() => ({
+const { MockOpenAI } = vi.hoisted(() => ({
+  MockOpenAI: vi.fn().mockImplementation(() => ({
     chat: {
       completions: {
         create: vi.fn().mockResolvedValue({
-          choices: [
-            {
-              message: {
-                content: JSON.stringify([
-                  {
-                    block_type: 'topic_banner',
-                    content_data: { heading: 'Test Topic' },
-                  },
-                  {
-                    block_type: 'content_block',
-                    content_data: { heading: 'Term', body: 'Definition' },
-                  },
-                ]),
-              },
-            },
-          ],
+          choices: [{ message: { content: JSON.stringify({ blocks: [] }) } }],
         }),
       },
     },
   })),
 }))
+
+vi.mock('openai', () => {
+  return { default: MockOpenAI }
+})
+
+import { extractStudyBlocks, getMockExtraction, isConfigured } from '../../../services/openaiService.js'
 
 describe('OpenAI Service', () => {
   beforeEach(() => {

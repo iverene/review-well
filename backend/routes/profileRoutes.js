@@ -1,15 +1,16 @@
-const express = require('express')
-const router = express.Router()
-const { getProfile, updateProfile, updateAvatar, getMyProfile } = require('../controllers/profileController')
-const { requireAuth, optionalAuth } = require('../middleware/auth')
-const { upload } = require('../middleware/upload')
+import express from 'express'
+import { getProfile, updateProfile, updateAvatar, getMyProfile } from '../controllers/profileController.js'
+import { requireAuth, optionalAuth } from '../middleware/auth.js'
+import { upload } from '../middleware/upload.js'
+
+const app = express.Router()
 
 // My profile
-router.get('/me', requireAuth, getMyProfile)
-router.put('/me', requireAuth, updateProfile)
-router.put('/me/avatar', requireAuth, upload.single('avatar'), updateAvatar)
+app.get('/me', requireAuth, getMyProfile)
+app.put('/me', requireAuth, updateProfile)
+app.put('/me/avatar', requireAuth, upload.single('avatar'), updateAvatar)
 
 // Public profile
-router.get('/:userId', optionalAuth, getProfile)
+app.get('/:userId', optionalAuth, getProfile)
 
-module.exports = router
+export default app

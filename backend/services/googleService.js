@@ -1,12 +1,31 @@
-const verifyGoogleToken = async (token) => {
-  // TODO: Implement Google token verification
-  // Will use google-auth-library
-  throw new Error('Not implemented')
+import { OAuth2Client } from 'google-auth-library'
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
+
+export const verifyGoogleToken = async (token) => {
+  if (!token || typeof token !== 'string') {
+    throw new Error('Invalid Google token')
+  }
+
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    })
+
+    return ticket.getPayload()
+  } catch (error) {
+    throw new Error('Invalid Google token', { cause: error })
+  }
 }
 
-const getGoogleUserInfo = async (token) => {
-  // TODO: Implement Google user info extraction
-  throw new Error('Not implemented')
-}
+export const getGoogleUserInfo = async (token) => {
+  const payload = await verifyGoogleToken(token)
 
-module.exports = { verifyGoogleToken, getGoogleUserInfo }
+  return {
+    googleId: payload.sub,
+    email: payload.email,
+    name: payload.name,
+    avatar: payload.picture,
+  }
+}

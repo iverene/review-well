@@ -1,4 +1,4 @@
-const { createClient } = require('@supabase/supabase-js')
+import { createClient } from '@supabase/supabase-js'
 
 const createStorageAdapter = () => {
   const supabaseUrl = process.env.SUPABASE_URL
@@ -40,7 +40,7 @@ const createStorageAdapter = () => {
     return { data }
   }
 
-  const delete = async (paths) => {
+  const deleteFiles = async (paths) => {
     try {
       const { error } = await supabase.storage
         .from(bucket)
@@ -53,7 +53,7 @@ const createStorageAdapter = () => {
     }
   }
 
-  return { upload, getPublicUrl, delete }
+  return { upload, getPublicUrl, delete: deleteFiles }
 }
 
-module.exports = { createStorageAdapter }
+export { createStorageAdapter }

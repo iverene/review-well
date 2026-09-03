@@ -1,4 +1,4 @@
-const { prisma } = require('../config/database')
+import { prisma } from '../config/database.js'
 
 const getQuota = async (userId) => {
   const now = new Date()
@@ -55,4 +55,4 @@ const getRemainingQuota = async (userId, limit = 50) => {
   return Math.max(0, limit - quota.generationsUsed)
 }
 
-module.exports = { getQuota, checkQuota, incrementUsage, getRemainingQuota }
+export { getQuota, checkQuota, incrementUsage, getRemainingQuota }

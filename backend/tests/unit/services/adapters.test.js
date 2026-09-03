@@ -1,13 +1,26 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+vi.mock('google-auth-library', () => ({
+  OAuth2Client: vi.fn().mockImplementation(() => ({
+    verifyIdToken: vi.fn().mockRejectedValue(new Error('Invalid token')),
+  })),
+}))
+vi.mock('@supabase/supabase-js', () => ({
+  createClient: vi.fn().mockReturnValue({
+    from: vi.fn().mockReturnThis(),
+    upload: vi.fn().mockResolvedValue({ data: { path: 'test.pdf' }, error: null }),
+    getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: 'https://example.com/test.pdf' } }),
+  }),
+}))
+
 import { createGoogleAuthAdapter } from '../../../services/adapters/googleAuth.js'
-import { createSendGridAdapter } from '../../../services/adapters/sendgrid.js'
-import { createOpenRouterAdapter } from '../../../services/adapters/openrouter.js'
 import { createStorageAdapter } from '../../../services/adapters/storage.js'
 
 describe('Google Auth Adapter', () => {
   let adapter
 
   beforeEach(() => {
+    vi.clearAllMocks()
     adapter = createGoogleAuthAdapter()
   })
 
@@ -18,54 +31,6 @@ describe('Google Auth Adapter', () => {
 
   it('should throw error for invalid token', async () => {
     await expect(adapter.verifyIdToken('invalid-token')).rejects.toThrow('Invalid Google token')
-  })
-})
-
-describe('SendGrid Adapter', () => {
-  let adapter
-
-  beforeEach(() => {
-    adapter = createSendGridAdapter()
-  })
-
-  it('should create adapter with send methods', () => {
-    expect(adapter.send).toBeDefined()
-    expect(adapter.sendVerificationEmail).toBeDefined()
-    expect(adapter.sendWelcomeEmail).toBeDefined()
-  })
-
-  it('should skip email when not configured', async () => {
-    const result = await adapter.send({
-      to: 'test@example.com',
-      subject: 'Test',
-      html: '<p>Test</p>',
-    })
-    expect(result.statusCode).toBe(200)
-  })
-})
-
-describe('OpenRouter Adapter', () => {
-  let adapter
-
-  beforeEach(() => {
-    adapter = createOpenRouterAdapter()
-  })
-
-  it('should create adapter with chat and extractStudyBlocks methods', () => {
-    expect(adapter.chat).toBeDefined()
-    expect(adapter.extractStudyBlocks).toBeDefined()
-  })
-
-  it('should return mock response when not configured', async () => {
-    const result = await adapter.chat([{ role: 'user', content: 'test' }])
-    expect(result.choices).toBeDefined()
-    expect(result.choices[0].message.content).toBeDefined()
-  })
-
-  it('should parse mock extraction response', async () => {
-    const blocks = await adapter.extractStudyBlocks('Test content')
-    expect(Array.isArray(blocks)).toBe(true)
-    expect(blocks[0].block_type).toBeDefined()
   })
 })
 

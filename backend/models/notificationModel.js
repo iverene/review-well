@@ -1,4 +1,4 @@
-const { prisma } = require('../config/database')
+import { prisma } from '../config/database.js'
 
 const create = async (data) => {
   return prisma.notification.create({ data })
@@ -70,12 +70,4 @@ const createFollowNotification = async (recipientId, actorId) => {
   })
 }
 
-module.exports = {
-  create,
-  findByRecipient,
-  markAsRead,
-  markAllAsRead,
-  countUnread,
-  createLikeNotification,
-  createFollowNotification,
-}
+export { create, findByRecipient, markAsRead, markAllAsRead, countUnread, createLikeNotification, createFollowNotification }

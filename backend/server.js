@@ -1,11 +1,13 @@
-require('dotenv').config()
-const express = require('express')
-const helmet = require('helmet')
-const cors = require('cors')
-const hpp = require('hpp')
-const passport = require('passport')
-const { sessionConfig } = require('./config/session')
-const { configurePassport } = require('./config/googleOAuth')
+import dotenv from 'dotenv'
+dotenv.config()
+import express from 'express'
+import helmet from 'helmet'
+import cors from 'cors'
+import hpp from 'hpp'
+import { pathToFileURL } from 'url'
+import passport from 'passport'
+import { sessionConfig } from './config/session.js'
+import { configurePassport } from './config/googleOAuth.js'
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -28,12 +30,11 @@ app.use(passport.session())
 configurePassport()
 
 // Routes
-app.use('/api/auth', require('./routes/authRoutes'))
-app.use('/api/reviewers', require('./routes/reviewerRoutes'))
-app.use('/api/ai', require('./routes/aiRoutes'))
-app.use('/api/social', require('./routes/socialRoutes'))
-app.use('/api/email', require('./routes/emailRoutes'))
-app.use('/api/profile', require('./routes/profileRoutes'))
+app.use('/api/auth', (await import('./routes/authRoutes.js')).default)
+app.use('/api/reviewers', (await import('./routes/reviewerRoutes.js')).default)
+app.use('/api/ai', (await import('./routes/aiRoutes.js')).default)
+app.use('/api/social', (await import('./routes/socialRoutes.js')).default)
+app.use('/api/profile', (await import('./routes/profileRoutes.js')).default)
 
 // Health check
 app.get('/api/health', (req, res) => {
@@ -48,10 +49,10 @@ app.use((err, req, res, next) => {
   })
 })
 
-if (require.main === module) {
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
   })
 }
 
-module.exports = app
+export default app

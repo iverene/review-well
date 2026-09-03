@@ -1,13 +1,52 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { getProfile, updateProfile, getMyProfile } from '../../../controllers/profileController.js'
-import userModel from '../../../models/userModel.js'
-import reviewerModel from '../../../models/reviewerModel.js'
-import followModel from '../../../models/followModel.js'
-import { createMockRequest, createMockResponse } from '../../helpers/mocks.js'
 
-vi.mock('../../../models/userModel.js')
-vi.mock('../../../models/reviewerModel.js')
-vi.mock('../../../models/followModel.js')
+vi.mock('../../../models/userModel.js', () => ({
+  getProfile: vi.fn(),
+  findById: vi.fn(),
+  findByGoogleId: vi.fn(),
+  findByEmail: vi.fn(),
+  create: vi.fn(),
+  update: vi.fn(),
+}))
+vi.mock('../../../models/reviewerModel.js', () => ({
+  findPublic: vi.fn(),
+  findByAuthor: vi.fn(),
+  findById: vi.fn(),
+  create: vi.fn(),
+  update: vi.fn(),
+  remove: vi.fn(),
+  count: vi.fn(),
+}))
+vi.mock('../../../models/followModel.js', () => ({
+  findByUsers: vi.fn(),
+  create: vi.fn(),
+  remove: vi.fn(),
+  countFollowers: vi.fn(),
+  countFollowing: vi.fn(),
+  isFollowing: vi.fn(),
+}))
+vi.mock('../../../models/likeModel.js', () => ({
+  findByUserAndReviewer: vi.fn(),
+  create: vi.fn(),
+  remove: vi.fn(),
+  countByReviewer: vi.fn(),
+  hasUserLiked: vi.fn(),
+}))
+vi.mock('../../../models/notificationModel.js', () => ({
+  create: vi.fn(),
+  findByRecipient: vi.fn(),
+  markAsRead: vi.fn(),
+  markAllAsRead: vi.fn(),
+  countUnread: vi.fn(),
+  createLikeNotification: vi.fn(),
+  createFollowNotification: vi.fn(),
+}))
+
+import { getProfile, updateProfile, getMyProfile } from '../../../controllers/profileController.js'
+import * as userModel from '../../../models/userModel.js'
+import * as reviewerModel from '../../../models/reviewerModel.js'
+import * as followModel from '../../../models/followModel.js'
+import { createMockRequest, createMockResponse } from '../../helpers/mocks.js'
 
 describe('Profile Controller', () => {
   beforeEach(() => {

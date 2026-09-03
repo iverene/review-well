@@ -1,6 +1,5 @@
-const express = require('express')
-const router = express.Router()
-const {
+import express from 'express'
+import {
   getPublicReviewers,
   getMyReviewers,
   getReviewerById,
@@ -11,33 +10,60 @@ const {
   updateBlock,
   deleteBlock,
   reorderBlocks,
-} = require('../controllers/reviewerController')
-const { requireAuth, optionalAuth } = require('../middleware/auth')
-const { validateBody } = require('../middleware/validate')
-const {
+} from '../controllers/reviewerController.js'
+import { requireAuth, optionalAuth } from '../middleware/auth.js'
+import { validateBody } from '../middleware/validate.js'
+import {
   createReviewerSchema,
   updateReviewerSchema,
   createBlockSchema,
   updateBlockSchema,
   reorderBlocksSchema,
-} = require('../validators/reviewer')
+} from '../validators/reviewer.js'
+
+const app = express.Router()
 
 // Public routes
-router.get('/public', getPublicReviewers)
+app.get('/public', getPublicReviewers)
 
 // Protected routes - require authentication
-router.get('/my', requireAuth, getMyReviewers)
-router.post('/', requireAuth, validateBody(createReviewerSchema), createReviewer)
+app.get('/my', requireAuth, getMyReviewers)
+app.post(
+  '/',
+  requireAuth,
+  validateBody(createReviewerSchema),
+  createReviewer
+)
 
 // Routes with optional authentication (for access control)
-router.get('/:id', optionalAuth, getReviewerById)
-router.put('/:id', requireAuth, validateBody(updateReviewerSchema), updateReviewer)
-router.delete('/:id', requireAuth, deleteReviewer)
+app.get('/:id', optionalAuth, getReviewerById)
+app.put(
+  '/:id',
+  requireAuth,
+  validateBody(updateReviewerSchema),
+  updateReviewer
+)
+app.delete('/:id', requireAuth, deleteReviewer)
 
 // Block routes
-router.post('/:reviewerId/blocks', requireAuth, validateBody(createBlockSchema), addBlock)
-router.put('/blocks/:blockId', requireAuth, validateBody(updateBlockSchema), updateBlock)
-router.delete('/blocks/:blockId', requireAuth, deleteBlock)
-router.put('/:reviewerId/blocks/reorder', requireAuth, validateBody(reorderBlocksSchema), reorderBlocks)
+app.post(
+  '/:reviewerId/blocks',
+  requireAuth,
+  validateBody(createBlockSchema),
+  addBlock
+)
+app.put(
+  '/blocks/:blockId',
+  requireAuth,
+  validateBody(updateBlockSchema),
+  updateBlock
+)
+app.delete('/blocks/:blockId', requireAuth, deleteBlock)
+app.put(
+  '/:reviewerId/blocks/reorder',
+  requireAuth,
+  validateBody(reorderBlocksSchema),
+  reorderBlocks
+)
 
-module.exports = router
+export default app

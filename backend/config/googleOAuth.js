@@ -1,6 +1,6 @@
-const passport = require('passport')
-const GoogleStrategy = require('passport-google-oauth20').Strategy
-const userModel = require('../models/userModel')
+import passport from 'passport'
+import GoogleStrategy from 'passport-google-oauth20'
+import * as userModel from '../models/userModel.js'
 
 const configurePassport = () => {
   passport.serializeUser((user, done) => {
@@ -58,4 +58,4 @@ const configurePassport = () => {
   }
 }
 
-module.exports = { configurePassport }
+export { configurePassport }

@@ -1,4 +1,4 @@
-const EXTRACT_SYSTEM_PROMPT = `You are an academic study guide extractor. Your task is to extract study blocks from educational content.
+export const EXTRACT_SYSTEM_PROMPT = `You are an academic study guide extractor. Your task is to extract study blocks from educational content.
 
 You must return a JSON array of blocks with the following structure:
 [
@@ -29,7 +29,7 @@ Rules:
 6. Use clear, concise language
 7. Return ONLY valid JSON, no additional text`
 
-const buildExtractionPrompt = (text, context = {}) => {
+export const buildExtractionPrompt = (text, context = {}) => {
   const { courseCode, courseDescription, examType } = context
 
   let userPrompt = 'Extract study blocks from the following content:\n\n'
@@ -52,15 +52,9 @@ const buildExtractionPrompt = (text, context = {}) => {
   }
 }
 
-const buildSummaryPrompt = (text) => {
+export const buildSummaryPrompt = (text) => {
   return {
     system: 'You are a helpful assistant that summarizes academic content.',
     user: `Summarize the following content in 2-3 sentences:\n\n${text}`,
   }
-}
-
-module.exports = {
-  EXTRACT_SYSTEM_PROMPT,
-  buildExtractionPrompt,
-  buildSummaryPrompt,
 }

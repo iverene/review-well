@@ -1,4 +1,4 @@
-const session = require('cookie-session')
+import session from 'cookie-session'
 
 const sessionConfig = session({
   name: 'session',
@@ -9,4 +9,4 @@ const sessionConfig = session({
   sameSite: 'strict',
 })
 
-module.exports = { sessionConfig }
+export { sessionConfig }

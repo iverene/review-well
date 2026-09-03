@@ -56,11 +56,6 @@ export const mockGoogleAuth = () => ({
   }),
 })
 
-export const mockSendGrid = () => ({
-  send: vi.fn().mockResolvedValue({ statusCode: 202 }),
-  setApiKey: vi.fn(),
-})
-
 export const mockOpenRouter = () => ({
   chat: {
     completions: {

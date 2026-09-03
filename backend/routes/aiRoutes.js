@@ -1,11 +1,12 @@
-const express = require('express')
-const router = express.Router()
-const { extractFromUpload, getQuotaStatus } = require('../controllers/aiController')
-const { requireAuth } = require('../middleware/auth')
-const { upload, handleUploadError } = require('../middleware/upload')
+import express from 'express'
+import { extractFromUpload, getQuotaStatus } from '../controllers/aiController.js'
+import { requireAuth } from '../middleware/auth.js'
+import { upload, handleUploadError } from '../middleware/upload.js'
+
+const app = express.Router()
 
 // Protected routes
-router.post(
+app.post(
   '/extract',
   requireAuth,
   upload.single('file'),
@@ -13,6 +14,6 @@ router.post(
   extractFromUpload
 )
 
-router.get('/quota', requireAuth, getQuotaStatus)
+app.get('/quota', requireAuth, getQuotaStatus)
 
-module.exports = router
+export default app

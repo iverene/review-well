@@ -1,5 +1,5 @@
-const OpenAI = require('openai')
-const { buildExtractionPrompt } = require('./promptService')
+import OpenAI from 'openai'
+import { buildExtractionPrompt } from './promptService.js'
 
 let client = null
 
@@ -79,4 +79,4 @@ const isConfigured = () => {
   return !!process.env.OPENROUTER_API_KEY
 }
 
-module.exports = { extractStudyBlocks, getMockExtraction, isConfigured }
+export { extractStudyBlocks, getMockExtraction, isConfigured }

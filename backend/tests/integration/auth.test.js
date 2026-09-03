@@ -2,10 +2,48 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import request from 'supertest'
 import express from 'express'
 import session from 'cookie-session'
-import authRoutes from '../../routes/authRoutes.js'
-import userModel from '../../models/userModel.js'
 
-vi.mock('../../models/userModel.js')
+vi.mock('../../models/userModel.js', () => ({
+  getProfile: vi.fn(),
+  findById: vi.fn(),
+  findByGoogleId: vi.fn(),
+  findByEmail: vi.fn(),
+  create: vi.fn(),
+  update: vi.fn(),
+}))
+vi.mock('../../models/reviewerModel.js', () => ({
+  findPublic: vi.fn(),
+  findByAuthor: vi.fn(),
+  findById: vi.fn(),
+  create: vi.fn(),
+  update: vi.fn(),
+  remove: vi.fn(),
+  count: vi.fn(),
+}))
+vi.mock('../../models/followModel.js', () => ({
+  findByUsers: vi.fn(),
+  create: vi.fn(),
+  remove: vi.fn(),
+  countFollowers: vi.fn(),
+  countFollowing: vi.fn(),
+  isFollowing: vi.fn(),
+}))
+vi.mock('../../models/blockModel.js', () => ({
+  findByReviewer: vi.fn(),
+  findById: vi.fn(),
+  create: vi.fn(),
+  createMany: vi.fn(),
+  update: vi.fn(),
+  remove: vi.fn(),
+  removeAllByReviewer: vi.fn(),
+  reorder: vi.fn(),
+  getMaxSortOrder: vi.fn(),
+}))
+
+import authRoutes from '../../routes/authRoutes.js'
+import { requireAuth } from '../../middleware/auth.js'
+import { getMe } from '../../controllers/authController.js'
+import * as userModel from '../../models/userModel.js'
 
 const createApp = () => {
   const app = express()
@@ -47,13 +85,14 @@ describe('Auth Routes', () => {
 
       userModel.getProfile.mockResolvedValue(mockUser)
 
-      const app = createApp()
-      app.get('/api/auth/me', (req, res, next) => {
+      const testApp = express()
+      testApp.use(express.json())
+      testApp.get('/api/auth/me', (req, res, next) => {
         req.user = { id: 'user-123' }
         next()
-      }, require('../../controllers/authController').getMe)
+      }, getMe)
 
-      const response = await request(app).get('/api/auth/me')
+      const response = await request(testApp).get('/api/auth/me')
 
       expect(response.status).toBe(200)
       expect(response.body.user).toEqual(mockUser)

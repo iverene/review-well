@@ -1,5 +1,5 @@
-const reviewerModel = require('../models/reviewerModel')
-const blockModel = require('../models/blockModel')
+import * as reviewerModel from '../models/reviewerModel.js'
+import * as blockModel from '../models/blockModel.js'
 
 const getPublicReviewers = async (req, res) => {
   try {
@@ -225,7 +225,7 @@ const reorderBlocks = async (req, res) => {
   }
 }
 
-module.exports = {
+export {
   getPublicReviewers,
   getMyReviewers,
   getReviewerById,

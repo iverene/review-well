@@ -1,7 +1,7 @@
-const { extractStudyBlocks, isConfigured } = require('../services/openaiService')
-const { checkQuota, incrementUsage, getRemainingQuota } = require('../models/aiQuotaModel')
-const blockModel = require('../models/blockModel')
-const reviewerModel = require('../models/reviewerModel')
+import { extractStudyBlocks, isConfigured } from '../services/openaiService.js'
+import { checkQuota, incrementUsage, getRemainingQuota } from '../models/aiQuotaModel.js'
+import * as blockModel from '../models/blockModel.js'
+import * as reviewerModel from '../models/reviewerModel.js'
 
 const AI_QUOTA_LIMIT = 50
 
@@ -100,4 +100,4 @@ const extractTextFromFile = (file) => {
   return `[Content from ${file.originalname}]\n\nThis is a placeholder for the actual content extraction. In production, this would use pdf-parse or similar library to extract text from ${file.mimetype} files.`
 }
 
-module.exports = { extractFromUpload, getQuotaStatus }
+export { extractFromUpload, getQuotaStatus }

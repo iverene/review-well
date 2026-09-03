@@ -1,4 +1,4 @@
-const { prisma } = require('../config/database')
+import { prisma } from '../config/database.js'
 
 const findByReviewer = async (reviewerId) => {
   return prisma.block.findMany({
@@ -53,14 +53,4 @@ const getMaxSortOrder = async (reviewerId, columnIndex) => {
   return result._max.sortOrder ?? -1
 }
 
-module.exports = {
-  findByReviewer,
-  findById,
-  create,
-  createMany,
-  update,
-  remove,
-  removeAllByReviewer,
-  reorder,
-  getMaxSortOrder,
-}
+export { findByReviewer, findById, create, createMany, update, remove, removeAllByReviewer, reorder, getMaxSortOrder }

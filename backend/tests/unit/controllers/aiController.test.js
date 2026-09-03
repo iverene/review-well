@@ -1,15 +1,75 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+vi.mock('../../../models/userModel.js', () => ({
+  getProfile: vi.fn(),
+  findById: vi.fn(),
+  findByGoogleId: vi.fn(),
+  findByEmail: vi.fn(),
+  create: vi.fn(),
+  update: vi.fn(),
+}))
+vi.mock('../../../models/reviewerModel.js', () => ({
+  findPublic: vi.fn(),
+  findByAuthor: vi.fn(),
+  findById: vi.fn(),
+  create: vi.fn(),
+  update: vi.fn(),
+  remove: vi.fn(),
+  count: vi.fn(),
+}))
+vi.mock('../../../models/followModel.js', () => ({
+  findByUsers: vi.fn(),
+  create: vi.fn(),
+  remove: vi.fn(),
+  countFollowers: vi.fn(),
+  countFollowing: vi.fn(),
+  isFollowing: vi.fn(),
+}))
+vi.mock('../../../models/likeModel.js', () => ({
+  findByUserAndReviewer: vi.fn(),
+  create: vi.fn(),
+  remove: vi.fn(),
+  countByReviewer: vi.fn(),
+  hasUserLiked: vi.fn(),
+}))
+vi.mock('../../../models/notificationModel.js', () => ({
+  create: vi.fn(),
+  findByRecipient: vi.fn(),
+  markAsRead: vi.fn(),
+  markAllAsRead: vi.fn(),
+  countUnread: vi.fn(),
+  createLikeNotification: vi.fn(),
+  createFollowNotification: vi.fn(),
+}))
+vi.mock('../../../models/blockModel.js', () => ({
+  findByReviewer: vi.fn(),
+  findById: vi.fn(),
+  create: vi.fn(),
+  createMany: vi.fn(),
+  update: vi.fn(),
+  remove: vi.fn(),
+  removeAllByReviewer: vi.fn(),
+  reorder: vi.fn(),
+  getMaxSortOrder: vi.fn(),
+}))
+vi.mock('../../../models/aiQuotaModel.js', () => ({
+  getQuota: vi.fn(),
+  checkQuota: vi.fn(),
+  incrementUsage: vi.fn(),
+  getRemainingQuota: vi.fn(),
+}))
+vi.mock('../../../services/openaiService.js', () => ({
+  extractStudyBlocks: vi.fn(),
+  getMockExtraction: vi.fn(),
+  isConfigured: vi.fn().mockReturnValue(false),
+}))
+
 import { extractFromUpload, getQuotaStatus } from '../../../controllers/aiController.js'
 import { createMockRequest, createMockResponse } from '../../helpers/mocks.js'
 import * as openaiService from '../../../services/openaiService.js'
 import * as aiQuotaModel from '../../../models/aiQuotaModel.js'
-import reviewerModel from '../../../models/reviewerModel.js'
-import blockModel from '../../../models/blockModel.js'
-
-vi.mock('../../../services/openaiService.js')
-vi.mock('../../../models/aiQuotaModel.js')
-vi.mock('../../../models/reviewerModel.js')
-vi.mock('../../../models/blockModel.js')
+import * as reviewerModel from '../../../models/reviewerModel.js'
+import * as blockModel from '../../../models/blockModel.js'
 
 describe('AI Controller', () => {
   beforeEach(() => {

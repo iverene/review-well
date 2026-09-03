@@ -1,4 +1,4 @@
-const { z } = require('zod')
+import { z } from 'zod'
 
 const createReviewerSchema = z.object({
   title: z.string().min(1).max(200),
@@ -54,7 +54,7 @@ const reorderBlocksSchema = z.object({
   })),
 })
 
-module.exports = {
+export {
   createReviewerSchema,
   updateReviewerSchema,
   createBlockSchema,

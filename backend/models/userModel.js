@@ -1,4 +1,4 @@
-const { prisma } = require('../config/database')
+import { prisma } from '../config/database.js'
 
 const findById = async (id) => {
   return prisma.user.findUnique({ where: { id } })
@@ -44,4 +44,4 @@ const getProfile = async (id) => {
   })
 }
 
-module.exports = { findById, findByGoogleId, findByEmail, create, update, getProfile }
+export { findById, findByGoogleId, findByEmail, create, update, getProfile }

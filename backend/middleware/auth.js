@@ -1,4 +1,4 @@
-const userModel = require('../models/userModel')
+import * as userModel from '../models/userModel.js'
 
 const requireAuth = async (req, res, next) => {
   if (!req.user) {
@@ -19,4 +19,4 @@ const optionalAuth = async (req, res, next) => {
   next()
 }
 
-module.exports = { requireAuth, optionalAuth }
+export { requireAuth, optionalAuth }

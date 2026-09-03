@@ -1,6 +1,5 @@
-const express = require('express')
-const router = express.Router()
-const {
+import express from 'express'
+import {
   likeReviewer,
   unlikeReviewer,
   getLikeStatus,
@@ -11,23 +10,25 @@ const {
   markNotificationRead,
   markAllNotificationsRead,
   getUnreadCount,
-} = require('../controllers/socialController')
-const { requireAuth, optionalAuth } = require('../middleware/auth')
+} from '../controllers/socialController.js'
+import { requireAuth, optionalAuth } from '../middleware/auth.js'
+
+const app = express.Router()
 
 // Like routes
-router.post('/reviewers/:reviewerId/like', requireAuth, likeReviewer)
-router.delete('/reviewers/:reviewerId/like', requireAuth, unlikeReviewer)
-router.get('/reviewers/:reviewerId/like', optionalAuth, getLikeStatus)
+app.post('/reviewers/:reviewerId/like', requireAuth, likeReviewer)
+app.delete('/reviewers/:reviewerId/like', requireAuth, unlikeReviewer)
+app.get('/reviewers/:reviewerId/like', optionalAuth, getLikeStatus)
 
 // Follow routes
-router.post('/users/:userId/follow', requireAuth, followUser)
-router.delete('/users/:userId/follow', requireAuth, unfollowUser)
-router.get('/users/:userId/follow', optionalAuth, getFollowStatus)
+app.post('/users/:userId/follow', requireAuth, followUser)
+app.delete('/users/:userId/follow', requireAuth, unfollowUser)
+app.get('/users/:userId/follow', optionalAuth, getFollowStatus)
 
 // Notification routes
-router.get('/notifications', requireAuth, getNotifications)
-router.put('/notifications/:notificationId/read', requireAuth, markNotificationRead)
-router.put('/notifications/read-all', requireAuth, markAllNotificationsRead)
-router.get('/notifications/unread-count', requireAuth, getUnreadCount)
+app.get('/notifications', requireAuth, getNotifications)
+app.put('/notifications/:notificationId/read', requireAuth, markNotificationRead)
+app.put('/notifications/read-all', requireAuth, markAllNotificationsRead)
+app.get('/notifications/unread-count', requireAuth, getUnreadCount)
 
-module.exports = router
+export default app

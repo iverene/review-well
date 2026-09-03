@@ -1,6 +1,6 @@
-const userModel = require('../models/userModel')
-const reviewerModel = require('../models/reviewerModel')
-const followModel = require('../models/followModel')
+import * as userModel from '../models/userModel.js'
+import * as reviewerModel from '../models/reviewerModel.js'
+import * as followModel from '../models/followModel.js'
 
 const getProfile = async (req, res) => {
   try {
@@ -106,4 +106,4 @@ const getMyProfile = async (req, res) => {
   }
 }
 
-module.exports = { getProfile, updateProfile, updateAvatar, getMyProfile }
+export { getProfile, updateProfile, updateAvatar, getMyProfile }

@@ -1,4 +1,4 @@
-const { prisma } = require('../config/database')
+import { prisma } from '../config/database.js'
 
 const findByUsers = async (followerId, followingId) => {
   return prisma.follow.findUnique({
@@ -75,13 +75,4 @@ const isFollowing = async (followerId, followingId) => {
   return !!follow
 }
 
-module.exports = {
-  findByUsers,
-  create,
-  remove,
-  getFollowers,
-  getFollowing,
-  countFollowers,
-  countFollowing,
-  isFollowing,
-}
+export { findByUsers, create, remove, getFollowers, getFollowing, countFollowers, countFollowing, isFollowing }

@@ -1,9 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { requireAuth, optionalAuth } from '../../../middleware/auth.js'
-import userModel from '../../../models/userModel.js'
-import { createMockRequest, createMockResponse, createMockNext } from '../../helpers/mocks.js'
 
-vi.mock('../../../models/userModel.js')
+vi.mock('../../../models/userModel.js', () => ({
+  getProfile: vi.fn(),
+  findById: vi.fn(),
+  findByGoogleId: vi.fn(),
+  findByEmail: vi.fn(),
+  create: vi.fn(),
+  update: vi.fn(),
+}))
+
+import { requireAuth, optionalAuth } from '../../../middleware/auth.js'
+import * as userModel from '../../../models/userModel.js'
+import { createMockRequest, createMockResponse, createMockNext } from '../../helpers/mocks.js'
 
 describe('Auth Middleware', () => {
   beforeEach(() => {
@@ -22,7 +30,7 @@ describe('Auth Middleware', () => {
     })
 
     it('should return 401 when user is not authenticated', async () => {
-      const req = createMockRequest({})
+      const req = createMockRequest({ user: undefined })
       const res = createMockResponse()
       const next = createMockNext()
 
@@ -54,7 +62,7 @@ describe('Auth Middleware', () => {
     })
 
     it('should call next without profile when user does not exist', async () => {
-      const req = createMockRequest({})
+      const req = createMockRequest({ user: undefined })
       const res = createMockResponse()
       const next = createMockNext()
 

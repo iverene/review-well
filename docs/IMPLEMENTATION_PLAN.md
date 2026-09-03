@@ -9,7 +9,7 @@
 ## Guiding Principles
 
 1. **Schema-first:** Fix Prisma schema to match SCHEMA.md before building features
-2. **Testable interfaces:** Every external service (Supabase, Google Auth, SendGrid, OpenRouter) gets a mock-able adapter so tests run without live credentials
+2. **Testable interfaces:** Every external service (Supabase, Google Auth, OpenRouter) gets a mock-able adapter so tests run without live credentials
 3. **TDD at each phase:** Write tests before or alongside implementation
 4. **Incremental delivery:** Each phase produces a working, testable slice
 
@@ -59,7 +59,6 @@ Create adapter pattern for all external services:
 // backend/services/adapters/
 //   supabase.js    — DB operations via Prisma (mockable)
 //   googleAuth.js  — Google OAuth verification (mockable)
-//   sendgrid.js    — Email sending (mockable)
 //   openrouter.js  — AI completion (mockable)
 //   storage.js     — File upload to Supabase Storage (mockable)
 ```
@@ -71,7 +70,6 @@ Each adapter exports:
 **Files:**
 - `backend/services/adapters/supabase.js`
 - `backend/services/adapters/googleAuth.js`
-- `backend/services/adapters/sendgrid.js`
 - `backend/services/adapters/openrouter.js`
 - `backend/services/adapters/storage.js`
 
@@ -321,27 +319,9 @@ Each adapter exports:
 
 ## Phase 6: Email & Notifications (Days 23-25)
 
-**Goal:** SendGrid email verification, email notifications
+**Goal:** Deferred email integrations
 
-### 6.1 SendGrid Integration
-- Implement `sendgridService.js` — email sending
-- Implement email templates (welcome, verification, notifications)
-- Implement email verification flow
-- Add unsubscribe handling
-
-**Files:**
-- `backend/services/sendgridService.js`
-- `backend/templates/email/` (new directory)
-- `backend/controllers/emailController.js` (new)
-
-### 6.2 Email Tests
-- Unit: `sendgridService.test.js` — mock SendGrid, test template rendering
-- Integration: `emailRoutes.test.js` — verification flow
-- E2E: `email.spec.js` — signup, receive verification email
-
-**Test files:**
-- `backend/tests/unit/services/sendgridService.test.js`
-- `backend/tests/integration/email.test.js`
+Email delivery is intentionally out of scope. Authentication is handled exclusively by Google OAuth.
 
 ---
 
@@ -397,7 +377,6 @@ Each adapter exports:
 ### 8.3 Production Setup
 - Configure production environment
 - Set up Supabase production project
-- Configure SendGrid production
 - Set up OpenRouter API keys
 - Configure Google OAuth production
 
@@ -435,7 +414,6 @@ backend/tests/
     services/
       googleService.test.js
       openaiService.test.js
-      sendgridService.test.js
       promptService.test.js
 ```
 
@@ -506,10 +484,6 @@ export const mockGoogleAuth = () => ({
   verifyIdToken: jest.fn().mockResolvedValue({ sub: '123', email: 'test@test.com' }),
 })
 
-export const mockSendGrid = () => ({
-  send: jest.fn().mockResolvedValue({ statusCode: 202 }),
-})
-
 export const mockOpenRouter = () => ({
   chat: { completions: { create: jest.fn() } },
 })
@@ -521,7 +495,6 @@ export const mockOpenRouter = () => ({
 DATABASE_URL=postgresql://test:test@localhost:5432/reviewwell_test
 GOOGLE_CLIENT_ID=test-google-client-id
 GOOGLE_CLIENT_SECRET=test-google-client-secret
-SENDGRID_API_KEY=SG.test-sendgrid-key
 OPENROUTER_API_KEY=sk-or-test-openrouter-key
 SESSION_SECRET=test-session-secret
 FRONTEND_URL=http://localhost:5173

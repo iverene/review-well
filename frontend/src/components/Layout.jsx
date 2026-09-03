@@ -5,7 +5,7 @@ import AvatarDropdown from './auth/AvatarDropdown'
 import NotificationBadge from './notifications/NotificationBadge'
 
 function Layout({ children }) {
-  const { isAuthenticated, loading } = useAuth()
+  const { isAuthenticated, isGuest, loading, signInWithGoogle, logout } = useAuth()
 
   return (
     <div className="min-h-screen bg-paper">
@@ -30,6 +30,16 @@ function Layout({ children }) {
                 </Link>
                 <NotificationBadge />
                 <AvatarDropdown />
+              </>
+            ) : isGuest ? (
+              <>
+                <span className="text-sm text-muted">Guest · View only</span>
+                <button
+                  onClick={signInWithGoogle}
+                  className="rounded border border-stone px-4 py-2 text-sm text-ink transition-colors hover:bg-stone focus:outline-none focus:ring-2 focus:ring-ink focus:ring-offset-2"
+                >
+                  Sign in with Google
+                </button>
               </>
             ) : (
               <LoginButton />

@@ -1,4 +1,4 @@
-const { OAuth2Client } = require('google-auth-library')
+import { OAuth2Client } from 'google-auth-library'
 
 const createGoogleAuthAdapter = () => {
   const client = new OAuth2Client(
@@ -18,7 +18,6 @@ const createGoogleAuthAdapter = () => {
         email: payload.email,
         name: payload.name,
         avatar: payload.picture,
-        emailVerified: payload.email_verified,
       }
     } catch (error) {
       console.error('Google token verification failed:', error)
@@ -29,4 +28,4 @@ const createGoogleAuthAdapter = () => {
   return { verifyIdToken }
 }
 
-module.exports = { createGoogleAuthAdapter }
+export { createGoogleAuthAdapter }

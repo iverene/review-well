@@ -1,4 +1,4 @@
-const { prisma } = require('../config/database')
+import { prisma } from '../config/database.js'
 
 const findPublic = async ({ skip = 0, take = 20, search = '' } = {}) => {
   const where = {
@@ -93,4 +93,4 @@ const count = async (where = {}) => {
   return prisma.reviewer.count({ where })
 }
 
-module.exports = { findPublic, findByAuthor, findById, create, update, remove, count }
+export { findPublic, findByAuthor, findById, create, update, remove, count }

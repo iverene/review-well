@@ -1,14 +1,21 @@
-const express = require('express')
-const router = express.Router()
-const { googleAuth, googleCallback, googleCallbackHandler, logout, getMe } = require('../controllers/authController')
-const { requireAuth } = require('../middleware/auth')
+import express from 'express'
+import {
+  googleAuth,
+  googleCallback,
+  googleCallbackHandler,
+  logout,
+  getMe,
+} from '../controllers/authController.js'
+import { requireAuth } from '../middleware/auth.js'
+
+const app = express.Router()
 
 // Google OAuth routes
-router.get('/google', googleAuth)
-router.get('/google/callback', googleCallback, googleCallbackHandler)
+app.get('/google', googleAuth)
+app.get('/google/callback', googleCallback, googleCallbackHandler)
 
 // Protected routes
-router.post('/logout', requireAuth, logout)
-router.get('/me', requireAuth, getMe)
+app.post('/logout', requireAuth, logout)
+app.get('/me', requireAuth, getMe)
 
-module.exports = router
+export default app
