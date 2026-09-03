@@ -13,7 +13,7 @@ function Layout({ children }) {
       <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:p-2 focus:bg-ink focus:text-paper">
         Skip to main content
       </a>
-      <header className="border-b-2 border-stone bg-paper/90 px-4 py-3 backdrop-blur md:px-8" role="banner">
+      <header className="relative z-50 border-b-2 border-stone bg-paper/90 px-4 py-3 backdrop-blur md:px-8" role="banner">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <h1 className="flex items-center text-2xl font-bold text-ink">
             <Link to="/" aria-label="Review Well home" className="flex items-center">

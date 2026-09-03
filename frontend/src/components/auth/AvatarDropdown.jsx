@@ -60,7 +60,7 @@ const AvatarDropdown = () => {
 
       {isOpen && (
         <div
-          className="absolute right-0 z-50 mt-2 w-52 rounded-soft border-2 border-stone bg-paper club-shadow"
+          className="absolute right-0 z-[100] mt-2 w-52 rounded-soft border-2 border-stone bg-paper club-shadow"
           role="menu"
           aria-orientation="vertical"
           aria-labelledby="user-menu-button"
