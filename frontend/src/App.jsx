@@ -7,6 +7,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute'
 // Lazy load pages for code splitting
 const Home = lazy(() => import('./pages/Home'))
 const Reviewer = lazy(() => import('./pages/Reviewer'))
+const ReviewerList = lazy(() => import('./pages/ReviewerList'))
 const Create = lazy(() => import('./pages/Create'))
 const Review = lazy(() => import('./pages/Review'))
 const Login = lazy(() => import('./pages/Login'))
@@ -46,6 +47,8 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route path="/reviewer/my" element={<ProtectedRoute><ReviewerList mine /></ProtectedRoute>} />
+              <Route path="/reviewer/public" element={<ReviewerList />} />
               <Route path="/reviewer/:id" element={<Reviewer />} />
               <Route
                 path="/workspace/:id"
