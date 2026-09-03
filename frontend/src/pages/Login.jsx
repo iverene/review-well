@@ -37,10 +37,10 @@ const Login = () => {
           <p className="mx-auto mt-3 max-w-sm leading-relaxed text-muted">Make an account for the full toolkit, or browse public guides as a guest.</p>
         </div>
         <div className="grid gap-3">
-          <div className="rounded-soft border-2 border-stone bg-paper p-4">
+          <div className="rounded-soft border-2 border-stone bg-paper p-4 text-center">
             <p className="font-extrabold text-ink">Full access</p>
             <p className="mt-1 text-sm text-muted">Create, edit, save, and use AI study tools.</p>
-            <div className="mt-3"><LoginButton /></div>
+            <div className="mt-3 flex justify-center"><LoginButton /></div>
           </div>
           <button
             onClick={() => {
