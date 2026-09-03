@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext'
 import EditProfile from '../components/profile/EditProfile'
 import ErrorAlert from '../components/common/ErrorAlert'
 import { getApiErrorMessage } from '../utils/apiError'
+import { ProfileSkeleton } from '../components/common/Skeleton'
 
 const Settings = () => {
   const { user, refreshUser } = useAuth()
@@ -71,9 +72,7 @@ const Settings = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-paper">
-        <div className="text-muted">Loading settings...</div>
-      </div>
+      <div className="min-h-screen bg-paper"><ProfileSkeleton /></div>
     )
   }
 

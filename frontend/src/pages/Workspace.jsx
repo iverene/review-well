@@ -7,6 +7,7 @@ import FormattingToolbar from '../components/workspace/FormattingToolbar'
 import BlockRenderer from '../components/workspace/BlockRenderer'
 import ErrorAlert from '../components/common/ErrorAlert'
 import { getApiErrorMessage } from '../utils/apiError'
+import { WorkspaceSkeleton } from '../components/common/Skeleton'
 
 const Workspace = () => {
   const { id } = useParams()
@@ -128,9 +129,7 @@ const Workspace = () => {
 
   if (loading) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-muted">Loading workspace...</div>
-      </div>
+      <WorkspaceSkeleton />
     )
   }
 

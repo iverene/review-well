@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/auth/ProtectedRoute'
+import { Skeleton } from './components/common/Skeleton'
 
 // Lazy load pages for code splitting
 const Home = lazy(() => import('./pages/Home'))
@@ -22,8 +23,10 @@ const Contact = lazy(() => import('./pages/Contact'))
 
 // Loading component
 const PageLoader = () => (
-  <div className="flex min-h-screen items-center justify-center bg-paper">
-    <div className="text-muted">Loading...</div>
+  <div className="mx-auto min-h-screen max-w-6xl space-y-6 px-4 py-20 md:px-8" role="status" aria-label="Loading page">
+    <Skeleton className="h-10 w-56" />
+    <Skeleton className="h-48 w-full" />
+    <div className="grid gap-4 md:grid-cols-3"><Skeleton className="h-36" /><Skeleton className="h-36" /><Skeleton className="h-36" /></div>
   </div>
 )
 

@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { Skeleton } from '../components/common/Skeleton'
 import LoginButton from '../components/auth/LoginButton'
 
 const Login = () => {
@@ -17,9 +18,7 @@ const Login = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-paper">
-        <div className="text-ink">Loading...</div>
-      </div>
+      <div className="mx-auto min-h-screen max-w-md space-y-5 px-4 py-20" role="status" aria-label="Loading sign in"><Skeleton className="mx-auto h-20 w-20 rounded-full" /><Skeleton className="h-10 w-3/4 mx-auto" /><Skeleton className="h-14 w-full" /></div>
     )
   }
 

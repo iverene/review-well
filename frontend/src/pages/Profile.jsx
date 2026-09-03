@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext'
 import FollowButton from '../components/social/FollowButton'
 import ErrorAlert from '../components/common/ErrorAlert'
 import { getApiErrorMessage } from '../utils/apiError'
+import { ProfileSkeleton } from '../components/common/Skeleton'
 
 const Profile = () => {
   const { userId } = useParams()
@@ -35,9 +36,7 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-paper">
-        <div className="text-muted">Loading profile...</div>
-      </div>
+      <div className="min-h-screen bg-paper"><ProfileSkeleton /></div>
     )
   }
 

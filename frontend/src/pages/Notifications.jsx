@@ -3,6 +3,7 @@ import axios from 'axios'
 import NotificationItem from '../components/notifications/NotificationItem'
 import ErrorAlert from '../components/common/ErrorAlert'
 import { getApiErrorMessage } from '../utils/apiError'
+import { NotificationsSkeleton } from '../components/common/Skeleton'
 
 const Notifications = () => {
   const [notifications, setNotifications] = useState([])
@@ -68,9 +69,7 @@ const Notifications = () => {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-paper">
-        <div className="text-muted">Loading notifications...</div>
-      </div>
+      <div className="min-h-screen bg-paper"><NotificationsSkeleton /></div>
     )
   }
 
