@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../contexts/AuthContext'
 import EditProfile from '../components/profile/EditProfile'
+import ErrorAlert from '../components/common/ErrorAlert'
+import { getApiErrorMessage } from '../utils/apiError'
 
 const Settings = () => {
   const { user, refreshUser } = useAuth()
@@ -23,7 +25,7 @@ const Settings = () => {
       setProfile(response.data.user)
     } catch (err) {
       console.error('Failed to fetch profile:', err)
-      setError('Failed to load profile')
+      setError(getApiErrorMessage(err, 'Unable to load your profile.'))
     } finally {
       setLoading(false)
     }
@@ -43,7 +45,7 @@ const Settings = () => {
       await refreshUser()
     } catch (err) {
       console.error('Failed to update profile:', err)
-      setError('Failed to update profile')
+      setError(getApiErrorMessage(err, 'Unable to update your profile.'))
     } finally {
       setSaving(false)
     }
@@ -62,7 +64,7 @@ const Settings = () => {
       await refreshUser()
     } catch (err) {
       console.error('Failed to upload avatar:', err)
-      setError('Failed to upload avatar')
+      setError(getApiErrorMessage(err, 'Unable to upload your avatar.'))
     }
   }
 
@@ -80,9 +82,7 @@ const Settings = () => {
         <h1 className="mb-8 text-2xl font-bold text-ink">Settings</h1>
 
         {error && (
-          <div className="mb-4 rounded border border-ink bg-paper p-4 text-ink">
-            {error}
-          </div>
+          <ErrorAlert className="mb-4">{error}</ErrorAlert>
         )}
 
         {success && (

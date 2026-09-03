@@ -1,20 +1,22 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../contexts/AuthContext'
 import Toolbar from '../components/workspace/Toolbar'
 import FormattingToolbar from '../components/workspace/FormattingToolbar'
 import BlockRenderer from '../components/workspace/BlockRenderer'
+import ErrorAlert from '../components/common/ErrorAlert'
+import { getApiErrorMessage } from '../utils/apiError'
 
 const Workspace = () => {
   const { id } = useParams()
-  const navigate = useNavigate()
   const { user } = useAuth()
   const [reviewer, setReviewer] = useState(null)
   const [blocks, setBlocks] = useState([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [selectedBlock, setSelectedBlock] = useState(null)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     fetchReviewer()
@@ -27,7 +29,7 @@ const Workspace = () => {
       setBlocks(response.data.reviewer.blocks || [])
     } catch (error) {
       console.error('Failed to fetch reviewer:', error)
-      navigate('/')
+      setError(getApiErrorMessage(error, 'Unable to load this reviewer.'))
     } finally {
       setLoading(false)
     }
@@ -35,6 +37,7 @@ const Workspace = () => {
 
   const handleSave = async () => {
     setSaving(true)
+    setError(null)
     try {
       await axios.put(
         `/api/reviewers/${id}`,
@@ -49,12 +52,14 @@ const Workspace = () => {
       }
     } catch (error) {
       console.error('Failed to save:', error)
+      setError(getApiErrorMessage(error, 'Unable to save your changes.'))
     } finally {
       setSaving(false)
     }
   }
 
   const handleAddBlock = async (blockType) => {
+    setError(null)
     try {
       const response = await axios.post(
         `/api/reviewers/${id}/blocks`,
@@ -69,6 +74,7 @@ const Workspace = () => {
       setBlocks([...blocks, response.data.block])
     } catch (error) {
       console.error('Failed to add block:', error)
+      setError(getApiErrorMessage(error, 'Unable to add this block.'))
     }
   }
 
@@ -92,6 +98,7 @@ const Workspace = () => {
   }
 
   const handleDeleteBlock = async (blockId) => {
+    setError(null)
     try {
       await axios.delete(`/api/reviewers/blocks/${blockId}`, { withCredentials: true })
       setBlocks(blocks.filter((b) => b.id !== blockId))
@@ -100,11 +107,13 @@ const Workspace = () => {
       }
     } catch (error) {
       console.error('Failed to delete block:', error)
+      setError(getApiErrorMessage(error, 'Unable to delete this block.'))
     }
   }
 
   const handleReorderBlocks = async (reorderedBlocks) => {
     setBlocks(reorderedBlocks)
+    setError(null)
     try {
       await axios.put(
         `/api/reviewers/${id}/blocks/reorder`,
@@ -113,6 +122,7 @@ const Workspace = () => {
       )
     } catch (error) {
       console.error('Failed to reorder blocks:', error)
+      setError(getApiErrorMessage(error, 'Unable to reorder your blocks.'))
     }
   }
 
@@ -127,7 +137,7 @@ const Workspace = () => {
   if (!reviewer) {
     return (
       <div className="flex h-full items-center justify-center">
-        <div className="text-muted">Reviewer not found</div>
+        <ErrorAlert>{error || 'Reviewer not found'}</ErrorAlert>
       </div>
     )
   }
@@ -141,6 +151,8 @@ const Workspace = () => {
         onSave={handleSave}
         onAddBlock={handleAddBlock}
       />
+
+      <ErrorAlert className="mx-4 mt-4 md:mx-8">{error}</ErrorAlert>
 
       {/* Formatting Toolbar */}
       {selectedBlock && (

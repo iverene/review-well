@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import axios from 'axios'
+import ErrorAlert from '../common/ErrorAlert'
+import { getApiErrorMessage } from '../../utils/apiError'
 
 const Sidebar = ({ open, onClose }) => {
   const [reviewers, setReviewers] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [error, setError] = useState(null)
   const location = useLocation()
 
   useEffect(() => {
@@ -18,6 +21,7 @@ const Sidebar = ({ open, onClose }) => {
       setReviewers(response.data.reviewers)
     } catch (error) {
       console.error('Failed to fetch reviewers:', error)
+      setError(getApiErrorMessage(error, 'Unable to load your reviewers.'))
     } finally {
       setLoading(false)
     }
@@ -61,6 +65,8 @@ const Sidebar = ({ open, onClose }) => {
           <div className="flex-1 overflow-y-auto">
             {loading ? (
               <div className="p-4 text-sm text-muted">Loading...</div>
+            ) : error ? (
+              <ErrorAlert className="m-4">{error}</ErrorAlert>
             ) : filteredReviewers.length === 0 ? (
               <div className="p-4 text-sm text-muted">No reviewers found</div>
             ) : (

@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../contexts/AuthContext'
 import FollowButton from '../components/social/FollowButton'
+import ErrorAlert from '../components/common/ErrorAlert'
+import { getApiErrorMessage } from '../utils/apiError'
 
 const Profile = () => {
   const { userId } = useParams()
@@ -25,7 +27,7 @@ const Profile = () => {
       setProfile(response.data.user)
     } catch (err) {
       console.error('Failed to fetch profile:', err)
-      setError('Failed to load profile')
+      setError(getApiErrorMessage(err, 'Unable to load this profile.'))
     } finally {
       setLoading(false)
     }
@@ -43,7 +45,7 @@ const Profile = () => {
     return (
       <div className="flex min-h-screen items-center justify-center bg-paper">
         <div className="text-center">
-          <div className="text-muted">{error || 'Profile not found'}</div>
+          <ErrorAlert className="mb-4">{error || 'Profile not found'}</ErrorAlert>
           <Link to="/" className="mt-4 inline-block text-ink hover:underline">
             Go back home
           </Link>

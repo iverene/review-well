@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
 import NotificationItem from '../components/notifications/NotificationItem'
+import ErrorAlert from '../components/common/ErrorAlert'
+import { getApiErrorMessage } from '../utils/apiError'
 
 const Notifications = () => {
   const [notifications, setNotifications] = useState([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     fetchNotifications()
@@ -14,6 +17,7 @@ const Notifications = () => {
 
   const fetchNotifications = async () => {
     try {
+      setError(null)
       const response = await axios.get('/api/social/notifications', {
         params: { page, limit: 20 },
         withCredentials: true,
@@ -26,6 +30,7 @@ const Notifications = () => {
       setHasMore(response.data.notifications.length === 20)
     } catch (error) {
       console.error('Failed to fetch notifications:', error)
+      setError(getApiErrorMessage(error, 'Unable to load notifications.'))
     } finally {
       setLoading(false)
     }
@@ -43,6 +48,7 @@ const Notifications = () => {
       )
     } catch (error) {
       console.error('Failed to mark notification as read:', error)
+      setError(getApiErrorMessage(error, 'Unable to mark the notification as read.'))
     }
   }
 
@@ -56,6 +62,7 @@ const Notifications = () => {
       )
     } catch (error) {
       console.error('Failed to mark all as read:', error)
+      setError(getApiErrorMessage(error, 'Unable to mark notifications as read.'))
     }
   }
 
@@ -82,6 +89,8 @@ const Notifications = () => {
             </button>
           )}
         </div>
+
+        <ErrorAlert className="mb-4">{error}</ErrorAlert>
 
         {/* Notifications List */}
         {notifications.length === 0 ? (

@@ -3,9 +3,10 @@ import { useAuth } from '../contexts/AuthContext'
 import LoginButton from './auth/LoginButton'
 import AvatarDropdown from './auth/AvatarDropdown'
 import NotificationBadge from './notifications/NotificationBadge'
+import ErrorAlert from './common/ErrorAlert'
 
 function Layout({ children }) {
-  const { isAuthenticated, isGuest, loading, signInWithGoogle, logout } = useAuth()
+  const { isAuthenticated, isGuest, loading, error, signInWithGoogle, logout } = useAuth()
 
   return (
     <div className="min-h-screen bg-paper">
@@ -50,6 +51,7 @@ function Layout({ children }) {
           </nav>
         </div>
       </header>
+      <ErrorAlert className="mx-auto mt-4 max-w-6xl px-4 md:px-8">{error}</ErrorAlert>
       <main id="main-content" className="mx-auto max-w-6xl px-4 py-8 md:px-8" role="main">
         {children}
       </main>

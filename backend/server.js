@@ -41,11 +41,16 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
+app.use('/api', (req, res) => {
+  res.status(404).json({ error: 'API route not found' })
+})
+
 // Error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack)
-  res.status(err.status || 500).json({
-    error: err.message || 'Internal server error',
+  console.error(err.stack || err)
+  const status = Number.isInteger(err.status) && err.status >= 400 && err.status < 500 ? err.status : 500
+  res.status(status).json({
+    error: status === 500 ? 'Something went wrong on the server' : (err.message || 'Request failed'),
   })
 })
 

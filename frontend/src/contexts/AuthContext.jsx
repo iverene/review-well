@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import axios from 'axios'
 import useAuthStore from '../stores/authStore'
+import { getApiErrorMessage } from '../utils/apiError'
 
 const AuthContext = createContext(null)
 
@@ -14,6 +15,7 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const { user, isAuthenticated, isGuest, login, enterGuest, logout } = useAuthStore()
 
   useEffect(() => {
@@ -22,12 +24,19 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
+      setError(null)
       const response = await axios.get('/api/auth/me', { withCredentials: true })
       if (response.data.user) {
         login(response.data.user)
+        return true
       }
+      return false
     } catch (error) {
-      console.log('Not authenticated')
+      if (error.response?.status !== 401) {
+        console.error('Failed to check authentication:', error)
+        setError(getApiErrorMessage(error, 'Unable to check your session.'))
+      }
+      return false
     } finally {
       setLoading(false)
     }
@@ -48,6 +57,7 @@ export const AuthProvider = ({ children }) => {
       logout()
     } catch (error) {
       console.error('Logout error:', error)
+      setError(getApiErrorMessage(error, 'Unable to sign out. Please try again.'))
     }
   }
 
@@ -56,6 +66,7 @@ export const AuthProvider = ({ children }) => {
     isAuthenticated,
     isGuest,
     loading,
+    error,
     signInWithGoogle,
     continueAsGuest: enterGuest,
     logout: handleLogout,
