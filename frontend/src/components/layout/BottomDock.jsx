@@ -44,13 +44,12 @@ const BottomDock = () => {
           <Link
             key={item.to}
             to={item.to}
-            className={`flex min-w-0 flex-1 flex-col items-center gap-1 rounded-soft px-1 py-2 ${
-              item.elevated
-                ? 'bg-powder text-ink'
-                : location.pathname === item.to || (item.to === '/reviewer/my' && location.pathname.startsWith('/reviewer/my'))
-                  ? 'bg-powder text-ink'
-                  : 'text-muted hover:bg-blush hover:text-ink'
+            className={`flex min-w-0 flex-1 flex-col items-center gap-1 rounded-soft px-1 py-2 transition-colors ${
+              location.pathname === item.to || (item.to === '/reviewer/my' && location.pathname.startsWith('/reviewer/my'))
+                ? 'bg-accent text-paper'
+                : 'text-muted hover:bg-powder hover:text-ink'
             }`}
+            aria-current={location.pathname === item.to || (item.to === '/reviewer/my' && location.pathname.startsWith('/reviewer/my')) ? 'page' : undefined}
           >
             {item.label === 'Profile' && user?.avatarUrl ? (
               <img src={user.avatarUrl} alt="" className="h-5 w-5 rounded-full object-cover" />
