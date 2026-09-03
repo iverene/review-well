@@ -5,13 +5,13 @@ import { ArrowRight, BookOpen, Clock3, LibraryBig, Plus } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import ErrorAlert from '../components/common/ErrorAlert'
 import { getApiErrorMessage } from '../utils/apiError'
+import { isSameCourse } from '../utils/courseMatching'
 
-const recentReviewersKey = 'review-well-recent-reviewers'
+const recentReviewersKey = (userId) => `review-well-recent-reviewers:${userId}`
 
 const ReviewerCard = ({ reviewer, compact = false }) => (
-  <Link to={`/reviewer/${reviewer.id}`} className={`group relative overflow-hidden rounded-soft border-2 border-stone bg-paper p-4 transition-transform hover:-translate-y-1 ${compact ? 'min-w-[250px] md:min-w-0' : ''}`}>
-    <span className="absolute inset-y-0 left-0 w-2 bg-mint group-hover:bg-powder" aria-hidden="true" />
-    <div className="pl-2">
+  <Link to={`/reviewer/${reviewer.id}`} className={`group relative overflow-hidden rounded-soft border-2 border-stone bg-paper p-4 club-shadow transition-transform hover:-translate-y-1 ${compact ? 'min-w-[250px] md:min-w-0' : ''}`}>
+    <div>
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="line-clamp-2 font-display text-lg font-bold text-ink">{reviewer.title}</p>
@@ -21,7 +21,7 @@ const ReviewerCard = ({ reviewer, compact = false }) => (
       </div>
       <div className="mt-5 flex items-center justify-between gap-2 text-xs text-muted">
         <span>{reviewer._count?.likes || 0} likes</span>
-        {reviewer.author?.displayName && <span className="truncate">by {reviewer.author.displayName}</span>}
+        {reviewer.user?.displayName && <span className="truncate">by {reviewer.user.displayName}</span>}
       </div>
     </div>
   </Link>
@@ -31,7 +31,7 @@ const Section = ({ icon: Icon, title, to, children, empty }) => (
   <section>
     <div className="mb-4 flex items-center justify-between gap-4">
       <h2 className="flex items-center gap-2 font-display text-2xl font-bold text-ink"><Icon className="h-5 w-5 text-accent" strokeWidth={2.3} aria-hidden="true" />{title}</h2>
-      <Link to={to} className="flex shrink-0 items-center gap-1 text-sm font-extrabold text-muted hover:text-ink">View all <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>
+      {to && <Link to={to} className="flex shrink-0 items-center gap-1 text-sm font-extrabold text-muted hover:text-ink">View all <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>}
     </div>
     {children || <p className="rounded-soft border-2 border-dashed border-stone px-5 py-8 text-center text-sm text-muted">{empty}</p>}
   </section>
@@ -78,7 +78,7 @@ const Home = () => {
         if (isAuthenticated) {
           const myResponse = await axios.get('/api/reviewers/my', { withCredentials: true })
           setMyReviewers(myResponse.data.reviewers || [])
-          setRecentReviewers(JSON.parse(window.localStorage.getItem(recentReviewersKey) || '[]'))
+          setRecentReviewers(JSON.parse(window.localStorage.getItem(recentReviewersKey(user.id)) || '[]'))
         }
       } catch (loadError) {
         console.error('Failed to load home reviewers:', loadError)
@@ -94,12 +94,9 @@ const Home = () => {
     return <div className="space-y-8"><ErrorAlert>{error}</ErrorAlert>{isGuest ? <section className="space-y-6 pb-8"><div><p className="font-mono text-xs font-bold uppercase tracking-widest text-accent">Guest library</p><h1 className="mt-2 text-4xl font-bold text-ink">Public reviewers</h1><p className="mt-2 text-muted">Browse study guides shared by the Review Well community.</p></div>{loading ? <p className="text-muted">Loading public reviewers...</p> : publicReviewers.length ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{publicReviewers.map((reviewer) => <ReviewerCard key={reviewer.id} reviewer={reviewer} />)}</div> : <p className="text-muted">No public reviewers are available yet.</p>}</section> : <Landing />}</div>
   }
 
-  const sameCourse = publicReviewers.filter((reviewer) => {
-    const course = `${reviewer.courseCode} ${reviewer.courseDescription || ''}`.toLowerCase()
-    return user?.program && course.includes(user.program.toLowerCase())
-  })
+  const sameCourse = publicReviewers.filter((reviewer) => isSameCourse(reviewer, user))
 
-  return <div className="space-y-10 pb-8"><div className="flex flex-wrap items-end justify-between gap-4"><div><p className="font-mono text-xs font-bold uppercase tracking-widest text-accent">Good to see you, {user?.displayName?.split(' ')[0]}</p><h1 className="mt-2 text-4xl font-bold text-ink">Your study desk</h1><p className="mt-2 text-muted">Pick up where you left off or find your next review.</p></div><Link to="/create" className="flex items-center gap-2 rounded-soft border-2 border-accent bg-accent px-4 py-3 text-sm font-extrabold text-paper hover:-translate-y-0.5"><Plus className="h-4 w-4" aria-hidden="true" /> New reviewer</Link></div><ErrorAlert>{error}</ErrorAlert>{loading ? <p className="text-muted">Setting up your study desk...</p> : <><Section icon={Clock3} title="Recent reviewers viewed" to="/reviewer/my" empty="Reviewers you open will show up here.">{recentReviewers.length > 0 && <div className="flex gap-4 overflow-x-auto pb-2">{recentReviewers.slice(0, 6).map((reviewer) => <ReviewerCard key={reviewer.id} reviewer={reviewer} compact />)}</div>}</Section><Section icon={LibraryBig} title="Reviewers from the same course" to="/reviewer/public" empty="No reviewers match your program yet.">{sameCourse.length > 0 && <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{sameCourse.slice(0, 3).map((reviewer) => <ReviewerCard key={reviewer.id} reviewer={reviewer} />)}</div>}</Section><Section icon={BookOpen} title="My Reviewers" to="/reviewer/my" empty="Create your first reviewer to see it here.">{myReviewers.length > 0 && <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{myReviewers.slice(0, 3).map((reviewer) => <ReviewerCard key={reviewer.id} reviewer={reviewer} />)}</div>}</Section></>}</div>
+  return <div className="space-y-10 pb-8"><div className="flex flex-wrap items-end justify-between gap-4"><div><p className="font-mono text-xs font-bold uppercase tracking-widest text-accent">Good to see you, {user?.displayName?.split(' ')[0]}</p><h1 className="mt-2 text-4xl font-bold text-ink">Your study desk</h1><p className="mt-2 text-muted">Pick up where you left off or find your next review.</p></div><Link to="/create" className="flex items-center gap-2 rounded-soft border-2 border-accent bg-accent px-4 py-3 text-sm font-extrabold text-paper hover:-translate-y-0.5"><Plus className="h-4 w-4" aria-hidden="true" /> New reviewer</Link></div><ErrorAlert>{error}</ErrorAlert>{loading ? <p className="text-muted">Setting up your study desk...</p> : <><Section icon={Clock3} title="Recently Viewed Reviewers" empty="Reviewers you open will show up here.">{recentReviewers.length > 0 && <div className="flex gap-4 overflow-x-auto pb-2">{recentReviewers.slice(0, 5).map((reviewer) => <ReviewerCard key={reviewer.id} reviewer={reviewer} compact />)}</div>}</Section><Section icon={LibraryBig} title="Reviewers from the same course" to="/reviewer/public?course=mine" empty="No reviewers match your program yet.">{sameCourse.length > 0 && <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{sameCourse.slice(0, 3).map((reviewer) => <ReviewerCard key={reviewer.id} reviewer={reviewer} />)}</div>}</Section><Section icon={BookOpen} title="My Reviewers" to="/reviewer/my" empty="Create your first reviewer to see it here.">{myReviewers.length > 0 && <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{myReviewers.slice(0, 3).map((reviewer) => <ReviewerCard key={reviewer.id} reviewer={reviewer} />)}</div>}</Section></>}</div>
 }
 
 export default Home

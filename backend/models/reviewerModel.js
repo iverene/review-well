@@ -17,7 +17,7 @@ const findPublic = async ({ skip = 0, take = 20, search = '' } = {}) => {
     prisma.reviewer.findMany({
       where,
       include: {
-        author: { select: { id: true, displayName: true, avatarUrl: true } },
+        user: { select: { id: true, displayName: true, avatarUrl: true } },
         _count: { select: { likes: true } },
       },
       orderBy: { updatedAt: 'desc' },
@@ -59,7 +59,7 @@ const findById = async (id) => {
   return prisma.reviewer.findUnique({
     where: { id },
     include: {
-      author: { select: { id: true, displayName: true, avatarUrl: true } },
+      user: { select: { id: true, displayName: true, avatarUrl: true } },
       blocks: { orderBy: [{ columnIndex: 'asc' }, { sortOrder: 'asc' }] },
       _count: { select: { likes: true } },
     },
@@ -70,7 +70,7 @@ const create = async (data) => {
   return prisma.reviewer.create({
     data,
     include: {
-      author: { select: { id: true, displayName: true, avatarUrl: true } },
+      user: { select: { id: true, displayName: true, avatarUrl: true } },
     },
   })
 }
@@ -80,7 +80,7 @@ const update = async (id, data) => {
     where: { id },
     data,
     include: {
-      author: { select: { id: true, displayName: true, avatarUrl: true } },
+      user: { select: { id: true, displayName: true, avatarUrl: true } },
     },
   })
 }

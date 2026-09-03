@@ -1,24 +1,27 @@
 import { useEffect } from 'react'
+import { useAuth } from '../contexts/AuthContext'
 
-const recentReviewersKey = 'review-well-recent-reviewers'
+const recentReviewersKey = (userId) => `review-well-recent-reviewers:${userId}`
 
 function Reviewer() {
+  const { user, isAuthenticated } = useAuth()
+
   useEffect(() => {
     const saveRecentReviewer = async () => {
       try {
         const response = await fetch(`/api/reviewers/${window.location.pathname.split('/').pop()}`, { credentials: 'include' })
         if (!response.ok) return
         const { reviewer } = await response.json()
-        const recent = JSON.parse(window.localStorage.getItem(recentReviewersKey) || '[]')
+        const recent = JSON.parse(window.localStorage.getItem(recentReviewersKey(user.id)) || '[]')
         const withoutCurrent = recent.filter((item) => item.id !== reviewer.id)
-        window.localStorage.setItem(recentReviewersKey, JSON.stringify([reviewer, ...withoutCurrent].slice(0, 6)))
+        window.localStorage.setItem(recentReviewersKey(user.id), JSON.stringify([reviewer, ...withoutCurrent].slice(0, 5)))
       } catch (error) {
         console.error('Failed to save recent reviewer:', error)
       }
     }
 
-    saveRecentReviewer()
-  }, [])
+    if (isAuthenticated && user?.id) saveRecentReviewer()
+  }, [isAuthenticated, user])
 
   return (
     <div>
