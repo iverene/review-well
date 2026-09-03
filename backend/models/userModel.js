@@ -37,7 +37,7 @@ const getProfile = async (id) => {
         select: {
           reviewers: true,
           followers: true,
-          following: true,
+          follows: true,
         },
       },
     },
