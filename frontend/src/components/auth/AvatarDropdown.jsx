@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
+import { UserRound, Settings, Info, Mail, LogOut } from 'lucide-react'
 
 const AvatarDropdown = () => {
   const { user, logout } = useAuth()
@@ -60,49 +61,63 @@ const AvatarDropdown = () => {
 
       {isOpen && (
         <div
-          className="absolute right-0 z-[100] mt-2 w-52 rounded-soft border-2 border-stone bg-paper club-shadow"
+          className="absolute right-0 z-[100] mt-2 w-64 rounded-soft border-2 border-stone bg-paper club-shadow"
           role="menu"
           aria-orientation="vertical"
           aria-labelledby="user-menu-button"
         >
           <div className="border-b-2 border-stone px-4 py-3">
-            <p className="font-extrabold text-ink">{user.displayName}</p>
-            <p className="text-xs text-muted">{user.email}</p>
+            <p className="truncate whitespace-nowrap font-extrabold text-ink" title={user.displayName}>{user.displayName}</p>
           </div>
           <div className="py-1" role="none">
             <Link
               to="/profile"
-              className="block px-4 py-2 text-sm font-semibold text-ink hover:bg-powder"
+              className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-ink hover:bg-powder"
               role="menuitem"
               onClick={() => setIsOpen(false)}
             >
+              <UserRound className="h-4 w-4 text-muted" aria-hidden="true" />
               Profile
             </Link>
             <Link
               to="/settings"
-              className="block px-4 py-2 text-sm font-semibold text-ink hover:bg-mint"
+              className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-ink hover:bg-mint"
               role="menuitem"
               onClick={() => setIsOpen(false)}
             >
-              Settings
+              <Settings className="h-4 w-4 text-muted" aria-hidden="true" />
+              Setting
             </Link>
             <Link
-              to="/create"
-              className="block px-4 py-2 text-sm font-semibold text-ink hover:bg-butter"
+              to="/about"
+              className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-ink hover:bg-butter"
               role="menuitem"
               onClick={() => setIsOpen(false)}
             >
-              Create Reviewer
+              <Info className="h-4 w-4 text-muted" aria-hidden="true" />
+              About
             </Link>
+            <Link
+              to="/contact"
+              className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-ink hover:bg-powder"
+              role="menuitem"
+              onClick={() => setIsOpen(false)}
+            >
+              <Mail className="h-4 w-4 text-muted" aria-hidden="true" />
+              Contact
+            </Link>
+          </div>
+          <div className="border-t-2 border-stone p-2">
             <button
               onClick={() => {
                 logout()
                 setIsOpen(false)
               }}
-              className="block w-full px-4 py-2 text-left text-sm font-semibold text-ink hover:bg-blush"
+              className="flex w-full items-center gap-3 rounded-soft px-3 py-2.5 text-left text-sm font-extrabold text-accent hover:bg-blush"
               role="menuitem"
             >
-              Sign out
+              <LogOut className="h-4 w-4" aria-hidden="true" />
+              Sign Out
             </button>
           </div>
         </div>
