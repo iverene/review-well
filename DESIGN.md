@@ -1,60 +1,170 @@
-# Review Well — UI/UX Design Specification
+# Review Well - Kawaii Academic Study Club
 
-## 1. Design Philosophy & Visual Language
+## 1. Core Feeling
 
-**Review Well** rejects contemporary, generic SaaS aesthetics ("vibe-coded" minimalism, heavy rounded cards, bright primary drop shadows, and ubiquitous sans-serifs like *Inter*). Instead, it adopts an **Editorial Academic / Archival Brutalist** aesthetic that honors print publishing precision and institutional structure.
+Review Well is a cheerful online study club: a cozy place where students collect notes, discover helpful reviewers, and make their own study guides. The interface should feel like opening a favorite notebook at a shared study table.
 
-* **Typography:** High-contrast editorial serif headings (*Newsreader* or *Lora*), clean neo-grotesque body text (*Plus Jakarta Sans* or *IBM Plex Sans*), and monospaced data figures (*JetBrains Mono*). **Inter is strictly prohibited.**
-* **Geometry & Layout:** Crisp 90-degree right angles (`border-radius: 0px` or razor-sharp 2px architectural tokens). Pill buttons, floating rounded cards, and bouncy micro-animations are completely banned.
-* **Surface Treatment & Depth:** Matte, tactile paper-like backgrounds (`#FAF8F5` light mode / `#141414` dark mode) utilizing sharp 1px solid borders (`#262626` or `#E5E2DC`) rather than blurred drop shadows.
-* **Color System:** Desaturated, earthy institutional tones (warm bone, ink black, sage green, and muted terracotta) inspired by vintage academic archives.
+The visual personality is **kawaii academic**: soft, hand-drawn, rounded, pastel, and encouraging. It should be charming without becoming childish, and organized without becoming institutional. The supplied `logo.png` and `word-logo.png` are the source of truth for this tone.
 
----
+Every screen should balance three qualities:
 
-## 2. Information Architecture & Navigation Shell
+- **Cozy:** warm surfaces, gentle contrast, friendly illustrations.
+- **Clear:** strong hierarchy, readable study content, predictable controls.
+- **Playful:** colorful labels, small expressive details, and rewarding feedback.
 
-The platform layout adapts fluidly between desktop and mobile viewports while preserving strict structural alignment.
+Avoid archival brutalism, rigid black-and-white layouts, corporate SaaS polish, purple gradients, neon overload, and decoration that competes with learning.
 
-* **Desktop Navigation (Sidebar Layout):**
-  * Fixed left vertical rail (240px width) with a 1px right border.
-  * Primary links: *Home*, *My Reviewers*, *Profile*, *Notifications*.
-  * Pinned bottom element: Full-width rectangular `+ Add Reviewer` primary action button.
-* **Mobile Navigation (Bottom Dock Layout):**
-  * Fixed bottom navigation dock with high-contrast active state indicators.
-  * Center prominence: Elevated square icon button (`+ Add`) breaking the top border plane of the navigation dock.
-* **Header Bar:**
-  * Left: Dynamic workspace breadcrumb or active document title.
-  * Right: Live notification badge for follows and likes, paired with a User Avatar dropdown exposing *Settings* and *About*.
+## 2. Brand Translation
 
----
+The logo combines a soft cream background, cocoa-brown outlines, a cute student illustration, blush pink details, powder blue accents, and small star-like decorations. The interface should borrow those qualities without turning every surface into an illustration.
 
-## 3. Onboarding & User Flows
+- Use `public/logo.png` as the favicon and compact brand mark.
+- Use `public/word-logo.png` as the primary header wordmark.
+- Preserve the wordmark's casual hand-drawn character. Do not replace it with a formal text treatment.
+- Use rounded forms and warm brown outlines instead of harsh black rules.
+- Use illustrations as meaningful moments: empty states, onboarding, AI results, and gentle welcome areas.
+- Keep artwork crisp and visible. Do not darken, blur, or crop the character artwork when it carries meaning.
 
-* **Authentication Entry:** Low-friction Google Sign-In or a read-only Guest browsing mode.
-* **First-Time Profile Wizard:** A sequential 3-step modal appearing immediately after initial Google authentication:
-  * *Step 1 — Academic Identity:* Input School and Program/Course with institutional auto-complete.
-  * *Step 2 — Standing:* Select Year Level and Major/Specialization.
-  * *Step 3 — Visual Identity:* Upload avatar image and set username handle.
+## 3. Color Palette
 
----
+Define the visual system with CSS variables so the palette remains consistent:
 
-## 4. The Workspace & Document Engine
+- **Cream `#FFF7E8`:** primary page and card surface.
+- **Cocoa `#604A3A`:** primary text, outlines, and logo-aligned dark tone.
+- **Blush `#F6C6D2`:** active tabs, friendly emphasis, and social moments.
+- **Powder `#C9E6F2`:** links, information, and calm secondary actions.
+- **Mint `#CDE8D2`:** saved, complete, and positive states.
+- **Butter `#F9E4A8`:** AI tools, study prompts, and highlights.
+- **Berry `#C96A83`:** primary action emphasis and important focus states.
 
-The workspace adapts the ergonomic utility of a familiar document toolbar layout, custom-built exclusively for structuring two-column academic study guides rather than general word processing.
+Cream and cocoa form the foundation. Pastels should be used as accents, tags, block headers, illustration details, and selected surfaces. Maintain readable contrast and never communicate state with color alone.
 
-* **Top App Bar & Document Title:**
-  * Left: Application brand icon, editable document title field, auto-save cloud sync indicator, and a streamlined menu (*File, Edit, View, Insert, Format*).
-  * Right: Version history, sharing controls (public, unlisted by link, private), user profile avatar, and the AI extraction panel trigger.
-* **Formatting Toolbar (Ergonomic Layout Reference):**
-  * Inspired by standard document editor layouts, this toolbar is customized specifically for review creation: Undo/Redo, print, zoom level, paragraph styles (*Heading 1*, *Topic Header*, *Sub-Topic Banner*), font selector family, font size controls, text formatting (*Bold*, *Italic*, text color, and academic highlight colors), table insertion, image embedding, and bullet/numbered lists.
-  * Right edge houses the AI extraction tool toggle and export to PDF action.
-* **Document Canvas & Grid Engine:**
-  * Standard A4 preview canvas enforcing an automated strict **2-column layout**.
-  * Modular block insertion for pre-styled academic components: *Main Title Block* (course code, description, semester, exam type, optional icon), *Topic Header Banners*, *Sub-Topic Banners*, and *Content Blocks*.
-  * Automated footer pagination rendering `Page X` alongside optional author name and the mandatory watermark: *"Made with Review Well"*.
+Do not default to a dark interface. Do not use large gradients, floating color orbs, bokeh, or a one-color screen.
 
----
+## 4. Typography
 
-## 5. Social Interactions
+The supplied wordmark is expressive and hand-drawn, so the surrounding typography should support it rather than compete with it.
 
-* **Long-Press Preview:** On mobile and desktop hover states, interacting with a reviewer triggers an iOS-style preview modal for rapid browsing without full navigation.
+- **Display:** a rounded, friendly display face such as Fredoka, Baloo 2, or Nunito ExtraBold for page titles and welcoming moments.
+- **Interface:** a warm, highly readable sans such as Nunito, Plus Jakarta Sans, or Atkinson Hyperlegible.
+- **Study metadata:** JetBrains Mono for course codes, counts, and compact labels only.
+
+Use friendly weight and generous line height instead of extreme size. Keep text legible on pastel surfaces. Do not use a formal editorial serif as the dominant page-heading style, since it conflicts with the hand-drawn logo personality.
+
+## 5. Shape, Texture, and Components
+
+- Use rounded corners from 10px to 16px for cards, buttons, inputs, avatars, and study blocks.
+- Use soft cocoa borders, occasional offset outlines, and tiny sticker-like labels to create a handmade feel.
+- Use subtle notebook dots, paper grain, washi-tape strips, and star marks as low-contrast texture.
+- Keep decorative elements sparse and anchored to nearby content.
+- Reserve cards for repeated content, dialogs, study blocks, and framed tools. Do not nest cards inside cards.
+- Keep controls at stable dimensions so icons, labels, and state text never cause layout shifts.
+- Use icon plus text for unfamiliar actions, and familiar icons with tooltips for compact tools.
+
+Buttons should feel like friendly stationery labels, not pills floating in space. Primary actions use Berry or Cocoa with clear hover and focus states. Secondary actions use Cream, Powder, or Mint surfaces.
+
+## 6. Header and Navigation
+
+The header should resemble the top of a decorated study notebook:
+
+- Left: `logo.png` icon plus `word-logo.png` wordmark.
+- Center or below on workspace pages: a concise page title or reviewer context.
+- Right: account controls and the most relevant action.
+- Authenticated users see profile, notifications, and creation actions.
+- Guests see `Guest - View only` and a clear `Sign in with Google` action.
+
+### Desktop Navigation
+
+Use a friendly sidebar with rounded active markers and small subject-colored icons. The sidebar should feel like labeled tabs in a personal binder, with generous breathing room and no dense enterprise styling.
+
+Authenticated destinations:
+
+- Home
+- Browse public reviewers
+- My reviewers
+- Notifications
+- Profile
+- Create reviewer
+
+Guests receive browsing destinations only. Do not show creation, editing, notification, or private-profile actions to guests.
+
+### Mobile Navigation
+
+Use a bottom dock with a warm cream surface, rounded upper corners, and clear active markers. The create action can be a visually distinct elevated control for authenticated users. Guests should see public browsing and a compact Google sign-in route instead.
+
+## 7. Login and Guest Experience
+
+The login screen should present two equally clear choices:
+
+1. **Continue with Google:** full account access for creating, editing, AI extraction, profiles, and social actions.
+2. **Continue as Guest:** immediate anonymous access to public study material in view-only mode.
+
+Guest mode is a local browsing state, not a database account and not an authenticated backend session. It may persist across refreshes so the user remains in browsing mode.
+
+Protected routes must continue to require Google authentication. If a guest selects a protected action or route, explain that Google sign-in is required and preserve the intended destination.
+
+Use a small friendly illustration or logo moment on the login page. The layout should be welcoming and compact, not a marketing hero.
+
+## 8. Home and Public Discovery
+
+The first screen should feel like entering the study club, not reading a product pitch. Show the brand, a short invitation to study, and immediate public content.
+
+Public reviewer browsing should include:
+
+- Color-coded course or subject tags.
+- Short content previews.
+- Author identity and like counts.
+- Clear view buttons.
+- A cozy empty state using `logo.png` or a supplied illustration.
+
+The public browsing path must work for both guests and Google users. Guest interactions stop at reading: like, follow, create, edit, AI, and notifications remain authenticated-only.
+
+## 9. Reviewer Workspace
+
+The workspace should feel like arranging colorful index cards on a clean desk.
+
+- Use a calm Cream canvas with a clear content boundary.
+- Give each block type a restrained pastel accent and a simple icon.
+- Use Cocoa text and outlines for reliable readability.
+- Keep the two-column study layout stable and comfortable on desktop.
+- Make add, save, reorder, and export controls obvious.
+- Show save feedback as a friendly state: `Saving`, `Saved`, or `Needs attention`.
+- Use sticker-like block labels sparingly so the study content stays primary.
+- Style the AI extraction action with Butter and a small sparkle detail.
+- Keep destructive actions behind confirmation or undo.
+
+## 10. Motion and Feedback
+
+Motion should feel gentle and hand-placed, not hyperactive:
+
+- Welcome content fades in with a short stagger.
+- Menus open with a small soft pop from their trigger.
+- New study blocks settle into place with a short ease.
+- Buttons use subtle press feedback.
+- Saved states can briefly show a tiny sparkle or color transition.
+- Empty-state illustrations may have a slow, occasional bob if it does not distract.
+
+Respect `prefers-reduced-motion`. Avoid constant floating, exaggerated bouncing, parallax, and motion on every hover.
+
+## 11. Accessibility and Responsive Rules
+
+- Maintain WCAG AA contrast, especially for Cocoa text on pastel backgrounds.
+- Provide accessible names and tooltips for icon-only controls.
+- Keep keyboard focus visible and rounded to match the component language.
+- Keep touch targets at least 44px where practical.
+- Ensure long wordmark and button labels wrap or resize without overlap.
+- Use stable dimensions for headers, docks, toolbars, cards, and block tiles.
+- Never rely on color alone for permissions or status.
+- Make `Guest - View only` visible in both text and behavior.
+- Test the branded shell at mobile, tablet, and desktop widths.
+
+## 12. Implementation Sequence
+
+1. Establish Cream, Cocoa, Blush, Powder, Mint, Butter, and Berry design tokens.
+2. Apply the supplied icon and wordmark consistently across the shell.
+3. Redesign login around Google and Guest choices.
+4. Build public discovery as the guest's primary destination.
+5. Rework desktop and mobile navigation with authenticated and guest states.
+6. Restyle reviewer blocks, workspace controls, and save feedback.
+7. Add restrained kawaii details, illustration moments, and reduced-motion fallbacks.
+8. Validate contrast, responsive layout, guest restrictions, and Google sign-in behavior.

@@ -28,26 +28,30 @@ const Login = () => {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-paper">
-      <div className="w-full max-w-md rounded border border-stone bg-paper p-8 shadow-sm">
+    <div className="flex min-h-[calc(100vh-120px)] items-center justify-center py-6">
+      <div className="club-surface w-full max-w-lg p-6 sm:p-10">
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-ink">Review Well</h1>
-          <p className="mt-2 text-muted">Sign in to create and manage study guides</p>
+          <img src="/logo.png" alt="" className="mx-auto mb-4 h-24 w-24 object-contain" />
+          <p className="mb-2 font-mono text-xs font-bold uppercase tracking-widest text-accent">Welcome to the study club</p>
+          <h1 className="text-4xl font-bold text-ink">Pick your study mode</h1>
+          <p className="mx-auto mt-3 max-w-sm leading-relaxed text-muted">Make an account for the full toolkit, or browse public guides as a guest.</p>
         </div>
-        <div className="flex flex-col items-center gap-4">
-          <LoginButton />
+        <div className="grid gap-3">
+          <div className="rounded-soft border-2 border-stone bg-paper p-4">
+            <p className="font-extrabold text-ink">Full access</p>
+            <p className="mt-1 text-sm text-muted">Create, edit, save, and use AI study tools.</p>
+            <div className="mt-3"><LoginButton /></div>
+          </div>
           <button
             onClick={() => {
               continueAsGuest()
               navigate(from, { replace: true })
             }}
-            className="rounded border border-stone px-4 py-2 text-sm text-ink transition-colors hover:bg-stone focus:outline-none focus:ring-2 focus:ring-ink focus:ring-offset-2"
+            className="rounded-soft border-2 border-stone bg-powder px-4 py-3 text-sm font-extrabold text-ink transition-transform hover:-translate-y-0.5 hover:bg-powder"
           >
-            Continue as Guest
+            Browse as Guest
           </button>
-          <p className="text-xs text-muted">
-            By signing in, you agree to our Terms of Service and Privacy Policy
-          </p>
+          <p className="pt-2 text-center text-xs text-muted">Guest mode is view-only and does not create an account.</p>
         </div>
       </div>
     </div>

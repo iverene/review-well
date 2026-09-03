@@ -33,8 +33,9 @@ const NavigationShell = ({ children }) => {
                 </svg>
               </button>
             )}
-            <Link to="/" className="text-xl font-bold text-ink">
-              Review Well
+            <Link to="/" className="flex items-center text-xl font-bold text-ink" aria-label="Review Well home">
+              <img src="/logo.png" alt="" className="h-8 w-8 object-contain" />
+              <img src="/word-logo.png" alt="Review Well" className="ml-2 h-6 w-auto object-contain" />
             </Link>
           </div>
           <nav className="flex items-center gap-4">

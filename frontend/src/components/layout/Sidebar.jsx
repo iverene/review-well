@@ -41,19 +41,19 @@ const Sidebar = ({ open, onClose }) => {
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-stone bg-paper transition-transform md:relative md:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-64 border-r-2 border-stone bg-paper transition-transform md:relative md:translate-x-0 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex h-full flex-col">
           {/* Search */}
-          <div className="border-b border-stone p-4">
+          <div className="border-b-2 border-stone p-4">
             <input
               type="text"
               placeholder="Search reviewers..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full rounded border border-stone bg-paper px-3 py-2 text-sm text-ink placeholder-muted focus:border-ink focus:outline-none"
+              className="w-full rounded-soft border-2 border-stone bg-paper px-3 py-2 text-sm text-ink placeholder-muted focus:border-accent focus:outline-none"
             />
           </div>
 
@@ -71,7 +71,7 @@ const Sidebar = ({ open, onClose }) => {
                     to={`/reviewer/${reviewer.id}`}
                     className={`block px-4 py-3 text-sm transition-colors hover:bg-stone ${
                       location.pathname === `/reviewer/${reviewer.id}`
-                        ? 'border-l-2 border-ink bg-stone text-ink'
+                        ? 'border-l-4 border-accent bg-blush/50 text-ink'
                         : 'text-muted'
                     }`}
                     onClick={onClose}
@@ -85,10 +85,10 @@ const Sidebar = ({ open, onClose }) => {
           </div>
 
           {/* Create Button */}
-          <div className="border-t border-stone p-4">
+          <div className="border-t-2 border-stone p-4">
             <Link
               to="/create"
-              className="flex w-full items-center justify-center gap-2 rounded border border-stone bg-ink px-4 py-2 text-sm text-paper transition-colors hover:bg-stone"
+              className="flex w-full items-center justify-center gap-2 rounded-soft border-2 border-ink bg-accent px-4 py-2 text-sm font-extrabold text-paper transition-transform hover:-translate-y-0.5 hover:bg-accent"
               onClick={onClose}
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

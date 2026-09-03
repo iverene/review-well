@@ -3,15 +3,55 @@
 @tailwind utilities;
 
 body {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  background-color: #fafaf9;
-  color: #1a1a1a;
+  font-family: 'Nunito', sans-serif;
+  background-color: #fff7e8;
+  background-image: radial-gradient(#eadfce 1px, transparent 1px);
+  background-size: 18px 18px;
+  color: #604a3a;
+  min-width: 320px;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Newsreader', serif;
+  font-family: 'Fredoka', sans-serif;
+  letter-spacing: 0;
 }
 
 code, pre {
   font-family: 'JetBrains Mono', monospace;
+}
+
+button, a, input, textarea, select {
+  border-radius: 12px;
+}
+
+button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 3px solid #c9e6f2;
+  outline-offset: 3px;
+}
+
+.club-surface {
+  border: 2px solid #eadfce;
+  border-radius: 16px;
+  background: rgba(255, 247, 232, 0.9);
+  box-shadow: 4px 5px 0 rgba(96, 74, 58, 0.08);
+}
+
+.club-shadow {
+  box-shadow: 5px 6px 0 rgba(96, 74, 58, 0.12);
+}
+
+@keyframes club-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.club-rise {
+  animation: club-rise 500ms ease-out both;
+}
+
+.club-rise-delay-1 { animation-delay: 100ms; }
+.club-rise-delay-2 { animation-delay: 180ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  .club-rise { animation: none; }
 }

@@ -31,7 +31,7 @@ const NotificationBadge = () => {
   return (
     <Link
       to="/notifications"
-      className="relative rounded p-2 text-ink hover:bg-stone"
+      className="relative rounded-full p-2 text-ink hover:bg-butter"
     >
       <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path
@@ -42,7 +42,7 @@ const NotificationBadge = () => {
         />
       </svg>
       {unreadCount > 0 && (
-        <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-ink text-xs text-paper">
+        <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs font-bold text-paper">
           {unreadCount > 99 ? '99+' : unreadCount}
         </span>
       )}

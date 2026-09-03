@@ -35,7 +35,7 @@ const BottomDock = () => {
   ]
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 border-t border-stone bg-paper">
+    <div className="fixed bottom-0 left-0 right-0 border-t-2 border-stone bg-paper/95 shadow-[0_-4px_0_rgba(96,74,58,0.06)] backdrop-blur">
       <nav className="flex items-center justify-around py-2">
         {navItems.map((item) => (
           <Link
@@ -43,7 +43,7 @@ const BottomDock = () => {
             to={item.to}
             className={`flex flex-col items-center gap-1 px-4 py-2 ${
               item.elevated
-                ? 'rounded-full bg-ink text-paper'
+                ? 'rounded-full bg-accent text-paper shadow-[3px_3px_0_rgba(96,74,58,0.14)]'
                 : location.pathname === item.to
                 ? 'text-ink'
                 : 'text-muted'
