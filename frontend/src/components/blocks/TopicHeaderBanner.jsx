@@ -1,6 +1,6 @@
 const TopicHeaderBanner = ({ content, onChange }) => {
   return (
-    <div className="border-l-4 border-ink bg-stone/50 pl-4 py-2">
+    <div className="border-l-4 border-accent bg-stone/50 pl-4 py-2">
       <input
         type="text"
         value={content?.heading || ''}

@@ -64,7 +64,7 @@ const LikeButton = ({ reviewerId, initialLiked = false, initialLikeCount = 0 }) 
         disabled={!isAuthenticated || loading}
         className={`flex items-center gap-2 rounded border px-3 py-1.5 text-sm transition-colors ${
         liked
-          ? 'border-ink bg-ink text-paper'
+          ? 'border-accent bg-blush text-ink'
           : 'border-stone bg-paper text-ink hover:bg-stone'
         } disabled:opacity-50`}
       >

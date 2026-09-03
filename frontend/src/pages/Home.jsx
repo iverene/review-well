@@ -18,11 +18,11 @@ function Home() {
           </p>
           <div className="mt-7 flex flex-wrap gap-3">
             {isAuthenticated ? (
-              <Link to="/create" className="club-shadow rounded-soft border-2 border-ink bg-accent px-5 py-3 font-extrabold text-paper transition-transform hover:-translate-y-1">Create a reviewer</Link>
+              <Link to="/create" className="club-shadow rounded-soft border-2 border-accent bg-accent px-5 py-3 font-extrabold text-paper transition-transform hover:-translate-y-1">Create a reviewer</Link>
             ) : isGuest ? (
               <span className="rounded-soft border-2 border-stone bg-powder px-5 py-3 font-extrabold text-ink">Browsing as a guest</span>
             ) : (
-              <Link to="/login" className="club-shadow rounded-soft border-2 border-ink bg-accent px-5 py-3 font-extrabold text-paper transition-transform hover:-translate-y-1">Join the study club</Link>
+              <Link to="/login" className="club-shadow rounded-soft border-2 border-accent bg-accent px-5 py-3 font-extrabold text-paper transition-transform hover:-translate-y-1">Join the study club</Link>
             )}
             <Link to="/reviewer/public" className="rounded-soft border-2 border-stone bg-paper px-5 py-3 font-extrabold text-ink transition-colors hover:bg-butter">Browse public guides</Link>
           </div>

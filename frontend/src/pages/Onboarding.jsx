@@ -194,7 +194,7 @@ const Onboarding = () => {
             type="button"
             onClick={handleNext}
             disabled={saving}
-            className="rounded-soft border-2 border-ink bg-accent px-6 py-3 text-sm font-extrabold text-paper hover:bg-accent disabled:opacity-60"
+            className="rounded-soft border-2 border-mint bg-mint px-6 py-3 text-sm font-extrabold text-ink hover:bg-butter disabled:opacity-60"
           >
             {saving ? 'Saving...' : isLastStep ? 'Finish profile' : 'Continue'}
           </button>
@@ -212,7 +212,7 @@ const Onboarding = () => {
             <button
               type="button"
               onClick={() => navigate('/', { replace: true })}
-              className="mt-7 rounded-soft border-2 border-ink bg-accent px-6 py-3 text-sm font-extrabold text-paper hover:bg-accent"
+              className="mt-7 rounded-soft border-2 border-mint bg-mint px-6 py-3 text-sm font-extrabold text-ink hover:bg-butter"
             >
               Enter Review Well
             </button>

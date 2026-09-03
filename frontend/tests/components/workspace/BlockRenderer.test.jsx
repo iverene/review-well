@@ -75,7 +75,7 @@ describe('BlockRenderer', () => {
         onDelete={() => {}}
       />
     )
-    expect(container.firstChild).toHaveClass('border-ink')
+    expect(container.firstChild).toHaveClass('border-accent')
   })
 
   it('shows delete button on hover', () => {

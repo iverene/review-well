@@ -51,7 +51,7 @@ const BlockRenderer = ({ block, selected, onSelect, onUpdate, onDelete }) => {
     <div
       className={`group relative rounded border transition-colors ${
         selected
-          ? 'border-ink bg-stone/30'
+          ? 'border-accent bg-stone/30'
           : 'border-transparent hover:border-stone hover:bg-stone/10'
       }`}
       onClick={onSelect}

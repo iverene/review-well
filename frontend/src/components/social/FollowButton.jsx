@@ -71,7 +71,7 @@ const FollowButton = ({ userId, initialFollowing = false, initialFollowerCount =
         className={`rounded border px-4 py-2 text-sm transition-colors ${
         following
           ? 'border-stone bg-paper text-ink hover:bg-stone'
-          : 'border-ink bg-ink text-paper hover:bg-stone'
+          : 'border-mint bg-mint text-ink hover:bg-butter'
         } disabled:opacity-50`}
       >
         {loading ? '...' : following ? 'Following' : 'Follow'}

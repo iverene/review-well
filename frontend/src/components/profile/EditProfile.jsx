@@ -86,7 +86,7 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
           name="displayName"
           value={formData.displayName}
           onChange={handleChange}
-          className="w-full rounded border border-stone px-4 py-2 text-ink focus:border-ink focus:outline-none"
+          className="w-full rounded border border-stone px-4 py-2 text-ink focus:border-accent focus:outline-none"
           required
         />
       </div>
@@ -103,7 +103,7 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
           value={formData.school}
           onChange={handleChange}
           required
-          className="w-full rounded border border-stone px-4 py-2 text-ink focus:border-ink focus:outline-none"
+          className="w-full rounded border border-stone px-4 py-2 text-ink focus:border-accent focus:outline-none"
           placeholder="e.g., MIT, Stanford, etc."
         />
       </div>
@@ -120,7 +120,7 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
           value={formData.program}
           onChange={handleChange}
           required
-          className="w-full rounded border border-stone px-4 py-2 text-ink focus:border-ink focus:outline-none"
+          className="w-full rounded border border-stone px-4 py-2 text-ink focus:border-accent focus:outline-none"
           placeholder="e.g., Computer Science, Biology, etc."
         />
       </div>
@@ -137,7 +137,7 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
           value={formData.major}
           onChange={handleChange}
           required
-          className="w-full rounded border border-stone px-4 py-2 text-ink focus:border-ink focus:outline-none"
+          className="w-full rounded border border-stone px-4 py-2 text-ink focus:border-accent focus:outline-none"
           placeholder="e.g., Software Engineering, etc."
         />
       </div>
@@ -153,7 +153,7 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
           value={formData.yearLevel}
           onChange={handleChange}
           required
-          className="w-full rounded border border-stone px-4 py-2 text-ink focus:border-ink focus:outline-none"
+          className="w-full rounded border border-stone px-4 py-2 text-ink focus:border-accent focus:outline-none"
         >
           <option value="">Select year level</option>
           {yearLevels.map((level) => (
@@ -169,7 +169,7 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
         <button
           type="submit"
           disabled={saving}
-          className="rounded border border-ink bg-ink px-6 py-2 text-paper transition-colors hover:bg-stone disabled:opacity-50"
+          className="rounded border-2 border-mint bg-mint px-6 py-2 font-extrabold text-ink transition-colors hover:bg-butter disabled:opacity-50"
         >
           {saving ? 'Saving...' : 'Save Changes'}
         </button>
