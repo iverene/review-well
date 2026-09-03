@@ -67,7 +67,7 @@ const Reviewer = () => {
   const isOwner = user?.id === reviewer.authorId
 
   return (
-    <div className="mx-auto max-w-6xl pb-10">
+    <div className="w-full pb-10">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <Link to="/" className="inline-flex items-center gap-2 text-sm font-extrabold text-muted hover:text-ink"><ArrowLeft className="h-4 w-4" /> Back to desk</Link>
         <div className="flex items-center gap-3">
