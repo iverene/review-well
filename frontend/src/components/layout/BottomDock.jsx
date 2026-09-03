@@ -1,55 +1,60 @@
 import { Link, useLocation } from 'react-router-dom'
+import { Home, LibraryBig, Globe2, UserRound } from 'lucide-react'
+import { useAuth } from '../../contexts/AuthContext'
 
 const BottomDock = () => {
   const location = useLocation()
+  const { user } = useAuth()
 
   const navItems = [
     {
       to: '/',
       label: 'Home',
       icon: (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-        </svg>
+        <Home className="h-5 w-5" strokeWidth={2.4} aria-hidden="true" />
       ),
     },
     {
-      to: '/create',
-      label: 'Create',
+      to: '/reviewer/my',
+      label: 'My Reviewers',
       icon: (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-        </svg>
+        <LibraryBig className="h-5 w-5" strokeWidth={2.4} aria-hidden="true" />
       ),
-      elevated: true,
+    },
+    {
+      to: '/reviewer/public',
+      label: 'Public Reviewers',
+      icon: (
+        <Globe2 className="h-5 w-5" strokeWidth={2.4} aria-hidden="true" />
+      ),
     },
     {
       to: '/profile',
       label: 'Profile',
       icon: (
-        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-        </svg>
+        <UserRound className="h-5 w-5" strokeWidth={2.4} aria-hidden="true" />
       ),
     },
   ]
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 border-t-2 border-stone bg-paper/95 shadow-[0_-4px_0_rgba(96,74,58,0.06)] backdrop-blur">
-      <nav className="flex items-center justify-around py-2">
+    <div className="fixed bottom-0 left-0 right-0 z-40 border-t-2 border-stone bg-paper/95 px-3 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_0_rgba(96,74,58,0.06)] backdrop-blur">
+      <nav className="flex w-full items-center justify-evenly gap-0 py-2" aria-label="Mobile navigation">
         {navItems.map((item) => (
           <Link
             key={item.to}
             to={item.to}
-            className={`flex flex-col items-center gap-1 px-4 py-2 ${
+            className={`flex min-w-0 flex-1 flex-col items-center gap-1 rounded-soft px-1 py-2 ${
               item.elevated
-                ? 'rounded-full bg-accent text-paper shadow-[3px_3px_0_rgba(96,74,58,0.14)]'
-                : location.pathname === item.to
-                ? 'text-ink'
-                : 'text-muted'
+                ? 'bg-powder text-ink'
+                : location.pathname === item.to || (item.to === '/reviewer/my' && location.pathname.startsWith('/reviewer/my'))
+                  ? 'bg-powder text-ink'
+                  : 'text-muted hover:bg-blush hover:text-ink'
             }`}
           >
-            {item.icon}
+            {item.label === 'Profile' && user?.avatarUrl ? (
+              <img src={user.avatarUrl} alt="" className="h-5 w-5 rounded-full object-cover" />
+            ) : item.icon}
             <span className="text-xs">{item.label}</span>
           </Link>
         ))}
