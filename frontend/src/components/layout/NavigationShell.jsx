@@ -4,6 +4,7 @@ import Sidebar from './Sidebar'
 import BottomDock from './BottomDock'
 import NotificationBadge from '../notifications/NotificationBadge'
 import AvatarDropdown from '../auth/AvatarDropdown'
+import LoginButton from '../auth/LoginButton'
 
 const NavigationShell = ({ children }) => {
   const { isAuthenticated } = useAuth()
@@ -37,12 +38,7 @@ const NavigationShell = ({ children }) => {
                 <AvatarDropdown />
               </div>
             ) : (
-              <Link
-                to="/login"
-                className="rounded border border-stone bg-ink px-4 py-2 text-sm text-paper transition-colors hover:bg-stone"
-              >
-                Sign In
-              </Link>
+              <LoginButton />
             )}
           </nav>
         </header>

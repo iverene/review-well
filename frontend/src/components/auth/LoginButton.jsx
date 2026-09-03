@@ -18,7 +18,7 @@ const LoginButton = () => {
   return (
     <button
       onClick={signInWithGoogle}
-      className="inline-flex items-center gap-2 rounded-soft border-2 border-mint bg-mint px-4 py-2 font-extrabold text-ink transition-transform hover:-translate-y-0.5 hover:bg-butter"
+      className="inline-flex items-center bg-paper gap-2 rounded-soft border-2 border-mint bg-mint px-4 py-2 font-extrabold text-ink transition-transform hover:-translate-y-0.5 hover:bg-accent hover:text-paper"
       aria-label="Sign in with Google"
     >
       <svg className="h-5 w-5 rounded-full bg-paper p-0.5" viewBox="0 0 24 24" aria-hidden="true">
