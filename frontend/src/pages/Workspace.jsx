@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../contexts/AuthContext'
@@ -18,6 +18,7 @@ const Workspace = () => {
   const [saving, setSaving] = useState(false)
   const [selectedBlock, setSelectedBlock] = useState(null)
   const [error, setError] = useState(null)
+  const fileInputRef = useRef(null)
 
   useEffect(() => {
     fetchReviewer()
@@ -42,7 +43,14 @@ const Workspace = () => {
     try {
       await axios.put(
         `/api/reviewers/${id}`,
-        { title: reviewer.title },
+        {
+          title: reviewer.title,
+          courseCode: reviewer.courseCode,
+          courseDescription: reviewer.courseDescription,
+          semester: reviewer.semester,
+          examType: reviewer.examType,
+          visibility: reviewer.visibility,
+        },
         { withCredentials: true }
       )
       // Save block changes
@@ -56,6 +64,25 @@ const Workspace = () => {
       setError(getApiErrorMessage(error, 'Unable to save your changes.'))
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleAiExtract = () => fileInputRef.current?.click()
+
+  const handleFileSelected = async (event) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    setError(null)
+    try {
+      await axios.post('/api/ai/extract', { file, reviewerId: id }, {
+        withCredentials: true,
+        headers: { 'Content-Type': 'multipart/form-data' },
+      })
+      await fetchReviewer()
+    } catch (error) {
+      console.error('Failed to extract study blocks:', error)
+      setError(getApiErrorMessage(error, 'Unable to extract study blocks.'))
     }
   }
 
@@ -149,7 +176,11 @@ const Workspace = () => {
         saving={saving}
         onSave={handleSave}
         onAddBlock={handleAddBlock}
+        onTitleChange={(title) => setReviewer({ ...reviewer, title })}
+        onAiExtract={handleAiExtract}
       />
+
+      <input ref={fileInputRef} type="file" accept=".pdf,.pptx,.ppt,.txt" onChange={handleFileSelected} className="hidden" />
 
       <ErrorAlert className="mx-4 mt-4 md:mx-8">{error}</ErrorAlert>
 
@@ -162,8 +193,9 @@ const Workspace = () => {
       )}
 
       {/* A4 Canvas */}
-      <div className="flex-1 overflow-y-auto bg-stone/30 p-4 md:p-8">
-        <div className="mx-auto max-w-[210mm] min-h-[297mm] bg-paper shadow-lg border border-stone">
+      <div className="flex flex-1 overflow-y-auto bg-stone/30 p-4 md:p-8">
+        <div className="mx-auto grid w-full max-w-[1200px] gap-6 lg:grid-cols-[minmax(0,1fr)_240px]">
+        <div className="min-h-[297mm] bg-paper shadow-lg border border-stone">
           {/* Main Title Block */}
           <div className="border-b border-stone p-6">
             <input
@@ -185,7 +217,7 @@ const Workspace = () => {
                 <p>No blocks yet. Click "Add Block" to get started.</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
                 {blocks.map((block) => (
                   <BlockRenderer
                     key={block.id}
@@ -199,6 +231,24 @@ const Workspace = () => {
               </div>
             )}
           </div>
+        </div>
+        <aside className="h-fit rounded-soft border-2 border-stone bg-paper p-4">
+          <h2 className="font-display text-lg font-bold text-ink">Study details</h2>
+          <div className="mt-4 space-y-3">
+            {['courseCode', 'courseDescription', 'semester'].map((field) => (
+              <label key={field} className="block text-xs font-extrabold text-ink">
+                {field === 'courseCode' ? 'Course code' : field === 'courseDescription' ? 'Course description' : 'Semester'}
+                <input value={reviewer[field] || ''} onChange={(event) => setReviewer({ ...reviewer, [field]: event.target.value })} className="mt-1 w-full rounded-soft border-2 border-stone bg-paper px-3 py-2 text-sm font-normal text-ink focus:border-accent focus:outline-none" />
+              </label>
+            ))}
+            <label className="block text-xs font-extrabold text-ink">Visibility
+              <select value={reviewer.visibility} onChange={(event) => setReviewer({ ...reviewer, visibility: event.target.value })} className="mt-1 w-full rounded-soft border-2 border-stone bg-paper px-3 py-2 text-sm font-normal text-ink focus:border-accent focus:outline-none">
+                <option value="private">Private</option><option value="unlisted">Unlisted</option><option value="public">Public</option>
+              </select>
+            </label>
+          </div>
+          <p className="mt-4 text-xs text-muted">Changes are saved together with your document.</p>
+        </aside>
         </div>
       </div>
     </div>

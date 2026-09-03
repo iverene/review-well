@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ArrowLeft, Download, Plus, Sparkles } from 'lucide-react'
 
-const Toolbar = ({ reviewer, saving, onSave, onAddBlock }) => {
+const Toolbar = ({ reviewer, saving, onSave, onAddBlock, onAiExtract, onTitleChange }) => {
   const [addMenuOpen, setAddMenuOpen] = useState(false)
 
   const blockTypes = [
@@ -12,19 +13,18 @@ const Toolbar = ({ reviewer, saving, onSave, onAddBlock }) => {
   ]
 
   return (
-    <div className="flex items-center justify-between border-b border-stone bg-paper px-4 py-2 md:px-6">
+    <div className="flex flex-wrap items-center gap-3 border-b-2 border-stone bg-paper/90 px-4 py-3 md:px-6">
       {/* Left: Back + Title */}
       <div className="flex items-center gap-4">
         <Link
           to="/"
           className="rounded p-2 text-muted hover:bg-stone hover:text-ink"
         >
-          <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-          </svg>
+          <ArrowLeft className="h-5 w-5" aria-hidden="true" />
         </Link>
-        <div className="hidden text-sm text-muted md:block">
-          {reviewer.courseCode} • {reviewer.visibility}
+        <div className="min-w-0">
+          <input value={reviewer.title} onChange={(event) => onTitleChange?.(event.target.value)} className="w-40 truncate bg-transparent font-display text-lg font-bold text-ink focus:outline-none sm:w-64" aria-label="Document title" />
+          <div className="hidden text-xs text-muted md:block">{reviewer.courseCode} · {reviewer.examType} · {reviewer.visibility}</div>
         </div>
       </div>
 
@@ -34,9 +34,7 @@ const Toolbar = ({ reviewer, saving, onSave, onAddBlock }) => {
           onClick={() => setAddMenuOpen(!addMenuOpen)}
           className="flex items-center gap-2 rounded border border-stone px-4 py-2 text-sm text-ink transition-colors hover:bg-stone"
         >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-          </svg>
+          <Plus className="h-4 w-4" aria-hidden="true" />
           Add Block
         </button>
 
@@ -70,6 +68,21 @@ const Toolbar = ({ reviewer, saving, onSave, onAddBlock }) => {
       {/* Right: Save */}
       <div className="flex items-center gap-2">
         <button
+          type="button"
+          onClick={onAiExtract}
+          className="hidden items-center gap-2 rounded-soft border-2 border-butter bg-butter px-3 py-2 text-sm font-extrabold text-ink hover:bg-mint sm:flex"
+        >
+          <Sparkles className="h-4 w-4" aria-hidden="true" /> AI extract
+        </button>
+        <button
+          type="button"
+          onClick={() => window.print()}
+          className="hidden items-center gap-2 rounded-soft border-2 border-stone px-3 py-2 text-sm font-extrabold text-ink hover:bg-powder sm:flex"
+        >
+          <Download className="h-4 w-4" aria-hidden="true" /> Export
+        </button>
+        <button
+          type="button"
           onClick={onSave}
           disabled={saving}
           className="rounded border border-stone px-4 py-2 text-sm text-ink transition-colors hover:bg-stone disabled:opacity-50"
