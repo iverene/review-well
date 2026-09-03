@@ -50,6 +50,7 @@ const Workspace = () => {
           semester: reviewer.semester,
           examType: reviewer.examType,
           visibility: reviewer.visibility,
+          colorPalette: reviewer.colorPalette,
         },
         { withCredentials: true }
       )
