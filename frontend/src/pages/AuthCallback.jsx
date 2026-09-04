@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import AuthLoading from '../components/auth/AuthLoading'
 import ErrorAlert from '../components/common/ErrorAlert'
 import { isProfileComplete } from '../utils/profile'
 
@@ -27,25 +28,20 @@ const AuthCallback = () => {
     }
   }, [refreshUser, navigate, loading])
 
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-paper">
-      <div className="text-center">
-        {error ? (
-          <>
-            <ErrorAlert>{error}</ErrorAlert>
-            <button onClick={() => navigate('/login')} className="mt-4 text-sm font-bold text-ink hover:underline">
-              Return to sign in
-            </button>
-          </>
-        ) : (
-          <>
-            <div className="mb-4 text-ink">Signing you in...</div>
-            <div className="text-sm text-muted">Please wait while we complete your authentication.</div>
-          </>
-        )}
+  if (error) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-paper">
+        <div className="text-center">
+          <ErrorAlert>{error}</ErrorAlert>
+          <button onClick={() => navigate('/login')} className="mt-4 text-sm font-bold text-ink hover:underline">
+            Return to sign in
+          </button>
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
+
+  return <AuthLoading />
 }
 
 export default AuthCallback
