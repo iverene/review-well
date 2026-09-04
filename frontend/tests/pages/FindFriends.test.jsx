@@ -56,4 +56,10 @@ describe('FindFriends', () => {
     await screen.findByText('Ann Lee')
     expect(screen.getAllByRole('button', { name: 'Follow' })).toHaveLength(2)
   })
+
+  it('shows a name-only header without the old subtext', async () => {
+    render(<MemoryRouter><FindFriends /></MemoryRouter>)
+    expect(await screen.findByRole('heading', { name: 'Find Friends', level: 1 })).toBeInTheDocument()
+    expect(screen.queryByText('Discover classmates, follow their study guides, and grow your circle.')).not.toBeInTheDocument()
+  })
 })

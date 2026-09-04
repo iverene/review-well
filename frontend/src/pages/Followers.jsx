@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import axios from 'axios'
-import { ArrowLeft, Users } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 
 import FollowButton from '../components/social/FollowButton'
 import ErrorAlert from '../components/common/ErrorAlert'
+import PageHeader from '../components/common/PageHeader'
+import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
 
 const Followers = ({ type }) => {
@@ -33,13 +35,11 @@ const Followers = ({ type }) => {
   }, [userId, type])
 
   return (
-    <div className="mx-auto max-w-2xl pb-10">
+    <PageContainer>
       <Link to={`/profile/${userId}`} className="mb-3 inline-flex items-center gap-2 text-sm font-extrabold text-muted hover:text-ink">
         <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back to profile
       </Link>
-      <h1 className="mt-1 flex items-center gap-2 font-display text-3xl font-bold text-ink">
-        <Users className="h-7 w-7 text-accent" aria-hidden="true" /> {title}
-      </h1>
+      <PageHeader title={title} />
 
       <ErrorAlert className="mt-4">{error}</ErrorAlert>
 
@@ -75,7 +75,7 @@ const Followers = ({ type }) => {
           </div>
         ))}
       </div>
-    </div>
+    </PageContainer>
   )
 }
 

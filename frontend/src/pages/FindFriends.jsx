@@ -5,6 +5,8 @@ import { Search, UserPlus } from 'lucide-react'
 
 import FollowButton from '../components/social/FollowButton'
 import ErrorAlert from '../components/common/ErrorAlert'
+import PageHeader from '../components/common/PageHeader'
+import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
 
 const FindFriends = () => {
@@ -42,12 +44,8 @@ const FindFriends = () => {
   }
 
   return (
-    <div className="mx-auto max-w-3xl pb-10">
-      <p className="font-mono text-xs font-bold uppercase tracking-widest text-accent">Study buddies</p>
-      <h1 className="mt-1 flex items-center gap-2 font-display text-4xl font-bold text-ink">
-        <UserPlus className="h-8 w-8 text-accent" aria-hidden="true" /> Find friends
-      </h1>
-      <p className="mt-2 text-muted">Discover classmates, follow their study guides, and grow your circle.</p>
+    <PageContainer>
+      <PageHeader title="Find Friends" />
 
       <form onSubmit={handleSubmit} className="mt-5 flex gap-2" role="search">
         <input
@@ -102,7 +100,7 @@ const FindFriends = () => {
           </div>
         ))}
       </div>
-    </div>
+    </PageContainer>
   )
 }
 
