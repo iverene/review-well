@@ -64,6 +64,15 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   background: #F8F9FA;
 }
 
+/* Scrollbars are hidden project-wide, except on the workspace desk
+   and the reviewer reading view (see .show-scroll). */
+* {
+  scrollbar-width: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+
 .workspace-canvas-scroll {
   flex: 1 1 auto;
   overflow-y: auto;
@@ -73,18 +82,28 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   scrollbar-color: #C9BFAE transparent;
 }
 
-.workspace-canvas-scroll::-webkit-scrollbar {
+.show-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #C9BFAE transparent;
+}
+
+.workspace-canvas-scroll::-webkit-scrollbar,
+.show-scroll::-webkit-scrollbar {
+  display: block;
   width: 10px;
 }
-.workspace-canvas-scroll::-webkit-scrollbar-track {
+.workspace-canvas-scroll::-webkit-scrollbar-track,
+.show-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
-.workspace-canvas-scroll::-webkit-scrollbar-thumb {
+.workspace-canvas-scroll::-webkit-scrollbar-thumb,
+.show-scroll::-webkit-scrollbar-thumb {
   background: #C9BFAE;
   border-radius: 8px;
   border: 2px solid #F0EFEA;
 }
-.workspace-canvas-scroll::-webkit-scrollbar-thumb:hover {
+.workspace-canvas-scroll::-webkit-scrollbar-thumb:hover,
+.show-scroll::-webkit-scrollbar-thumb:hover {
   background: #604A3A;
 }
 

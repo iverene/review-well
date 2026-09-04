@@ -10,6 +10,12 @@ const NavigationShell = ({ children }) => {
   const { isAuthenticated } = useAuth()
   const location = useLocation()
   const isWorkspace = location.pathname.startsWith('/workspace')
+  // Reviewer reading view keeps a visible scrollbar; everything else hides it.
+  const reviewerSegment = location.pathname.split('/')[2]
+  const isReviewerDetail = location.pathname.startsWith('/reviewer/')
+    && !!reviewerSegment
+    && reviewerSegment !== 'my'
+    && reviewerSegment !== 'public'
 
   // Defensive: never render global chrome inside the fullscreen study desk.
   if (isWorkspace) {
@@ -54,7 +60,7 @@ const NavigationShell = ({ children }) => {
         </header>
 
         {/* Page Content */}
-        <main className="relative flex-1 overflow-y-auto pb-24 pt-20 md:pb-0 md:pt-24">{children}</main>
+        <main className={`relative flex-1 overflow-y-auto pb-24 pt-20 md:pb-0 md:pt-24${isReviewerDetail ? ' show-scroll' : ''}`}>{children}</main>
       </div>
 
       {/* Mobile Bottom Dock */}
