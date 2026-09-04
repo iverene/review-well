@@ -43,7 +43,12 @@ vi.mock('../../../models/notificationModel.js', () => ({
   createFollowNotification: vi.fn(),
 }))
 
-import { getProfile, updateProfile, getMyProfile, searchUsers } from '../../../controllers/profileController.js'
+vi.mock('../../../services/adapters/storage.js', () => ({
+  createStorageAdapter: vi.fn(),
+}))
+
+import { getProfile, updateProfile, getMyProfile, searchUsers, updateAvatar } from '../../../controllers/profileController.js'
+import { createStorageAdapter } from '../../../services/adapters/storage.js'
 import * as userModel from '../../../models/userModel.js'
 import * as reviewerModel from '../../../models/reviewerModel.js'
 import * as followModel from '../../../models/followModel.js'
@@ -151,6 +156,75 @@ describe('Profile Controller', () => {
 
       expect(userModel.searchUsers).toHaveBeenCalledWith('', expect.objectContaining({ excludeId: 'user-123' }))
       expect(res.json).toHaveBeenCalledWith({ users: [] })
+    })
+  })
+
+  describe('updateAvatar', () => {
+    const avatarFile = () => ({
+      buffer: Buffer.from('fake-image'),
+      mimetype: 'image/png',
+      size: 1024,
+    })
+
+    it('should upload an avatar and store its public URL', async () => {
+      const req = createMockRequest({ user: { id: 'user-123' }, file: avatarFile() })
+      const res = createMockResponse()
+      const storage = {
+        upload: vi.fn().mockResolvedValue({ data: {}, error: null }),
+        getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: 'https://cdn.example.com/avatars/user-123/1.png' } }),
+      }
+      createStorageAdapter.mockReturnValue(storage)
+      userModel.update.mockResolvedValue({})
+      userModel.getProfile.mockResolvedValue({ id: 'user-123', avatarUrl: 'https://cdn.example.com/avatars/user-123/1.png' })
+
+      await updateAvatar(req, res)
+
+      expect(storage.upload).toHaveBeenCalledWith(
+        expect.any(Buffer),
+        expect.stringMatching(/^avatars\/user-123\/\d+\.png$/),
+        'image/png'
+      )
+      expect(userModel.update).toHaveBeenCalledWith('user-123', {
+        avatarUrl: 'https://cdn.example.com/avatars/user-123/1.png',
+      })
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ user: expect.objectContaining({ id: 'user-123' }) })
+      )
+    })
+
+    it('should accept an avatar URL without a file', async () => {
+      const req = createMockRequest({
+        user: { id: 'user-123' },
+        body: { avatarUrl: 'https://example.com/me.png' },
+      })
+      const res = createMockResponse()
+      userModel.getProfile.mockResolvedValue({ id: 'user-123' })
+
+      await updateAvatar(req, res)
+
+      expect(userModel.update).toHaveBeenCalledWith('user-123', { avatarUrl: 'https://example.com/me.png' })
+    })
+
+    it('should return 400 when nothing is provided', async () => {
+      const req = createMockRequest({ user: { id: 'user-123' }, body: {} })
+      const res = createMockResponse()
+
+      await updateAvatar(req, res)
+
+      expect(res.status).toHaveBeenCalledWith(400)
+    })
+
+    it('should return 503 when storage is not configured', async () => {
+      const req = createMockRequest({ user: { id: 'user-123' }, file: avatarFile() })
+      const res = createMockResponse()
+      createStorageAdapter.mockReturnValue({
+        upload: vi.fn().mockResolvedValue({ data: null, error: 'Storage not configured' }),
+        getPublicUrl: vi.fn(),
+      })
+
+      await updateAvatar(req, res)
+
+      expect(res.status).toHaveBeenCalledWith(503)
     })
   })
 

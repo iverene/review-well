@@ -1,6 +1,7 @@
 import * as userModel from '../models/userModel.js'
 import * as reviewerModel from '../models/reviewerModel.js'
 import * as followModel from '../models/followModel.js'
+import { createStorageAdapter } from '../services/adapters/storage.js'
 
 const searchUsers = async (req, res) => {
   try {
@@ -83,16 +84,44 @@ const updateProfile = async (req, res) => {
   }
 }
 
+const AVATAR_EXTENSIONS = {
+  'image/jpeg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
+}
+
 const updateAvatar = async (req, res) => {
   try {
     const userId = req.user.id
-    const avatarUrl = req.file?.path || req.body.avatarUrl
 
-    if (!avatarUrl) {
+    // URL-based avatar (e.g. keep an existing one)
+    if (!req.file && req.body.avatarUrl) {
+      await userModel.update(userId, { avatarUrl: req.body.avatarUrl })
+      const profile = await userModel.getProfile(userId)
+      return res.json({ user: profile })
+    }
+
+    if (!req.file) {
       return res.status(400).json({ error: 'No avatar provided' })
     }
 
-    const user = await userModel.update(userId, { avatarUrl })
+    const storage = createStorageAdapter()
+    const extension = AVATAR_EXTENSIONS[req.file.mimetype] || 'jpg'
+    const storagePath = `avatars/${userId}/${Date.now()}.${extension}`
+
+    const { error: uploadError } = await storage.upload(req.file.buffer, storagePath, req.file.mimetype)
+    if (uploadError) {
+      return res.status(503).json({ error: 'Avatar storage is not configured. Please try again later.' })
+    }
+
+    const { data } = storage.getPublicUrl(storagePath)
+    const avatarUrl = data?.publicUrl
+    if (!avatarUrl) {
+      return res.status(500).json({ error: 'Failed to update avatar' })
+    }
+
+    await userModel.update(userId, { avatarUrl })
     const profile = await userModel.getProfile(userId)
 
     res.json({ user: profile })

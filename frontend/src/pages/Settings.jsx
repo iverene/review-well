@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
+import { LogOut, Mail, Settings as SettingsIcon, ShieldCheck } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import EditProfile from '../components/profile/EditProfile'
 import ErrorAlert from '../components/common/ErrorAlert'
@@ -8,12 +9,13 @@ import { getApiErrorMessage } from '../utils/apiError'
 import { ProfileSkeleton } from '../components/common/Skeleton'
 
 const Settings = () => {
-  const { user, refreshUser } = useAuth()
+  const { user, logout, refreshUser } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [signingOut, setSigningOut] = useState(false)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(false)
 
@@ -67,6 +69,17 @@ const Settings = () => {
     } catch (err) {
       console.error('Failed to upload avatar:', err)
       setError(getApiErrorMessage(err, 'Unable to upload your avatar.'))
+      throw err
+    }
+  }
+
+  const handleSignOut = async () => {
+    setSigningOut(true)
+    try {
+      await logout()
+      navigate('/login')
+    } finally {
+      setSigningOut(false)
     }
   }
 
@@ -77,52 +90,70 @@ const Settings = () => {
   }
 
   return (
-    <div className="min-h-screen bg-paper">
-      <div className="mx-auto max-w-2xl px-4 py-8">
-        <h1 className="mb-2 text-2xl font-bold text-ink">
-          {location.state?.onboarding ? 'Complete your profile' : 'Settings'}
-        </h1>
-        {location.state?.onboarding && (
-          <p className="mb-8 text-sm text-muted">
-            Add your academic information before you continue.
-          </p>
-        )}
+    <div className="mx-auto max-w-2xl pb-10">
+      <p className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-widest text-accent">
+        <SettingsIcon className="h-4 w-4" aria-hidden="true" /> Your space
+      </p>
+      <h1 className="mt-1 font-display text-4xl font-bold text-ink">
+        {location.state?.onboarding ? 'Complete your profile' : 'Settings'}
+      </h1>
+      {location.state?.onboarding && (
+        <p className="mt-2 text-muted">
+          Add your academic information before you continue.
+        </p>
+      )}
 
-        {error && (
-          <ErrorAlert className="mb-4">{error}</ErrorAlert>
-        )}
+      <ErrorAlert className="mt-4">{error}</ErrorAlert>
 
-        {success && (
-          <div className="mb-4 rounded border border-stone bg-paper p-4 text-ink">
-            Profile updated successfully
-          </div>
-        )}
+      {success && (
+        <div className="mt-4 rounded-soft border-2 border-mint bg-mint/40 p-4 text-sm font-bold text-ink" role="status">
+          Profile updated successfully
+        </div>
+      )}
 
-        {profile && (
+      {profile && (
+        <section className="mt-5 rounded-soft border-2 border-stone bg-paper p-6 club-shadow sm:p-8" aria-label="Edit profile">
           <EditProfile
             profile={profile}
             onSave={handleSave}
             onAvatarUpload={handleAvatarUpload}
             saving={saving}
           />
-        )}
+        </section>
+      )}
 
-        <div className="mt-8 border-t border-stone pt-8">
-          <h2 className="mb-4 text-lg font-semibold text-ink">Account</h2>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm text-muted">Email</label>
-              <div className="text-ink">{user?.email}</div>
-            </div>
-            <button
-              onClick={() => navigate('/')}
-              className="text-sm text-muted hover:text-ink"
-            >
-              Sign out
-            </button>
+      <section className="mt-4 rounded-soft border-2 border-stone bg-paper p-6 club-shadow" aria-label="Account">
+        <h2 className="font-display text-xl font-bold text-ink">Account</h2>
+        <div className="mt-4 space-y-4">
+          <div className="flex items-center gap-3">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-powder" aria-hidden="true">
+              <Mail className="h-4 w-4 text-ink" />
+            </span>
+            <span>
+              <span className="block text-xs font-extrabold uppercase tracking-widest text-muted">Signed in as</span>
+              <span className="block text-sm font-bold text-ink">{user?.email}</span>
+            </span>
           </div>
+          <button
+            onClick={handleSignOut}
+            disabled={signingOut}
+            className="inline-flex items-center gap-2 rounded-soft border-2 border-stone bg-paper px-4 py-2 text-sm font-extrabold text-ink hover:bg-blush disabled:opacity-60"
+          >
+            <LogOut className="h-4 w-4" aria-hidden="true" />
+            {signingOut ? 'Signing out…' : 'Sign out'}
+          </button>
         </div>
-      </div>
+      </section>
+
+      <section className="mt-4 rounded-soft border-2 border-stone bg-paper p-6 club-shadow" aria-label="Legal">
+        <h2 className="flex items-center gap-2 font-display text-xl font-bold text-ink">
+          <ShieldCheck className="h-5 w-5 text-accent" aria-hidden="true" /> Legal
+        </h2>
+        <div className="mt-3 flex flex-col gap-1 text-sm font-bold">
+          <Link to="/privacy" className="rounded-soft px-2 py-2 text-ink hover:bg-powder">Privacy Policy</Link>
+          <Link to="/terms" className="rounded-soft px-2 py-2 text-ink hover:bg-powder">Terms and Conditions</Link>
+        </div>
+      </section>
     </div>
   )
 }

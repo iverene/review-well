@@ -23,6 +23,8 @@ const Guide = lazy(() => import('./pages/Guide'))
 const Contact = lazy(() => import('./pages/Contact'))
 const FindFriends = lazy(() => import('./pages/FindFriends'))
 const Followers = lazy(() => import('./pages/Followers'))
+const Privacy = lazy(() => import('./pages/Privacy'))
+const Terms = lazy(() => import('./pages/Terms'))
 
 // Loading component
 const PageLoader = () => (
@@ -46,6 +48,8 @@ function App() {
               <Route path="/about" element={<About />} />
               <Route path="/guide" element={<Guide />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
               <Route
                 path="/onboarding"
                 element={
