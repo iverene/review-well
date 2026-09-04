@@ -9,6 +9,16 @@ import LoginButton from '../auth/LoginButton'
 const NavigationShell = ({ children }) => {
   const { isAuthenticated } = useAuth()
   const location = useLocation()
+  const isWorkspace = location.pathname.startsWith('/workspace')
+
+  // Defensive: never render global chrome inside the fullscreen study desk.
+  if (isWorkspace) {
+    return (
+      <div className="workspace-shell" style={{ width: '100vw', height: '100vh', overflow: 'hidden', background: '#F8F9FA' }}>
+        {children}
+      </div>
+    )
+  }
 
   return (
     <div className="relative flex h-screen bg-paper">

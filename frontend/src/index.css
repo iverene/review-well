@@ -55,3 +55,164 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 @media (prefers-reduced-motion: reduce) {
   .club-rise { animation: none; }
 }
+
+/* ---- Fullscreen study-desk workspace (Google Docs / MS Word inspired) ---- */
+.workspace-shell {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background: #F8F9FA;
+}
+
+.workspace-canvas-scroll {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: #F0EFEA;
+  scrollbar-width: thin;
+  scrollbar-color: #C9BFAE transparent;
+}
+
+.workspace-canvas-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+.workspace-canvas-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.workspace-canvas-scroll::-webkit-scrollbar-thumb {
+  background: #C9BFAE;
+  border-radius: 8px;
+  border: 2px solid #F0EFEA;
+}
+.workspace-canvas-scroll::-webkit-scrollbar-thumb:hover {
+  background: #604A3A;
+}
+
+.sheet-theme {
+  --sheet-primary: #604A3A;
+  --sheet-secondary: #F9E4A8;
+  --sheet-tint: #FFF7E8;
+  --sheet-ink: #1f1b16;
+}
+
+.sheet-page {
+  background: #FFFFFF;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 8px 24px rgba(16, 24, 40, 0.10);
+}
+
+.sheet-editable {
+  outline: none;
+  border-radius: 4px;
+  min-width: 1ch;
+}
+.sheet-editable:focus {
+  box-shadow: 0 0 0 2px rgba(201, 230, 242, 0.9);
+  background: rgba(201, 230, 242, 0.12);
+}
+.sheet-editable:hover {
+  background: rgba(96, 74, 58, 0.04);
+}
+
+/* Two-column center rule */
+.sheet-columns {
+  position: relative;
+}
+.sheet-columns::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: #E5E7EB;
+  pointer-events: none;
+}
+
+/* Branded workspace loading screen */
+@keyframes desk-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes desk-fade {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes desk-dots {
+  0% { content: ''; }
+  25% { content: '.'; }
+  50% { content: '..'; }
+  75% { content: '...'; }
+}
+.desk-bob {
+  animation: desk-bob 2.4s ease-in-out infinite;
+}
+.desk-fade {
+  animation: desk-fade 600ms ease-out both;
+}
+.desk-dots::after {
+  display: inline-block;
+  width: 1.5em;
+  text-align: left;
+  content: '';
+  animation: desk-dots 1.5s steps(1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .desk-bob, .desk-fade, .desk-dots::after { animation: none; }
+}
+
+/* Ruler */
+.docs-ruler {
+  background:
+    repeating-linear-gradient(to right, #D1D5DB 0 1px, transparent 1px 8px),
+    linear-gradient(#FFFFFF, #FFFFFF);
+  background-size: 100% 8px, 100% 100%;
+  background-repeat: repeat-x;
+  background-position: bottom;
+}
+
+/* Ribbon buttons never shift layout */
+.ribbon-btn {
+  min-width: 32px;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+}
+
+/* Print: export only the sheets, no surrounding UI — with exact colors and fonts */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #sheet-export-root, #sheet-export-root * {
+    visibility: visible;
+  }
+  #sheet-export-root {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    background: #fff;
+    zoom: 1 !important;
+  }
+  .sheet-page {
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .sheet-page * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .no-print {
+    display: none !important;
+  }
+}

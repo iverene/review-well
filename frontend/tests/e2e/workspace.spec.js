@@ -26,8 +26,10 @@ test.describe('Workspace', () => {
         body: JSON.stringify({
           reviewer: {
             id: '1',
-            title: 'Test Reviewer',
+            title: 'Calculus',
             courseCode: 'MATH 101',
+            courseDescription: 'Calculus',
+            examType: 'midterm',
             semester: 'Fall 2024',
             visibility: 'public',
             isDraft: true,
@@ -50,36 +52,37 @@ test.describe('Workspace', () => {
   test('should load workspace with reviewer data', async ({ page }) => {
     await page.goto('/workspace/1')
 
-    await expect(page.locator('input[value="Test Reviewer"]')).toBeVisible()
-    await expect(page.locator('text=MATH 101')).toBeVisible()
+    await expect(page.getByLabel('Document title')).toHaveValue('Calculus')
+    await expect(page.locator('text=Midterm · Fall 2024')).toBeVisible()
   })
 
   test('should display existing blocks', async ({ page }) => {
     await page.goto('/workspace/1')
 
-    await expect(page.locator('input[value="Chapter 1"]')).toBeVisible()
+    await expect(page.getByRole('textbox', { name: 'Main topic heading' })).toContainText('Chapter 1')
   })
 
-  test('should open add block menu', async ({ page }) => {
+  test('should open insert menu with structured blocks', async ({ page }) => {
     await page.goto('/workspace/1')
 
-    await page.click('text=Add Block')
+    await page.getByRole('button', { name: 'Insert' }).click()
 
-    await expect(page.locator('text=Topic Header')).toBeVisible()
-    await expect(page.locator('text=Content Block')).toBeVisible()
-    await expect(page.locator('text=Table')).toBeVisible()
+    await expect(page.getByRole('menuitem', { name: 'Main Topic' })).toBeVisible()
+    await expect(page.getByRole('menuitem', { name: 'Terms and Definitions Card' })).toBeVisible()
+    await expect(page.getByRole('menuitem', { name: 'Blank Page' })).toBeVisible()
   })
 
   test('should save reviewer changes', async ({ page }) => {
     await page.goto('/workspace/1')
 
     // Update title
-    await page.fill('input[value="Test Reviewer"]', 'Updated Reviewer')
+    await page.getByLabel('Document title').fill('Updated Reviewer')
 
-    // Click save
-    await page.click('text=Save')
+    // Click save via File menu
+    await page.getByRole('button', { name: 'File' }).click()
+    await page.getByRole('menuitem', { name: 'Save' }).click()
 
     // Should show saving state
-    await expect(page.locator('text=Saving...')).toBeVisible()
+    await expect(page.locator('text=Saving…')).toBeVisible()
   })
 })

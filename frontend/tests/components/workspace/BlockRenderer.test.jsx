@@ -18,7 +18,7 @@ describe('BlockRenderer', () => {
         onDelete={() => {}}
       />
     )
-    expect(screen.getByDisplayValue('Test Topic')).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Main topic heading' })).toHaveTextContent('Test Topic')
   })
 
   it('renders content_block block', () => {
@@ -36,8 +36,41 @@ describe('BlockRenderer', () => {
         onDelete={() => {}}
       />
     )
-    expect(screen.getByDisplayValue('Term')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('Definition')).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Term or heading' })).toHaveTextContent('Term')
+    expect(screen.getByRole('textbox', { name: 'Normal text body' })).toHaveTextContent('Definition')
+  })
+
+  it('renders terms_card block', () => {
+    const block = {
+      id: '7',
+      blockType: 'terms_card',
+      contentData: { title: 'Key Terms', terms: [{ term: 'Alpha', definition: 'First letter' }] },
+    }
+    render(
+      <BlockRenderer block={block} selected={false} onSelect={() => {}} onUpdate={() => {}} onDelete={() => {}} />
+    )
+    expect(screen.getByRole('textbox', { name: 'Terms card title' })).toHaveTextContent('Key Terms')
+    expect(screen.getByRole('textbox', { name: 'Term 1' })).toHaveTextContent('Alpha')
+  })
+
+  it('renders page_break marker', () => {
+    const block = { id: '8', blockType: 'page_break', contentData: {} }
+    render(
+      <BlockRenderer block={block} selected={false} onSelect={() => {}} onUpdate={() => {}} onDelete={() => {}} />
+    )
+    expect(screen.getByText('Blank page break')).toBeInTheDocument()
+  })
+
+  it('renders lesson_banner block', () => {
+    const block = {
+      id: '6',
+      blockType: 'lesson_banner',
+      contentData: { heading: 'LESSON 1', subtitle: 'Intro' },
+    }
+    render(
+      <BlockRenderer block={block} selected={false} onSelect={() => {}} onUpdate={() => {}} onDelete={() => {}} />
+    )
+    expect(screen.getByRole('textbox', { name: 'Lesson banner heading' })).toHaveTextContent('LESSON 1')
   })
 
   it('calls onSelect when clicking block', () => {
@@ -56,7 +89,7 @@ describe('BlockRenderer', () => {
         onDelete={() => {}}
       />
     )
-    fireEvent.click(screen.getByDisplayValue('Test'))
+    fireEvent.click(screen.getByRole('textbox', { name: 'Main topic heading' }))
     expect(onSelect).toHaveBeenCalled()
   })
 
@@ -75,7 +108,7 @@ describe('BlockRenderer', () => {
         onDelete={() => {}}
       />
     )
-    expect(container.firstChild).toHaveClass('border-accent')
+    expect(container.firstChild).toHaveClass('bg-blue-50/60')
   })
 
   it('shows delete button on hover', () => {

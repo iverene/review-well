@@ -19,6 +19,7 @@ const Profile = lazy(() => import('./pages/Profile'))
 const Settings = lazy(() => import('./pages/Settings'))
 const Onboarding = lazy(() => import('./pages/Onboarding'))
 const About = lazy(() => import('./pages/About'))
+const Guide = lazy(() => import('./pages/Guide'))
 const Contact = lazy(() => import('./pages/Contact'))
 
 // Loading component
@@ -41,6 +42,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/about" element={<About />} />
+              <Route path="/guide" element={<Guide />} />
               <Route path="/contact" element={<Contact />} />
               <Route
                 path="/onboarding"

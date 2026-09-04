@@ -4,9 +4,9 @@ import ContentBlock from '../../../src/components/blocks/ContentBlock'
 
 describe('ContentBlock', () => {
   it('renders with default content', () => {
-    render(<ContentBlock content={{}} onChange={() => {}} />)
-    expect(screen.getByPlaceholderText('Term')).toBeInTheDocument()
-    expect(screen.getByPlaceholderText('Definition')).toBeInTheDocument()
+    render(<ContentBlock content={{ heading: '', body: '' }} onChange={() => {}} />)
+    expect(screen.getByRole('textbox', { name: 'Term or heading' })).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Normal text body' })).toBeInTheDocument()
   })
 
   it('renders with provided content', () => {
@@ -16,25 +16,25 @@ describe('ContentBlock', () => {
         onChange={() => {}}
       />
     )
-    expect(screen.getByDisplayValue('Photosynthesis')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('Process by which plants make food')).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Term or heading' })).toHaveTextContent('Photosynthesis')
+    expect(screen.getByRole('textbox', { name: 'Normal text body' })).toHaveTextContent('Process by which plants make food')
   })
 
-  it('calls onChange when term changes', () => {
+  it('calls onChange when term blurs', () => {
     const onChange = vi.fn()
-    render(<ContentBlock content={{}} onChange={onChange} />)
-    fireEvent.change(screen.getByPlaceholderText('Term'), {
-      target: { value: 'New Term' },
-    })
-    expect(onChange).toHaveBeenCalledWith({ heading: 'New Term' })
+    render(<ContentBlock content={{ heading: '', body: '' }} onChange={onChange} />)
+    const el = screen.getByRole('textbox', { name: 'Term or heading' })
+    el.textContent = 'New Term'
+    fireEvent.blur(el)
+    expect(onChange).toHaveBeenCalledWith({ heading: 'New Term', body: '' })
   })
 
-  it('calls onChange when definition changes', () => {
+  it('calls onChange when definition blurs', () => {
     const onChange = vi.fn()
-    render(<ContentBlock content={{}} onChange={onChange} />)
-    fireEvent.change(screen.getByPlaceholderText('Definition'), {
-      target: { value: 'New definition' },
-    })
-    expect(onChange).toHaveBeenCalledWith({ body: 'New definition' })
+    render(<ContentBlock content={{ heading: '', body: '' }} onChange={onChange} />)
+    const el = screen.getByRole('textbox', { name: 'Normal text body' })
+    el.textContent = 'New definition'
+    fireEvent.blur(el)
+    expect(onChange).toHaveBeenCalled()
   })
 })
