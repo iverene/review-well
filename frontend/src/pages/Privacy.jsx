@@ -10,9 +10,6 @@ const Section = ({ title, children }) => (
 
 const Privacy = () => (
   <div className="mx-auto max-w-2xl pb-10">
-    <Link to="/about" className="mb-3 inline-flex items-center gap-2 text-sm font-extrabold text-muted hover:text-ink">
-      <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back to About
-    </Link>
     <h1 className="mt-1 font-display text-4xl font-bold text-ink">Privacy Policy</h1>
 
     <div className="mt-4 rounded-soft border-2 border-stone bg-paper p-6 club-shadow sm:p-8">
