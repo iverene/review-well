@@ -16,13 +16,14 @@ const createStorageAdapter = () => {
   const supabase = createClient(supabaseUrl, supabaseKey)
   const bucket = process.env.SUPABASE_STORAGE_BUCKET || 'uploads'
 
-  const upload = async (file, path) => {
+  const upload = async (file, path, contentType) => {
     try {
       const { data, error } = await supabase.storage
         .from(bucket)
         .upload(path, file, {
           cacheControl: '3600',
           upsert: false,
+          ...(contentType && { contentType }),
         })
 
       if (error) throw error

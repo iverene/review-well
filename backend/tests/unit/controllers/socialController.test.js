@@ -25,12 +25,13 @@ vi.mock('../../../models/followModel.js', () => ({
   countFollowing: vi.fn(),
   isFollowing: vi.fn(),
 }))
-vi.mock('../../../models/likeModel.js', () => ({
+vi.mock('../../../models/saveModel.js', () => ({
   findByUserAndReviewer: vi.fn(),
   create: vi.fn(),
   remove: vi.fn(),
   countByReviewer: vi.fn(),
-  hasUserLiked: vi.fn(),
+  findByUser: vi.fn(),
+  hasUserSaved: vi.fn(),
 }))
 vi.mock('../../../models/notificationModel.js', () => ({
   create: vi.fn(),
@@ -38,7 +39,7 @@ vi.mock('../../../models/notificationModel.js', () => ({
   markAsRead: vi.fn(),
   markAllAsRead: vi.fn(),
   countUnread: vi.fn(),
-  createLikeNotification: vi.fn(),
+  createSaveNotification: vi.fn(),
   createFollowNotification: vi.fn(),
 }))
 vi.mock('../../../models/blockModel.js', () => ({
@@ -60,9 +61,12 @@ vi.mock('../../../models/aiQuotaModel.js', () => ({
 }))
 
 import {
-  likeReviewer,
-  unlikeReviewer,
-  getLikeStatus,
+  saveReviewer,
+  unsaveReviewer,
+  getSaveStatus,
+  getSavedReviewers,
+  getFollowers,
+  getFollowing,
   followUser,
   unfollowUser,
   getFollowStatus,
@@ -70,7 +74,7 @@ import {
   markNotificationRead,
   getUnreadCount,
 } from '../../../controllers/socialController.js'
-import * as likeModel from '../../../models/likeModel.js'
+import * as saveModel from '../../../models/saveModel.js'
 import * as followModel from '../../../models/followModel.js'
 import * as notificationModel from '../../../models/notificationModel.js'
 import * as reviewerModel from '../../../models/reviewerModel.js'
@@ -81,8 +85,8 @@ describe('Social Controller', () => {
     vi.clearAllMocks()
   })
 
-  describe('likeReviewer', () => {
-    it('should like a reviewer', async () => {
+  describe('saveReviewer', () => {
+    it('should save a reviewer', async () => {
       const req = createMockRequest({
         user: { id: 'user-123' },
         params: { reviewerId: 'reviewer-1' },
@@ -90,14 +94,14 @@ describe('Social Controller', () => {
       const res = createMockResponse()
 
       reviewerModel.findById.mockResolvedValue({ id: 'reviewer-1', authorId: 'author-1' })
-      likeModel.findByUserAndReviewer.mockResolvedValue(null)
-      likeModel.create.mockResolvedValue({})
-      notificationModel.createLikeNotification.mockResolvedValue({})
-      likeModel.countByReviewer.mockResolvedValue(5)
+      saveModel.findByUserAndReviewer.mockResolvedValue(null)
+      saveModel.create.mockResolvedValue({})
+      notificationModel.createSaveNotification.mockResolvedValue({})
+      saveModel.countByReviewer.mockResolvedValue(5)
 
-      await likeReviewer(req, res)
+      await saveReviewer(req, res)
 
-      expect(res.json).toHaveBeenCalledWith({ liked: true, likeCount: 5 })
+      expect(res.json).toHaveBeenCalledWith({ saved: true, saveCount: 5 })
     })
 
     it('should return 404 if reviewer not found', async () => {
@@ -109,12 +113,12 @@ describe('Social Controller', () => {
 
       reviewerModel.findById.mockResolvedValue(null)
 
-      await likeReviewer(req, res)
+      await saveReviewer(req, res)
 
       expect(res.status).toHaveBeenCalledWith(404)
     })
 
-    it('should return 400 if already liked', async () => {
+    it('should return 400 if already saved', async () => {
       const req = createMockRequest({
         user: { id: 'user-123' },
         params: { reviewerId: 'reviewer-1' },
@@ -122,43 +126,86 @@ describe('Social Controller', () => {
       const res = createMockResponse()
 
       reviewerModel.findById.mockResolvedValue({ id: 'reviewer-1' })
-      likeModel.findByUserAndReviewer.mockResolvedValue({ id: 'like-1' })
+      saveModel.findByUserAndReviewer.mockResolvedValue({ userId: 'user-123', reviewerId: 'reviewer-1' })
 
-      await likeReviewer(req, res)
+      await saveReviewer(req, res)
 
       expect(res.status).toHaveBeenCalledWith(400)
     })
   })
 
-  describe('unlikeReviewer', () => {
-    it('should unlike a reviewer', async () => {
+  describe('unsaveReviewer', () => {
+    it('should unsave a reviewer', async () => {
       const req = createMockRequest({
         user: { id: 'user-123' },
         params: { reviewerId: 'reviewer-1' },
       })
       const res = createMockResponse()
 
-      likeModel.findByUserAndReviewer.mockResolvedValue({ id: 'like-1' })
-      likeModel.remove.mockResolvedValue({})
-      likeModel.countByReviewer.mockResolvedValue(4)
+      saveModel.findByUserAndReviewer.mockResolvedValue({ userId: 'user-123', reviewerId: 'reviewer-1' })
+      saveModel.remove.mockResolvedValue({})
+      saveModel.countByReviewer.mockResolvedValue(4)
 
-      await unlikeReviewer(req, res)
+      await unsaveReviewer(req, res)
 
-      expect(res.json).toHaveBeenCalledWith({ liked: false, likeCount: 4 })
+      expect(res.json).toHaveBeenCalledWith({ saved: false, saveCount: 4 })
     })
 
-    it('should return 400 if not liked', async () => {
+    it('should return 400 if not saved', async () => {
       const req = createMockRequest({
         user: { id: 'user-123' },
         params: { reviewerId: 'reviewer-1' },
       })
       const res = createMockResponse()
 
-      likeModel.findByUserAndReviewer.mockResolvedValue(null)
+      saveModel.findByUserAndReviewer.mockResolvedValue(null)
 
-      await unlikeReviewer(req, res)
+      await unsaveReviewer(req, res)
 
       expect(res.status).toHaveBeenCalledWith(400)
+    })
+  })
+
+  describe('getSavedReviewers', () => {
+    it('should return the current user saved reviewers', async () => {
+      const req = createMockRequest({ user: { id: 'user-123' } })
+      const res = createMockResponse()
+      const reviewer = { id: 'reviewer-1', title: 'Saved Reviewer' }
+
+      saveModel.findByUser.mockResolvedValue([{ reviewer }, { reviewer: null }])
+
+      await getSavedReviewers(req, res)
+
+      expect(saveModel.findByUser).toHaveBeenCalledWith('user-123')
+      expect(res.json).toHaveBeenCalledWith({ reviewers: [reviewer] })
+    })
+  })
+
+  describe('getFollowers', () => {
+    it('should return mapped follower users', async () => {
+      const req = createMockRequest({ params: { userId: 'user-1' } })
+      const res = createMockResponse()
+      const follower = { id: 'user-2', displayName: 'Friend' }
+
+      followModel.getFollowers = vi.fn().mockResolvedValue([{ follower }, { follower: null }])
+
+      await getFollowers(req, res)
+
+      expect(res.json).toHaveBeenCalledWith({ users: [follower] })
+    })
+  })
+
+  describe('getFollowing', () => {
+    it('should return mapped following users', async () => {
+      const req = createMockRequest({ params: { userId: 'user-1' } })
+      const res = createMockResponse()
+      const following = { id: 'user-3', displayName: 'Mentor' }
+
+      followModel.getFollowing = vi.fn().mockResolvedValue([{ following }])
+
+      await getFollowing(req, res)
+
+      expect(res.json).toHaveBeenCalledWith({ users: [following] })
     })
   })
 

@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+
 import { AuthProvider } from './contexts/AuthContext'
 import Layout from './components/Layout'
 import ProtectedRoute from './components/auth/ProtectedRoute'
@@ -19,7 +20,12 @@ const Profile = lazy(() => import('./pages/Profile'))
 const Settings = lazy(() => import('./pages/Settings'))
 const Onboarding = lazy(() => import('./pages/Onboarding'))
 const About = lazy(() => import('./pages/About'))
+const Guide = lazy(() => import('./pages/Guide'))
 const Contact = lazy(() => import('./pages/Contact'))
+const FindFriends = lazy(() => import('./pages/FindFriends'))
+const Followers = lazy(() => import('./pages/Followers'))
+const Privacy = lazy(() => import('./pages/Privacy'))
+const Terms = lazy(() => import('./pages/Terms'))
 
 // Loading component
 const PageLoader = () => (
@@ -41,7 +47,10 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/about" element={<About />} />
+              <Route path="/guide" element={<Guide />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
               <Route
                 path="/onboarding"
                 element={
@@ -87,6 +96,30 @@ function App() {
                 }
               />
               <Route path="/profile/:userId" element={<Profile />} />
+              <Route
+                path="/profile/:userId/followers"
+                element={
+                  <ProtectedRoute>
+                    <Followers type="followers" />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile/:userId/following"
+                element={
+                  <ProtectedRoute>
+                    <Followers type="following" />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/friends"
+                element={
+                  <ProtectedRoute>
+                    <FindFriends />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/settings"
                 element={

@@ -113,11 +113,11 @@ Public reviewer browsing should include:
 
 - Color-coded course or subject tags.
 - Short content previews.
-- Author identity and like counts.
+- Author identity and save counts.
 - Clear view buttons.
 - A cozy empty state using `logo.png` or a supplied illustration.
 
-The public browsing path must work for both guests and Google users. Guest interactions stop at reading: like, follow, create, edit, AI, and notifications remain authenticated-only.
+The public browsing path must work for both guests and Google users. Guest interactions stop at reading: save, follow, create, edit, AI, and notifications remain authenticated-only.
 
 ## 9. Reviewer Workspace
 

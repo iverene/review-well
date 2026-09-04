@@ -1,16 +1,13 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import { ArrowLeft, BookOpen, Check, Globe2, LockKeyhole, UsersRound } from 'lucide-react'
+import { ArrowLeft, BookOpen, Globe2, LockKeyhole, UsersRound } from 'lucide-react'
+
 import ErrorAlert from '../components/common/ErrorAlert'
 import { getApiErrorMessage } from '../utils/apiError'
 
-const palettes = [
-  { name: 'Mint morning', primary: '#CDE8D2', secondary: '#FFF7E8', accent: '#7DBB88' },
-  { name: 'Blush notes', primary: '#F6C6D2', secondary: '#FFF7E8', accent: '#C96A83' },
-  { name: 'Powder sky', primary: '#C9E6F2', secondary: '#FFF7E8', accent: '#6C9FB5' },
-  { name: 'Butter paper', primary: '#F9E4A8', secondary: '#FFF7E8', accent: '#C39A3A' },
-]
+// Default theme applied at creation; theming lives in the workspace Format menu.
+const defaultPalette = { name: 'Cocoa Classic', primary: '#7C6B5D', secondary: '#F5EAD3', accent: '#FCF7EC' }
 
 const Create = () => {
   const navigate = useNavigate()
@@ -23,7 +20,7 @@ const Create = () => {
     examType: 'midterm',
     visibility: 'private',
     isDraft: true,
-    colorPalette: palettes[0],
+    colorPalette: defaultPalette,
   })
 
   const updateField = (event) => {
@@ -101,18 +98,6 @@ const Create = () => {
               </select>
             </div>
           </div>
-
-          <section className="mt-8 border-t-2 border-stone pt-6" aria-labelledby="palette-heading">
-            <h2 id="palette-heading" className="font-display text-xl font-bold text-ink">Color palette choice</h2>
-            <p className="mt-1 text-xs text-muted">Choose a gentle starting mood.</p>
-            <div className="mt-4 grid grid-cols-4 gap-2">
-              {palettes.map((palette) => (
-                <button key={palette.name} type="button" onClick={() => setFormData((previous) => ({ ...previous, colorPalette: palette }))} className="relative h-10 rounded-soft border-2 border-stone" style={{ background: `linear-gradient(135deg, ${palette.primary} 50%, ${palette.accent} 50%)` }} title={palette.name} aria-label={palette.name}>
-                  {formData.colorPalette.name === palette.name && <Check className="absolute inset-0 m-auto h-5 w-5 text-ink" strokeWidth={3} aria-hidden="true" />}
-                </button>
-              ))}
-            </div>
-          </section>
 
           <div className="mt-8 flex justify-end border-t-2 border-stone pt-6">
             <button type="submit" disabled={saving} className="inline-flex items-center gap-2 rounded-soft border-2 border-accent bg-accent px-6 py-3 text-sm font-extrabold text-paper hover:-translate-y-0.5 disabled:opacity-60">

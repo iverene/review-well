@@ -21,6 +21,11 @@ app.use(hpp())
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
 
+// Trust the hosting proxy in production so secure session cookies are set correctly
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1)
+}
+
 // Session
 app.use(sessionConfig)
 
@@ -35,6 +40,7 @@ app.use('/api/reviewers', (await import('./routes/reviewerRoutes.js')).default)
 app.use('/api/ai', (await import('./routes/aiRoutes.js')).default)
 app.use('/api/social', (await import('./routes/socialRoutes.js')).default)
 app.use('/api/profile', (await import('./routes/profileRoutes.js')).default)
+app.use('/api/contact', (await import('./routes/contactRoutes.js')).default)
 
 // Health check
 app.get('/api/health', (req, res) => {

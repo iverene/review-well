@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
+
 import { useAuth } from '../contexts/AuthContext'
 import { Skeleton } from '../components/common/Skeleton'
 import LoginButton from '../components/auth/LoginButton'
@@ -51,6 +52,12 @@ const Login = () => {
             Browse as Guest
           </button>
           <p className="pt-2 text-center text-xs text-muted">Guest mode is view-only and does not create an account.</p>
+          <p className="pt-3 text-center text-xs text-muted">
+            By signing in, you agree to our{' '}
+            <Link to="/terms" className="font-bold text-accent hover:underline">Terms of Service</Link>
+            {' '}and{' '}
+            <Link to="/privacy" className="font-bold text-accent hover:underline">Privacy Policy</Link>.
+          </p>
         </div>
       </div>
     </div>

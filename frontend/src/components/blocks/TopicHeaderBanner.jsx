@@ -1,13 +1,25 @@
 const TopicHeaderBanner = ({ content, onChange }) => {
+  const update = (field, value) => onChange({ ...content, [field]: value })
+
   return (
-    <div className="border-l-4 border-accent bg-stone/50 pl-4 py-2">
-      <input
-        type="text"
-        value={content?.heading || ''}
-        onChange={(e) => onChange({ ...content, heading: e.target.value })}
-        className="w-full text-xl font-bold text-ink bg-transparent border-none focus:outline-none"
-        placeholder="Topic Header"
-      />
+    <div
+      className="rounded-full border-2 px-4 py-1.5"
+      style={{
+        background: 'var(--sheet-secondary, #F9E4A8)',
+        borderColor: 'var(--sheet-primary, #604A3A)',
+      }}
+    >
+      <div
+        contentEditable
+        suppressContentEditableWarning
+        spellCheck
+        role="textbox"
+        aria-label="Main topic heading"
+        onBlur={(e) => update('heading', e.currentTarget.textContent?.trim() || '')}
+        className="sheet-editable text-sm font-extrabold"
+      >
+        {content?.heading || 'Main Topic — click to edit'}
+      </div>
     </div>
   )
 }

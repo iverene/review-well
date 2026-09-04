@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
+
 import { useAuth } from '../../contexts/AuthContext'
 
 const NotificationBadge = () => {
@@ -8,10 +9,14 @@ const NotificationBadge = () => {
   const [unreadCount, setUnreadCount] = useState(0)
 
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchUnreadCount()
-      const interval = setInterval(fetchUnreadCount, 30000) // Poll every 30 seconds
-      return () => clearInterval(interval)
+    if (!isAuthenticated) return
+    fetchUnreadCount()
+    // Live delivery without page restarts: poll plus refresh on window focus
+    const interval = setInterval(fetchUnreadCount, 20000)
+    window.addEventListener('focus', fetchUnreadCount)
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('focus', fetchUnreadCount)
     }
   }, [isAuthenticated])
 

@@ -1,10 +1,11 @@
-import * as likeModel from '../models/likeModel.js'
+import * as saveModel from '../models/saveModel.js'
 import * as followModel from '../models/followModel.js'
 import * as notificationModel from '../models/notificationModel.js'
 import * as reviewerModel from '../models/reviewerModel.js'
+import { delPrefix } from '../utils/cache.js'
 
-// Like endpoints
-const likeReviewer = async (req, res) => {
+// Save endpoints
+const saveReviewer = async (req, res) => {
   try {
     const { reviewerId } = req.params
     const userId = req.user.id
@@ -14,56 +15,73 @@ const likeReviewer = async (req, res) => {
       return res.status(404).json({ error: 'Reviewer not found' })
     }
 
-    const existingLike = await likeModel.findByUserAndReviewer(userId, reviewerId)
-    if (existingLike) {
-      return res.status(400).json({ error: 'Already liked' })
+    const existingSave = await saveModel.findByUserAndReviewer(userId, reviewerId)
+    if (existingSave) {
+      return res.status(400).json({ error: 'Already saved' })
     }
 
-    await likeModel.create(userId, reviewerId)
-    await notificationModel.createLikeNotification(reviewer.authorId, userId, reviewerId)
+    await saveModel.create(userId, reviewerId)
+    await notificationModel.createSaveNotification(reviewer.authorId, userId, reviewerId)
+    delPrefix('social:')
+    delPrefix('reviewers:')
 
-    const likeCount = await likeModel.countByReviewer(reviewerId)
+    const saveCount = await saveModel.countByReviewer(reviewerId)
 
-    res.json({ liked: true, likeCount })
+    res.json({ saved: true, saveCount })
   } catch (error) {
-    console.error('Like error:', error)
-    res.status(500).json({ error: 'Failed to like reviewer' })
+    console.error('Save error:', error)
+    res.status(500).json({ error: 'Failed to save reviewer' })
   }
 }
 
-const unlikeReviewer = async (req, res) => {
+const unsaveReviewer = async (req, res) => {
   try {
     const { reviewerId } = req.params
     const userId = req.user.id
 
-    const existingLike = await likeModel.findByUserAndReviewer(userId, reviewerId)
-    if (!existingLike) {
-      return res.status(400).json({ error: 'Not liked' })
+    const existingSave = await saveModel.findByUserAndReviewer(userId, reviewerId)
+    if (!existingSave) {
+      return res.status(400).json({ error: 'Not saved' })
     }
 
-    await likeModel.remove(userId, reviewerId)
+    await saveModel.remove(userId, reviewerId)
+    delPrefix('social:')
+    delPrefix('reviewers:')
 
-    const likeCount = await likeModel.countByReviewer(reviewerId)
+    const saveCount = await saveModel.countByReviewer(reviewerId)
 
-    res.json({ liked: false, likeCount })
+    res.json({ saved: false, saveCount })
   } catch (error) {
-    console.error('Unlike error:', error)
-    res.status(500).json({ error: 'Failed to unlike reviewer' })
+    console.error('Unsave error:', error)
+    res.status(500).json({ error: 'Failed to unsave reviewer' })
   }
 }
 
-const getLikeStatus = async (req, res) => {
+const getSaveStatus = async (req, res) => {
   try {
     const { reviewerId } = req.params
     const userId = req.user?.id
 
-    const likeCount = await likeModel.countByReviewer(reviewerId)
-    const liked = userId ? await likeModel.hasUserLiked(userId, reviewerId) : false
+    const saveCount = await saveModel.countByReviewer(reviewerId)
+    const saved = userId ? await saveModel.hasUserSaved(userId, reviewerId) : false
 
-    res.json({ liked, likeCount })
+    res.json({ saved, saveCount })
   } catch (error) {
-    console.error('Get like status error:', error)
-    res.status(500).json({ error: 'Failed to get like status' })
+    console.error('Get save status error:', error)
+    res.status(500).json({ error: 'Failed to get save status' })
+  }
+}
+
+const getSavedReviewers = async (req, res) => {
+  try {
+    const saves = await saveModel.findByUser(req.user.id)
+
+    res.json({
+      reviewers: saves.map((save) => save.reviewer).filter(Boolean),
+    })
+  } catch (error) {
+    console.error('Get saved reviewers error:', error)
+    res.status(500).json({ error: 'Failed to get saved reviewers' })
   }
 }
 
@@ -84,6 +102,8 @@ const followUser = async (req, res) => {
 
     await followModel.create(followerId, targetUserId)
     await notificationModel.createFollowNotification(targetUserId, followerId)
+    delPrefix('social:')
+    delPrefix('profile:')
 
     const followerCount = await followModel.countFollowers(targetUserId)
 
@@ -105,6 +125,8 @@ const unfollowUser = async (req, res) => {
     }
 
     await followModel.remove(followerId, targetUserId)
+    delPrefix('social:')
+    delPrefix('profile:')
 
     const followerCount = await followModel.countFollowers(targetUserId)
 
@@ -185,13 +207,40 @@ const getUnreadCount = async (req, res) => {
   }
 }
 
+const getFollowers = async (req, res) => {
+  try {
+    const { userId } = req.params
+    const rows = await followModel.getFollowers(userId)
+
+    res.json({ users: rows.map((row) => row.follower).filter(Boolean) })
+  } catch (error) {
+    console.error('Get followers error:', error)
+    res.status(500).json({ error: 'Failed to get followers' })
+  }
+}
+
+const getFollowing = async (req, res) => {
+  try {
+    const { userId } = req.params
+    const rows = await followModel.getFollowing(userId)
+
+    res.json({ users: rows.map((row) => row.following).filter(Boolean) })
+  } catch (error) {
+    console.error('Get following error:', error)
+    res.status(500).json({ error: 'Failed to get following' })
+  }
+}
+
 export {
-  likeReviewer,
-  unlikeReviewer,
-  getLikeStatus,
+  saveReviewer,
+  unsaveReviewer,
+  getSaveStatus,
+  getSavedReviewers,
   followUser,
   unfollowUser,
   getFollowStatus,
+  getFollowers,
+  getFollowing,
   getNotifications,
   markNotificationRead,
   markAllNotificationsRead,

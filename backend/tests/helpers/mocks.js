@@ -23,10 +23,12 @@ export const mockSupabase = () => ({
     delete: vi.fn(),
     deleteMany: vi.fn(),
   },
-  like: {
+  save: {
     findUnique: vi.fn(),
+    findMany: vi.fn(),
     create: vi.fn(),
     delete: vi.fn(),
+    count: vi.fn(),
   },
   follow: {
     findUnique: vi.fn(),

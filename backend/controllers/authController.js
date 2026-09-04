@@ -24,8 +24,15 @@ const logout = (req, res) => {
     if (err) {
       return res.status(500).json({ error: 'Failed to logout' })
     }
-    req.session = null
-    res.json({ message: 'Logged out successfully' })
+    // express-session API: destroy the server-side session and clear the cookie
+    // (req.session = null belongs to cookie-session and leaves both behind)
+    req.session.destroy((destroyErr) => {
+      if (destroyErr) {
+        return res.status(500).json({ error: 'Failed to logout' })
+      }
+      res.clearCookie('session')
+      res.json({ message: 'Logged out successfully' })
+    })
   })
 }
 

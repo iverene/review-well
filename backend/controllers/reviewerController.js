@@ -1,5 +1,32 @@
 import * as reviewerModel from '../models/reviewerModel.js'
 import * as blockModel from '../models/blockModel.js'
+import * as followModel from '../models/followModel.js'
+import * as notificationModel from '../models/notificationModel.js'
+import { del, delPrefix } from '../utils/cache.js'
+
+const isVisibleToFollowers = (reviewer) => reviewer.visibility === 'public' && reviewer.isDraft === false
+
+// Fan out a "friend published" notification to every follower.
+// Fire-and-forget safe: notification failures never fail the request.
+const notifyFollowersOfNewReviewer = async (authorId, reviewerId) => {
+  try {
+    const rows = await followModel.getFollowers(authorId)
+    const recipients = rows
+      .map((row) => row.follower?.id || row.followerId)
+      .filter((id) => id && id !== authorId)
+    if (recipients.length === 0) return
+    await notificationModel.createMany(
+      recipients.map((recipientId) => ({
+        recipientId,
+        actorId: authorId,
+        actionType: 'new_reviewer',
+        reviewerId,
+      }))
+    )
+  } catch (error) {
+    console.error('New reviewer notification error:', error)
+  }
+}
 
 const getPublicReviewers = async (req, res) => {
   try {
@@ -20,6 +47,30 @@ const getPublicReviewers = async (req, res) => {
     })
   } catch (error) {
     console.error('Get public reviewers error:', error)
+    res.status(500).json({ error: 'Failed to fetch reviewers' })
+  }
+}
+
+const getAuthorReviewers = async (req, res) => {
+  try {
+    const { userId } = req.params
+    const { page = 1, limit = 50 } = req.query
+    const skip = (parseInt(page) - 1) * parseInt(limit)
+    const take = parseInt(limit)
+
+    const result = await reviewerModel.findPublicByAuthor(userId, { skip, take })
+
+    res.json({
+      reviewers: result.reviewers,
+      pagination: {
+        page: parseInt(page),
+        limit: take,
+        total: result.total,
+        hasMore: result.hasMore,
+      },
+    })
+  } catch (error) {
+    console.error('Get author reviewers error:', error)
     res.status(500).json({ error: 'Failed to fetch reviewers' })
   }
 }
@@ -80,6 +131,13 @@ const createReviewer = async (req, res) => {
       authorId: req.user.id,
     })
 
+    delPrefix('reviewers:')
+    del(`profile:${req.user.id}`)
+
+    if (isVisibleToFollowers(reviewer)) {
+      await notifyFollowersOfNewReviewer(req.user.id, reviewer.id)
+    }
+
     res.status(201).json({ reviewer })
   } catch (error) {
     console.error('Create reviewer error:', error)
@@ -90,7 +148,13 @@ const createReviewer = async (req, res) => {
 const updateReviewer = async (req, res) => {
   try {
     const { id } = req.params
-    const data = req.validatedBody
+    const data = { ...req.validatedBody }
+
+    // Sharing a reviewer publishes it: public listings and direct links
+    // both require a non-draft, so flipping to public/unlisted clears the draft flag.
+    if (data.visibility && data.visibility !== 'private') {
+      data.isDraft = false
+    }
 
     const existing = await reviewerModel.findById(id)
     if (!existing) {
@@ -102,6 +166,13 @@ const updateReviewer = async (req, res) => {
     }
 
     const reviewer = await reviewerModel.update(id, data)
+    delPrefix('reviewers:')
+    del(`profile:${existing.authorId}`)
+    // Notify on the transition to visible (e.g. draft -> published),
+    // not on every edit of an already-visible reviewer.
+    if (!isVisibleToFollowers(existing) && isVisibleToFollowers(reviewer)) {
+      await notifyFollowersOfNewReviewer(existing.authorId, id)
+    }
     res.json({ reviewer })
   } catch (error) {
     console.error('Update reviewer error:', error)
@@ -123,6 +194,9 @@ const deleteReviewer = async (req, res) => {
     }
 
     await reviewerModel.remove(id)
+    delPrefix('reviewers:')
+    delPrefix('social:')
+    del(`profile:${existing.authorId}`)
     res.json({ message: 'Reviewer deleted successfully' })
   } catch (error) {
     console.error('Delete reviewer error:', error)
@@ -151,6 +225,7 @@ const addBlock = async (req, res) => {
       sortOrder: maxSortOrder + 1,
     })
 
+    delPrefix('reviewers:')
     res.status(201).json({ block })
   } catch (error) {
     console.error('Add block error:', error)
@@ -174,6 +249,7 @@ const updateBlock = async (req, res) => {
     }
 
     const block = await blockModel.update(blockId, data)
+    delPrefix('reviewers:')
     res.json({ block })
   } catch (error) {
     console.error('Update block error:', error)
@@ -196,6 +272,7 @@ const deleteBlock = async (req, res) => {
     }
 
     await blockModel.remove(blockId)
+    delPrefix('reviewers:')
     res.json({ message: 'Block deleted successfully' })
   } catch (error) {
     console.error('Delete block error:', error)
@@ -218,6 +295,7 @@ const reorderBlocks = async (req, res) => {
     }
 
     await blockModel.reorder(reviewerId, blocks)
+    delPrefix('reviewers:')
     res.json({ message: 'Blocks reordered successfully' })
   } catch (error) {
     console.error('Reorder blocks error:', error)
@@ -227,6 +305,7 @@ const reorderBlocks = async (req, res) => {
 
 export {
   getPublicReviewers,
+  getAuthorReviewers,
   getMyReviewers,
   getReviewerById,
   createReviewer,

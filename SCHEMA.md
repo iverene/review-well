@@ -11,9 +11,9 @@ The persistent data layer for **Review Well** is built on **PostgreSQL (via Supa
 * **`users` 1 : N `reviewers`** (A user can author multiple reviewers)
 * **`users` 1 : N `ai_quotas`** (Tracks weekly generation limits per user)
 * **`reviewers` 1 : N `reviewer_blocks`** (A reviewer is composed of modular structured blocks)
-* **`users` M : N `reviewers` (via `likes`)** (Users can like multiple reviewers)
+* **`users` M : N `reviewers` (via `likes` table, `Save` model)** (Users can save/bookmark multiple reviewers)
 * **`users` M : N `users` (via `follows`)** (Users can follow other users)
-* **`users`1 : N `notifications`** (Tracks user notifications for likes and follows)
+* **`users`1 : N `notifications`** (Tracks user notifications for saves and follows)
 
 ---
 
@@ -79,9 +79,9 @@ Manages rolling rate limits for AI file extractions (max 3 per week).
 | `window_reset_at` | TIMESTAMPTZ | NOT NULL | Timestamp when current quota period expires |
 | `updated_at` | TIMESTAMPTZ | DEFAULT `NOW()` | Last generation consumption timestamp |
 
-### 3.6 `likes` & `follows` (Social Graph)
+### 3.6 `likes` (`Save` model) & `follows` (Social Graph)
 
-* **`likes` Table:**
+* **`likes` Table (bookmarks via the `Save` Prisma model):**
   * `user_id` (UUID, FK `users`)
   * `reviewer_id` (UUID, FK `reviewers`)
   * `PRIMARY KEY (user_id, reviewer_id)`
@@ -92,14 +92,14 @@ Manages rolling rate limits for AI file extractions (max 3 per week).
   * `PRIMARY KEY (follower_id, following_id)`
 
 ### 3.6 `notifications`
-Stores social event triggers (likes and follows) for user notification bells.
+Stores social event triggers (saves and follows) for user notification bells.
 
 | Column Name | Data Type | Constraints | Description |
 | :--- | :--- | :--- | :--- |
 | `id` | UUID | PRIMARY KEY, DEFAULT `gen_random_uuid()` | Unique notification identifier |
 | `recipient_id` | UUID | REFERENCES `users(id) ON DELETE CASCADE` | User receiving the notification |
 | `actor_id` | UUID | REFERENCES `users(id) ON DELETE CASCADE` | User who triggered the action |
-| `action_type` | VARCHAR(50) | NOT NULL | Type of event (`'like'`, `'follow'`) |
+| `action_type` | VARCHAR(50) | NOT NULL | Type of event (`'save'`, `'follow'`) |
 | `reviewer_id` | UUID | REFERENCES `reviewers(id) ON DELETE CASCADE` (NULLABLE) | Target reviewer ID if applicable |
 | `is_read` | BOOLEAN | DEFAULT `FALSE` | Read status indicator |
 | `created_at` | TIMESTAMPTZ | DEFAULT `NOW()` | Notification generation timestamp |

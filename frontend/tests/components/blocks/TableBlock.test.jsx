@@ -1,12 +1,13 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
+
 import TableBlock from '../../../src/components/blocks/TableBlock'
 
 describe('TableBlock', () => {
   it('renders with default content', () => {
     render(<TableBlock content={{}} onChange={() => {}} />)
-    expect(screen.getByDisplayValue('Column 1')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('Column 2')).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Table header 1' })).toHaveTextContent('Column 1')
+    expect(screen.getByRole('textbox', { name: 'Table header 2' })).toHaveTextContent('Column 2')
   })
 
   it('renders with provided content', () => {
@@ -19,25 +20,25 @@ describe('TableBlock', () => {
         onChange={() => {}}
       />
     )
-    expect(screen.getByDisplayValue('Name')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('Value')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('Item 1')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('100')).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Table header 1' })).toHaveTextContent('Name')
+    expect(screen.getByRole('textbox', { name: 'Table header 2' })).toHaveTextContent('Value')
+    expect(screen.getByRole('textbox', { name: 'Row 1 column 1' })).toHaveTextContent('Item 1')
+    expect(screen.getByRole('textbox', { name: 'Row 1 column 2' })).toHaveTextContent('100')
   })
 
-  it('calls onChange when header changes', () => {
+  it('calls onChange when header blurs', () => {
     const onChange = vi.fn()
     render(<TableBlock content={{ headers: ['Col 1'], rows: [['']] }} onChange={onChange} />)
-    fireEvent.change(screen.getByDisplayValue('Col 1'), {
-      target: { value: 'New Header' },
-    })
+    const el = screen.getByRole('textbox', { name: 'Table header 1' })
+    el.textContent = 'New Header'
+    fireEvent.blur(el)
     expect(onChange).toHaveBeenCalledWith({
       headers: ['New Header'],
       rows: [['']],
     })
   })
 
-  it('calls onChange when cell changes', () => {
+  it('calls onChange when cell blurs', () => {
     const onChange = vi.fn()
     render(
       <TableBlock
@@ -45,9 +46,9 @@ describe('TableBlock', () => {
         onChange={onChange}
       />
     )
-    fireEvent.change(screen.getByDisplayValue('Old Value'), {
-      target: { value: 'New Value' },
-    })
+    const el = screen.getByRole('textbox', { name: 'Row 1 column 1' })
+    el.textContent = 'New Value'
+    fireEvent.blur(el)
     expect(onChange).toHaveBeenCalledWith({
       headers: ['Col 1'],
       rows: [['New Value']],

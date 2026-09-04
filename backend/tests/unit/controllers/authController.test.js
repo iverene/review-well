@@ -25,12 +25,13 @@ vi.mock('../../../models/followModel.js', () => ({
   countFollowing: vi.fn(),
   isFollowing: vi.fn(),
 }))
-vi.mock('../../../models/likeModel.js', () => ({
+vi.mock('../../../models/saveModel.js', () => ({
   findByUserAndReviewer: vi.fn(),
   create: vi.fn(),
   remove: vi.fn(),
   countByReviewer: vi.fn(),
-  hasUserLiked: vi.fn(),
+  findByUser: vi.fn(),
+  hasUserSaved: vi.fn(),
 }))
 vi.mock('../../../models/notificationModel.js', () => ({
   create: vi.fn(),
@@ -38,7 +39,7 @@ vi.mock('../../../models/notificationModel.js', () => ({
   markAsRead: vi.fn(),
   markAllAsRead: vi.fn(),
   countUnread: vi.fn(),
-  createLikeNotification: vi.fn(),
+  createSaveNotification: vi.fn(),
   createFollowNotification: vi.fn(),
 }))
 vi.mock('../../../models/blockModel.js', () => ({
@@ -118,17 +119,31 @@ describe('Auth Controller', () => {
     it('should logout successfully', async () => {
       const req = createMockRequest({})
       req.logout = vi.fn((callback) => callback(null))
-      req.session = null
+      req.session = { destroy: vi.fn((callback) => callback(null)) }
       const res = createMockResponse()
 
       await logout(req, res)
 
+      expect(req.session.destroy).toHaveBeenCalled()
+      expect(res.clearCookie).toHaveBeenCalledWith('session')
       expect(res.json).toHaveBeenCalledWith({ message: 'Logged out successfully' })
     })
 
     it('should return 500 on logout error', async () => {
       const req = createMockRequest({})
       req.logout = vi.fn((callback) => callback(new Error('Logout failed')))
+      const res = createMockResponse()
+
+      await logout(req, res)
+
+      expect(res.status).toHaveBeenCalledWith(500)
+      expect(res.json).toHaveBeenCalledWith({ error: 'Failed to logout' })
+    })
+
+    it('should return 500 when session destruction fails', async () => {
+      const req = createMockRequest({})
+      req.logout = vi.fn((callback) => callback(null))
+      req.session = { destroy: vi.fn((callback) => callback(new Error('Store failed'))) }
       const res = createMockResponse()
 
       await logout(req, res)

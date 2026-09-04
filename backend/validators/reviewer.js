@@ -33,14 +33,14 @@ const updateReviewerSchema = z.object({
 })
 
 const createBlockSchema = z.object({
-  blockType: z.enum(['topic_banner', 'sub_topic_banner', 'content_block', 'table']),
+  blockType: z.enum(['topic_banner', 'sub_topic_banner', 'content_block', 'table', 'lesson_banner', 'image', 'divider', 'two_column', 'terms_card', 'page_break']),
   columnIndex: z.number().int().min(1).max(2).default(1),
   sortOrder: z.number().int().min(0),
   contentData: z.record(z.any()),
 })
 
 const updateBlockSchema = z.object({
-  blockType: z.enum(['topic_banner', 'sub_topic_banner', 'content_block', 'table']).optional(),
+  blockType: z.enum(['topic_banner', 'sub_topic_banner', 'content_block', 'table', 'lesson_banner', 'image', 'divider', 'two_column', 'terms_card', 'page_break']).optional(),
   columnIndex: z.number().int().min(1).max(2).optional(),
   sortOrder: z.number().int().min(0).optional(),
   contentData: z.record(z.any()).optional(),

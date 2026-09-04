@@ -1,4 +1,5 @@
 import { Navigate, useLocation } from 'react-router-dom'
+
 import { useAuth } from '../../contexts/AuthContext'
 import { isProfileComplete } from '../../utils/profile'
 import { Skeleton } from '../common/Skeleton'

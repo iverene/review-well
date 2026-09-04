@@ -1,11 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
+
 import MainTitleBlock from '../../../src/components/blocks/MainTitleBlock'
 
 describe('MainTitleBlock', () => {
   it('renders with default content', () => {
     render(<MainTitleBlock content={{}} onChange={() => {}} />)
-    expect(screen.getByPlaceholderText('Main Title')).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Main title' })).toBeInTheDocument()
   })
 
   it('renders with provided content', () => {
@@ -15,16 +16,16 @@ describe('MainTitleBlock', () => {
         onChange={() => {}}
       />
     )
-    expect(screen.getByDisplayValue('Test Title')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('Test Subtitle')).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: 'Main title' })).toHaveTextContent('Test Title')
+    expect(screen.getByRole('textbox', { name: 'Subtitle' })).toHaveTextContent('Test Subtitle')
   })
 
-  it('calls onChange when heading changes', () => {
+  it('calls onChange when heading blurs', () => {
     const onChange = vi.fn()
     render(<MainTitleBlock content={{}} onChange={onChange} />)
-    fireEvent.change(screen.getByPlaceholderText('Main Title'), {
-      target: { value: 'New Title' },
-    })
+    const el = screen.getByRole('textbox', { name: 'Main title' })
+    el.textContent = 'New Title'
+    fireEvent.blur(el)
     expect(onChange).toHaveBeenCalledWith({ heading: 'New Title' })
   })
 })
