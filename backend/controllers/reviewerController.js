@@ -90,7 +90,13 @@ const createReviewer = async (req, res) => {
 const updateReviewer = async (req, res) => {
   try {
     const { id } = req.params
-    const data = req.validatedBody
+    const data = { ...req.validatedBody }
+
+    // Sharing a reviewer publishes it: public listings and direct links
+    // both require a non-draft, so flipping to public/unlisted clears the draft flag.
+    if (data.visibility && data.visibility !== 'private') {
+      data.isDraft = false
+    }
 
     const existing = await reviewerModel.findById(id)
     if (!existing) {

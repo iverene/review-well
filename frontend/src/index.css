@@ -182,12 +182,21 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   border-radius: 6px;
 }
 
+/* Reviewer inline preview shows the first page only; the fullscreen view shows all pages */
+.preview-first-only .preview-page ~ .preview-page {
+  display: none;
+}
+.preview-first-only.export-all .preview-page ~ .preview-page {
+  display: block;
+}
+
 /* Print: export only the sheets, no surrounding UI — with exact colors and fonts */
 @media print {
   body * {
     visibility: hidden;
   }
-  #sheet-export-root, #sheet-export-root * {
+  #sheet-export-root, #sheet-export-root *,
+  #reviewer-preview-root, #reviewer-preview-root * {
     visibility: visible;
   }
   #sheet-export-root {
@@ -209,6 +218,24 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
     print-color-adjust: exact;
   }
   .sheet-page * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  #reviewer-preview-root {
+    position: absolute;
+    inset: 0;
+    margin: 0 auto;
+    padding: 0;
+    background: #fff;
+    zoom: 1 !important;
+  }
+  .preview-page {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .preview-page * {
     -webkit-print-color-adjust: exact;
     print-color-adjust: exact;
   }

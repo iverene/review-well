@@ -227,6 +227,55 @@ describe('Reviewer Controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(403)
     })
+
+    it('should clear the draft flag when sharing as public', async () => {
+      const req = createMockRequest({
+        params: { id: '1' },
+        user: { id: 'user-123' },
+        validatedBody: { visibility: 'public' },
+      })
+      const res = createMockResponse()
+      const mockExisting = { id: '1', authorId: 'user-123', isDraft: true }
+
+      reviewerModel.findById.mockResolvedValue(mockExisting)
+      reviewerModel.update.mockResolvedValue({ ...mockExisting, visibility: 'public', isDraft: false })
+
+      await updateReviewer(req, res)
+
+      expect(reviewerModel.update).toHaveBeenCalledWith('1', { visibility: 'public', isDraft: false })
+    })
+
+    it('should clear the draft flag when sharing as unlisted', async () => {
+      const req = createMockRequest({
+        params: { id: '1' },
+        user: { id: 'user-123' },
+        validatedBody: { visibility: 'unlisted' },
+      })
+      const res = createMockResponse()
+
+      reviewerModel.findById.mockResolvedValue({ id: '1', authorId: 'user-123', isDraft: true })
+      reviewerModel.update.mockResolvedValue({ id: '1', authorId: 'user-123', visibility: 'unlisted', isDraft: false })
+
+      await updateReviewer(req, res)
+
+      expect(reviewerModel.update).toHaveBeenCalledWith('1', { visibility: 'unlisted', isDraft: false })
+    })
+
+    it('should keep the draft flag when set back to private', async () => {
+      const req = createMockRequest({
+        params: { id: '1' },
+        user: { id: 'user-123' },
+        validatedBody: { visibility: 'private' },
+      })
+      const res = createMockResponse()
+
+      reviewerModel.findById.mockResolvedValue({ id: '1', authorId: 'user-123', isDraft: true })
+      reviewerModel.update.mockResolvedValue({ id: '1', authorId: 'user-123', visibility: 'private', isDraft: true })
+
+      await updateReviewer(req, res)
+
+      expect(reviewerModel.update).toHaveBeenCalledWith('1', { visibility: 'private' })
+    })
   })
 
   describe('deleteReviewer', () => {

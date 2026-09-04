@@ -8,6 +8,8 @@ import BlockRenderer from '../components/workspace/BlockRenderer'
 import ErrorAlert from '../components/common/ErrorAlert'
 import { getApiErrorMessage } from '../utils/apiError'
 import WorkspaceLoading from '../components/workspace/WorkspaceLoading'
+import { EXAM_LABELS, exportSheetsToPdf, reviewerPdfFilename } from '../utils/exportPdf'
+import { PAPER_SIZES, paginateBlocks } from '../utils/paginate'
 
 const PALETTES = [
   { name: 'Cocoa Classic', primary: '#7C6B5D', secondary: '#F5EAD3', accent: '#FCF7EC' },
@@ -15,14 +17,6 @@ const PALETTES = [
   { name: 'Powder Calm', primary: '#6E9FC4', secondary: '#D6E9F4', accent: '#F1F7FB' },
   { name: 'Mint Fresh', primary: '#6FA287', secondary: '#D7EADC', accent: '#F1F7F2' },
 ]
-
-const PAPER_SIZES = {
-  Letter: { label: '8.5 × 11 in', width: 816, height: 1056 },
-  A4: { label: '210 × 297 mm', width: 794, height: 1123 },
-  Legal: { label: '8.5 × 14 in', width: 816, height: 1344 },
-}
-
-const EXAM_LABELS = { prelim: 'Prelim', midterm: 'Midterm', final: 'Finals' }
 
 const localId = () => `local-${Date.now()}-${Math.floor(Math.random() * 1e6)}`
 
@@ -51,64 +45,6 @@ const blockToText = (block) => {
     default:
       return ''
   }
-}
-
-const estimateBlock = (block) => {
-  const data = block.contentData || {}
-  switch (block.blockType) {
-    case 'lesson_banner':
-      return 104
-    case 'topic_banner':
-      return 56
-    case 'sub_topic_banner':
-      return 52
-    case 'divider':
-      return 30
-    case 'page_break':
-      return 0
-    case 'table':
-      return 84 + (data.rows?.length || 1) * 34
-    case 'image':
-      return data.src ? 260 : 90
-    case 'terms_card':
-      return 92 + (data.terms?.length || 1) * 60
-    case 'content_block':
-      return 64 + Math.ceil(((data.body || '').length + (data.heading || '').length) / 110) * 20
-    case 'main_title':
-      return 100
-    case 'two_column':
-      return 150
-    default:
-      return 90
-  }
-}
-
-// Split blocks into bounded, printable pages. `page_break` blocks force a new page.
-const paginateBlocks = (blocks, paperKey) => {
-  const paper = PAPER_SIZES[paperKey] || PAPER_SIZES.A4
-  const budget = (pageIdx) => (pageIdx === 0 ? paper.height - 64 - 170 - 60 : paper.height - 64 - 60)
-  const pages = [[]]
-  const breakBefore = [false]
-  let used = 0
-  blocks.forEach((b) => {
-    if (b.blockType === 'page_break') {
-      pages.push([])
-      breakBefore.push(true)
-      used = 0
-      return
-    }
-    const est = estimateBlock(b)
-    const idx = pages.length - 1
-    if (pages[idx].length > 0 && used + est > budget(idx)) {
-      pages.push([b])
-      breakBefore.push(false)
-      used = est + 16
-    } else {
-      pages[idx].push(b)
-      used += est + 16
-    }
-  })
-  return { pages, breakBefore }
 }
 
 const Workspace = () => {
@@ -477,41 +413,16 @@ const Workspace = () => {
     await insertBlockAt(source.blockType, JSON.parse(JSON.stringify(source.contentData || {})), idx + 1)
   }
 
-  const pdfFilename = () => {
-    const exam = EXAM_LABELS[reviewer?.examType] || reviewer?.examType || 'Reviewer'
-    const desc = reviewer?.courseDescription || reviewer?.title || 'Untitled'
-    return `${exam} ${desc}`.replace(/[\\/:*?"<>|]/g, '').trim().slice(0, 120) + '.pdf'
-  }
-
   const handleSaveAsPdf = async () => {
     if (!reviewer) return
     setError(null)
     try {
-      const [{ jsPDF }, html2canvasModule] = await Promise.all([import('jspdf'), import('html2canvas')])
-      const html2canvas = html2canvasModule.default || html2canvasModule
-      const root = document.getElementById('sheet-export-root')
-      const sheets = root ? Array.from(root.querySelectorAll('.sheet-page')) : []
-      if (sheets.length === 0) {
-        setError('Nothing to export yet. Add some blocks first.')
-        return
-      }
-      const doc = new jsPDF({ unit: 'pt', format: paperSize.toLowerCase(), compress: true })
-      for (let i = 0; i < sheets.length; i += 1) {
-        const canvas = await html2canvas(sheets[i], {
-          scale: 2,
-          backgroundColor: '#FFFFFF',
-          useCORS: true,
-          logging: false,
-          ignoreElements: (el) => el.classList?.contains('no-print'),
-        })
-        const imgData = canvas.toDataURL('image/png')
-        const pageWidth = doc.internal.pageSize.getWidth()
-        const pageHeight = doc.internal.pageSize.getHeight()
-        if (i > 0) doc.addPage()
-        // Exact page dimensions preserve the sheet's size, colors, fonts, and layout
-        doc.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight)
-      }
-      doc.save(pdfFilename())
+      await exportSheetsToPdf({
+        rootId: 'sheet-export-root',
+        pageSelector: '.sheet-page',
+        filename: reviewerPdfFilename(reviewer),
+        format: paperSize,
+      })
     } catch (err) {
       console.error('Failed to compile PDF:', err)
       setError(getApiErrorMessage(err, 'Unable to compile the PDF.'))
