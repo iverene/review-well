@@ -1,6 +1,32 @@
 import * as reviewerModel from '../models/reviewerModel.js'
 import * as blockModel from '../models/blockModel.js'
+import * as followModel from '../models/followModel.js'
+import * as notificationModel from '../models/notificationModel.js'
 import { del, delPrefix } from '../utils/cache.js'
+
+const isVisibleToFollowers = (reviewer) => reviewer.visibility === 'public' && reviewer.isDraft === false
+
+// Fan out a "friend published" notification to every follower.
+// Fire-and-forget safe: notification failures never fail the request.
+const notifyFollowersOfNewReviewer = async (authorId, reviewerId) => {
+  try {
+    const rows = await followModel.getFollowers(authorId)
+    const recipients = rows
+      .map((row) => row.follower?.id || row.followerId)
+      .filter((id) => id && id !== authorId)
+    if (recipients.length === 0) return
+    await notificationModel.createMany(
+      recipients.map((recipientId) => ({
+        recipientId,
+        actorId: authorId,
+        actionType: 'new_reviewer',
+        reviewerId,
+      }))
+    )
+  } catch (error) {
+    console.error('New reviewer notification error:', error)
+  }
+}
 
 const getPublicReviewers = async (req, res) => {
   try {
@@ -108,6 +134,10 @@ const createReviewer = async (req, res) => {
     delPrefix('reviewers:')
     del(`profile:${req.user.id}`)
 
+    if (isVisibleToFollowers(reviewer)) {
+      await notifyFollowersOfNewReviewer(req.user.id, reviewer.id)
+    }
+
     res.status(201).json({ reviewer })
   } catch (error) {
     console.error('Create reviewer error:', error)
@@ -138,6 +168,11 @@ const updateReviewer = async (req, res) => {
     const reviewer = await reviewerModel.update(id, data)
     delPrefix('reviewers:')
     del(`profile:${existing.authorId}`)
+    // Notify on the transition to visible (e.g. draft -> published),
+    // not on every edit of an already-visible reviewer.
+    if (!isVisibleToFollowers(existing) && isVisibleToFollowers(reviewer)) {
+      await notifyFollowersOfNewReviewer(existing.authorId, id)
+    }
     res.json({ reviewer })
   } catch (error) {
     console.error('Update reviewer error:', error)

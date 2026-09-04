@@ -16,6 +16,33 @@ const Notifications = () => {
     fetchNotifications()
   }, [page])
 
+  // Live delivery without page restarts: silently merge newly arrived
+  // notifications to the top of the list, on an interval and on focus.
+  useEffect(() => {
+    const fetchLatest = async () => {
+      try {
+        const response = await axios.get('/api/social/notifications', {
+          params: { page: 1, limit: 20 },
+          withCredentials: true,
+        })
+        const fresh = response.data.notifications || []
+        setNotifications((prev) => {
+          const known = new Set(prev.map((n) => n.id))
+          const unseen = fresh.filter((n) => !known.has(n.id))
+          return unseen.length > 0 ? [...unseen, ...prev] : prev
+        })
+      } catch {
+        // Keep the stale list; the badge poll still surfaces the count
+      }
+    }
+    const interval = setInterval(fetchLatest, 20000)
+    window.addEventListener('focus', fetchLatest)
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('focus', fetchLatest)
+    }
+  }, [])
+
   const fetchNotifications = async () => {
     try {
       setError(null)

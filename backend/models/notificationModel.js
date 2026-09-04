@@ -58,6 +58,18 @@ const createSaveNotification = async (recipientId, actorId, reviewerId) => {
   })
 }
 
+const createNewReviewerNotification = async (recipientId, actorId, reviewerId) => {
+  // Don't notify self
+  if (recipientId === actorId) return null
+
+  return create({
+    recipientId,
+    actorId,
+    actionType: 'new_reviewer',
+    reviewerId,
+  })
+}
+
 const createFollowNotification = async (recipientId, actorId) => {
   // Don't notify self
   if (recipientId === actorId) return null
@@ -70,4 +82,9 @@ const createFollowNotification = async (recipientId, actorId) => {
   })
 }
 
-export { create, findByRecipient, markAsRead, markAllAsRead, countUnread, createSaveNotification, createFollowNotification }
+const createMany = async (rows) => {
+  if (!rows.length) return { count: 0 }
+  return prisma.notification.createMany({ data: rows })
+}
+
+export { create, createMany, findByRecipient, markAsRead, markAllAsRead, countUnread, createSaveNotification, createNewReviewerNotification, createFollowNotification }
