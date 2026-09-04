@@ -134,7 +134,7 @@ const Profile = () => {
     <PageContainer>
       <PageHeader title="Profile" />
       {/* Profile header card */}
-      <section className="rounded-soft border-2 border-stone bg-paper p-6 club-shadow sm:p-8" aria-label="Profile">
+      <section className="rounded-soft border-2 border-stone bg-paper p-6 mt-5 club-shadow sm:p-8" aria-label="Profile">
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div className="flex items-center gap-5">
             {profile.avatarUrl ? (

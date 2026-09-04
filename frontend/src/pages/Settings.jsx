@@ -92,9 +92,6 @@ const Settings = () => {
 
   return (
     <div className="mx-auto max-w-2xl pb-10">
-      <p className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-widest text-accent">
-        <SettingsIcon className="h-4 w-4" aria-hidden="true" /> Your space
-      </p>
       <h1 className="mt-1 font-display text-4xl font-bold text-ink">
         {location.state?.onboarding ? 'Complete your profile' : 'Settings'}
       </h1>

@@ -6,7 +6,6 @@ const Guide = () => (
     <Link to="/" className="mb-3 inline-flex items-center gap-2 text-sm font-extrabold text-muted hover:text-ink">
       <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back to desk
     </Link>
-    <p className="font-mono text-xs font-bold uppercase tracking-widest text-accent">How it works</p>
     <h1 className="mt-3 flex items-center gap-2 text-4xl font-extrabold text-ink">
       <BookOpen className="h-8 w-8" aria-hidden="true" /> Review Well guide
     </h1>

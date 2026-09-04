@@ -36,9 +36,6 @@ const Contact = () => {
   if (!isAuthenticated) {
     return (
       <div className="mx-auto max-w-2xl pb-10">
-        <p className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-widest text-accent">
-          <Mail className="h-4 w-4" aria-hidden="true" /> Say hello
-        </p>
         <h1 className="mt-1 font-display text-4xl font-bold text-ink">Contact</h1>
         <section className="mt-5 rounded-soft border-2 border-stone bg-paper p-6 text-center club-shadow sm:p-8" aria-label="Sign in required">
           <LogIn className="mx-auto h-10 w-10 text-accent" aria-hidden="true" />
@@ -59,9 +56,6 @@ const Contact = () => {
 
   return (
     <div className="mx-auto max-w-2xl pb-10">
-      <p className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-widest text-accent">
-        <Mail className="h-4 w-4" aria-hidden="true" /> Say hello
-      </p>
       <h1 className="mt-1 font-display text-4xl font-bold text-ink">Contact</h1>
       <p className="mt-2 leading-relaxed text-muted">
         Questions, ideas, or a study-club story to share? Send a message and it lands directly
@@ -98,7 +92,7 @@ const Contact = () => {
                 title="Locked to your signed-in account"
                 className="w-full cursor-not-allowed rounded-soft border-2 border-stone bg-stone/40 px-4 py-2.5 text-muted focus:outline-none"
               />
-              <p className="mt-1 text-xs text-muted">Locked to your account so every message is verifiably from you.</p>
+              
             </div>
             <div>
               <label htmlFor="contact-message" className="mb-1 block text-sm font-extrabold text-ink">

@@ -70,7 +70,7 @@ const AvatarDropdown = () => {
           <div className="border-b-2 border-stone px-4 py-3">
             <p className="truncate whitespace-nowrap font-extrabold text-ink" title={user.displayName}>{user.displayName}</p>
           </div>
-          <div className="py-1" role="none">
+          <div className="p-1" role="none">
             <Link
               to="/profile"
               className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-ink hover:bg-powder"
