@@ -21,6 +21,11 @@ app.use(hpp())
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
 
+// Trust the hosting proxy in production so secure session cookies are set correctly
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1)
+}
+
 // Session
 app.use(sessionConfig)
 
