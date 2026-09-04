@@ -12,7 +12,7 @@ module.exports = {
       jsx: true,
     },
   },
-  plugins: ['react', 'import'],
+  plugins: ['react', 'react-hooks', 'jsx-a11y', 'import'],
   rules: {
     'import/order': [
       'error',

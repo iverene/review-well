@@ -19,6 +19,7 @@ const { mockPrismaInstance } = vi.hoisted(() => ({
 vi.mock('../../../config/database.js', () => ({ prisma: mockPrismaInstance }))
 
 import * as reviewerModel from '../../../models/reviewerModel.js'
+import { clearAll } from '../../../utils/cache.js'
 
 describe('Reviewer Model', () => {
   beforeEach(() => {
@@ -71,5 +72,17 @@ describe('Reviewer Model', () => {
   it('should delete reviewer', async () => {
     const result = await reviewerModel.remove('1')
     expect(result).toEqual({ id: '1' })
+  })
+
+  it('should serve repeat list reads from cache', async () => {
+    clearAll()
+    mockPrismaInstance.reviewer.findMany.mockClear()
+    mockPrismaInstance.reviewer.count.mockClear()
+
+    await reviewerModel.findPublic({ skip: 0, take: 5 })
+    await reviewerModel.findPublic({ skip: 0, take: 5 })
+
+    expect(mockPrismaInstance.reviewer.findMany).toHaveBeenCalledTimes(1)
+    expect(mockPrismaInstance.reviewer.count).toHaveBeenCalledTimes(1)
   })
 })

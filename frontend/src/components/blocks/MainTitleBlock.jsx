@@ -1,22 +1,26 @@
-const MainTitleBlock = ({ content, onChange }) => {
-  return (
-    <div className="space-y-2">
-      <input
-        type="text"
-        value={content?.heading || ''}
-        onChange={(e) => onChange({ ...content, heading: e.target.value })}
-        className="w-full text-2xl font-bold text-ink bg-transparent border-none focus:outline-none"
-        placeholder="Main Title"
-      />
-      <input
-        type="text"
-        value={content?.subtitle || ''}
-        onChange={(e) => onChange({ ...content, subtitle: e.target.value })}
-        className="w-full text-lg text-muted bg-transparent border-none focus:outline-none"
-        placeholder="Subtitle (optional)"
-      />
+const MainTitleBlock = ({ content, onChange }) => (
+  <div className="space-y-1">
+    <div
+      contentEditable
+      suppressContentEditableWarning
+      role="textbox"
+      aria-label="Main title"
+      onBlur={(e) => onChange({ ...content, heading: e.currentTarget.textContent?.trim() || '' })}
+      className="sheet-editable text-2xl font-extrabold"
+    >
+      {content?.heading || 'Main Title'}
     </div>
-  )
-}
+    <div
+      contentEditable
+      suppressContentEditableWarning
+      role="textbox"
+      aria-label="Subtitle"
+      onBlur={(e) => onChange({ ...content, subtitle: e.currentTarget.textContent?.trim() || '' })}
+      className="sheet-editable text-sm text-gray-500"
+    >
+      {content?.subtitle || 'Subtitle (optional)'}
+    </div>
+  </div>
+)
 
 export default MainTitleBlock

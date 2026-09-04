@@ -32,24 +32,29 @@ vi.mock('../../../models/followModel.js', () => ({
   findByUsers: vi.fn(),
   create: vi.fn(),
   remove: vi.fn(),
+  getFollowers: vi.fn(),
+  getFollowing: vi.fn(),
   countFollowers: vi.fn(),
   countFollowing: vi.fn(),
   isFollowing: vi.fn(),
 }))
-vi.mock('../../../models/likeModel.js', () => ({
+vi.mock('../../../models/saveModel.js', () => ({
   findByUserAndReviewer: vi.fn(),
   create: vi.fn(),
   remove: vi.fn(),
   countByReviewer: vi.fn(),
-  hasUserLiked: vi.fn(),
+  findByUser: vi.fn(),
+  hasUserSaved: vi.fn(),
 }))
 vi.mock('../../../models/notificationModel.js', () => ({
   create: vi.fn(),
+  createMany: vi.fn(),
   findByRecipient: vi.fn(),
   markAsRead: vi.fn(),
   markAllAsRead: vi.fn(),
   countUnread: vi.fn(),
-  createLikeNotification: vi.fn(),
+  createSaveNotification: vi.fn(),
+  createNewReviewerNotification: vi.fn(),
   createFollowNotification: vi.fn(),
 }))
 vi.mock('../../../models/aiQuotaModel.js', () => ({
@@ -69,11 +74,15 @@ import {
 } from '../../../controllers/reviewerController.js'
 import * as reviewerModel from '../../../models/reviewerModel.js'
 import * as blockModel from '../../../models/blockModel.js'
+import * as followModel from '../../../models/followModel.js'
+import * as notificationModel from '../../../models/notificationModel.js'
+import * as cache from '../../../utils/cache.js'
 import { createMockRequest, createMockResponse } from '../../helpers/mocks.js'
 
 describe('Reviewer Controller', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    cache.clearAll()
   })
 
   describe('getPublicReviewers', () => {
@@ -191,6 +200,41 @@ describe('Reviewer Controller', () => {
       expect(res.status).toHaveBeenCalledWith(201)
       expect(res.json).toHaveBeenCalledWith({ reviewer: mockReviewer })
     })
+
+    it('should notify followers when created already visible', async () => {
+      const req = createMockRequest({
+        user: { id: 'author-1' },
+        validatedBody: { title: 'Live Guide', visibility: 'public', isDraft: false },
+      })
+      const res = createMockResponse()
+
+      reviewerModel.create.mockResolvedValue({ id: 'r1', authorId: 'author-1', visibility: 'public', isDraft: false })
+      followModel.getFollowers.mockResolvedValue([
+        { follower: { id: 'fan-1' } },
+        { follower: { id: 'author-1' } },
+      ])
+      notificationModel.createMany.mockResolvedValue({ count: 1 })
+
+      await createReviewer(req, res)
+
+      expect(notificationModel.createMany).toHaveBeenCalledWith([
+        { recipientId: 'fan-1', actorId: 'author-1', actionType: 'new_reviewer', reviewerId: 'r1' },
+      ])
+    })
+
+    it('should not notify followers for drafts', async () => {
+      const req = createMockRequest({
+        user: { id: 'author-1' },
+        validatedBody: { title: 'Draft Guide' },
+      })
+      const res = createMockResponse()
+
+      reviewerModel.create.mockResolvedValue({ id: 'r1', authorId: 'author-1', visibility: 'private', isDraft: true })
+
+      await createReviewer(req, res)
+
+      expect(notificationModel.createMany).not.toHaveBeenCalled()
+    })
   })
 
   describe('updateReviewer', () => {
@@ -226,6 +270,110 @@ describe('Reviewer Controller', () => {
       await updateReviewer(req, res)
 
       expect(res.status).toHaveBeenCalledWith(403)
+    })
+
+    it('should bust cached reviewer reads after updating', async () => {
+      const req = createMockRequest({
+        params: { id: '1' },
+        user: { id: 'user-123' },
+        validatedBody: { title: 'Updated Title' },
+      })
+      const res = createMockResponse()
+
+      reviewerModel.findById.mockResolvedValue({ id: '1', authorId: 'user-123' })
+      reviewerModel.update.mockResolvedValue({ id: '1', title: 'Updated Title', authorId: 'user-123' })
+      cache.set('reviewers:detail:1', { id: '1', title: 'Stale' }, 60_000)
+      cache.set('reviewers:public:0:20:', { reviewers: [] }, 60_000)
+
+      await updateReviewer(req, res)
+
+      expect(cache.get('reviewers:detail:1')).toBeUndefined()
+      expect(cache.get('reviewers:public:0:20:')).toBeUndefined()
+    })
+
+    it('should clear the draft flag when sharing as public', async () => {
+      const req = createMockRequest({
+        params: { id: '1' },
+        user: { id: 'user-123' },
+        validatedBody: { visibility: 'public' },
+      })
+      const res = createMockResponse()
+      const mockExisting = { id: '1', authorId: 'user-123', isDraft: true }
+
+      reviewerModel.findById.mockResolvedValue(mockExisting)
+      reviewerModel.update.mockResolvedValue({ ...mockExisting, visibility: 'public', isDraft: false })
+
+      await updateReviewer(req, res)
+
+      expect(reviewerModel.update).toHaveBeenCalledWith('1', { visibility: 'public', isDraft: false })
+    })
+
+    it('should clear the draft flag when sharing as unlisted', async () => {
+      const req = createMockRequest({
+        params: { id: '1' },
+        user: { id: 'user-123' },
+        validatedBody: { visibility: 'unlisted' },
+      })
+      const res = createMockResponse()
+
+      reviewerModel.findById.mockResolvedValue({ id: '1', authorId: 'user-123', isDraft: true })
+      reviewerModel.update.mockResolvedValue({ id: '1', authorId: 'user-123', visibility: 'unlisted', isDraft: false })
+
+      await updateReviewer(req, res)
+
+      expect(reviewerModel.update).toHaveBeenCalledWith('1', { visibility: 'unlisted', isDraft: false })
+    })
+
+    it('should keep the draft flag when set back to private', async () => {
+      const req = createMockRequest({
+        params: { id: '1' },
+        user: { id: 'user-123' },
+        validatedBody: { visibility: 'private' },
+      })
+      const res = createMockResponse()
+
+      reviewerModel.findById.mockResolvedValue({ id: '1', authorId: 'user-123', isDraft: true })
+      reviewerModel.update.mockResolvedValue({ id: '1', authorId: 'user-123', visibility: 'private', isDraft: true })
+
+      await updateReviewer(req, res)
+
+      expect(reviewerModel.update).toHaveBeenCalledWith('1', { visibility: 'private' })
+    })
+
+    it('should notify followers when a draft becomes visible', async () => {
+      const req = createMockRequest({
+        params: { id: '1' },
+        user: { id: 'user-123' },
+        validatedBody: { visibility: 'public' },
+      })
+      const res = createMockResponse()
+
+      reviewerModel.findById.mockResolvedValue({ id: '1', authorId: 'user-123', visibility: 'private', isDraft: true })
+      reviewerModel.update.mockResolvedValue({ id: '1', authorId: 'user-123', visibility: 'public', isDraft: false })
+      followModel.getFollowers.mockResolvedValue([{ follower: { id: 'fan-1' } }])
+      notificationModel.createMany.mockResolvedValue({ count: 1 })
+
+      await updateReviewer(req, res)
+
+      expect(notificationModel.createMany).toHaveBeenCalledWith([
+        { recipientId: 'fan-1', actorId: 'user-123', actionType: 'new_reviewer', reviewerId: '1' },
+      ])
+    })
+
+    it('should not notify followers when editing an already-visible reviewer', async () => {
+      const req = createMockRequest({
+        params: { id: '1' },
+        user: { id: 'user-123' },
+        validatedBody: { title: 'Another edit' },
+      })
+      const res = createMockResponse()
+
+      reviewerModel.findById.mockResolvedValue({ id: '1', authorId: 'user-123', visibility: 'public', isDraft: false })
+      reviewerModel.update.mockResolvedValue({ id: '1', authorId: 'user-123', visibility: 'public', isDraft: false, title: 'Another edit' })
+
+      await updateReviewer(req, res)
+
+      expect(notificationModel.createMany).not.toHaveBeenCalled()
     })
   })
 

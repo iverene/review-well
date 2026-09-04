@@ -5,7 +5,7 @@ const createReviewerSchema = z.object({
   courseCode: z.string().min(1).max(50),
   courseDescription: z.string().min(1).max(500),
   semester: z.string().min(1).max(50),
-  examType: z.enum(['midterm', 'final', 'quiz', 'assignment', 'other']),
+  examType: z.enum(['prelim', 'midterm', 'final']),
   visibility: z.enum(['public', 'unlisted', 'private']).default('private'),
   isDraft: z.boolean().default(true),
   thumbnailIcon: z.string().url().optional(),
@@ -21,7 +21,7 @@ const updateReviewerSchema = z.object({
   courseCode: z.string().min(1).max(50).optional(),
   courseDescription: z.string().min(1).max(500).optional(),
   semester: z.string().min(1).max(50).optional(),
-  examType: z.enum(['midterm', 'final', 'quiz', 'assignment', 'other']).optional(),
+  examType: z.enum(['prelim', 'midterm', 'final']).optional(),
   visibility: z.enum(['public', 'unlisted', 'private']).optional(),
   isDraft: z.boolean().optional(),
   thumbnailIcon: z.string().url().optional().nullable(),
@@ -33,14 +33,14 @@ const updateReviewerSchema = z.object({
 })
 
 const createBlockSchema = z.object({
-  blockType: z.enum(['topic_banner', 'sub_topic_banner', 'content_block', 'table']),
+  blockType: z.enum(['topic_banner', 'sub_topic_banner', 'content_block', 'table', 'lesson_banner', 'image', 'divider', 'two_column', 'terms_card', 'page_break']),
   columnIndex: z.number().int().min(1).max(2).default(1),
   sortOrder: z.number().int().min(0),
   contentData: z.record(z.any()),
 })
 
 const updateBlockSchema = z.object({
-  blockType: z.enum(['topic_banner', 'sub_topic_banner', 'content_block', 'table']).optional(),
+  blockType: z.enum(['topic_banner', 'sub_topic_banner', 'content_block', 'table', 'lesson_banner', 'image', 'divider', 'two_column', 'terms_card', 'page_break']).optional(),
   columnIndex: z.number().int().min(1).max(2).optional(),
   sortOrder: z.number().int().min(0).optional(),
   contentData: z.record(z.any()).optional(),

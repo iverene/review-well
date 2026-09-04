@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+
 import FollowButton from '../social/FollowButton'
 
 const UserProfile = ({ user, showFollowButton = true }) => {

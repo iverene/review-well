@@ -1,30 +1,26 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import axios from 'axios'
-import { ArrowLeft, BookOpen, Check, Globe2, LockKeyhole, UsersRound } from 'lucide-react'
+import { ArrowLeft, BookOpen, Globe2, LockKeyhole, UsersRound } from 'lucide-react'
+
 import ErrorAlert from '../components/common/ErrorAlert'
 import { getApiErrorMessage } from '../utils/apiError'
 
-const palettes = [
-  { name: 'Mint morning', primary: '#CDE8D2', secondary: '#FFF7E8', accent: '#7DBB88' },
-  { name: 'Blush notes', primary: '#F6C6D2', secondary: '#FFF7E8', accent: '#C96A83' },
-  { name: 'Powder sky', primary: '#C9E6F2', secondary: '#FFF7E8', accent: '#6C9FB5' },
-  { name: 'Butter paper', primary: '#F9E4A8', secondary: '#FFF7E8', accent: '#C39A3A' },
-]
+// Default theme applied at creation; theming lives in the workspace Format menu.
+const defaultPalette = { name: 'Cocoa Classic', primary: '#7C6B5D', secondary: '#F5EAD3', accent: '#FCF7EC' }
 
 const Create = () => {
   const navigate = useNavigate()
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
   const [formData, setFormData] = useState({
-    title: '',
     courseCode: '',
     courseDescription: '',
     semester: '',
     examType: 'midterm',
     visibility: 'private',
     isDraft: true,
-    colorPalette: palettes[0],
+    colorPalette: defaultPalette,
   })
 
   const updateField = (event) => {
@@ -39,7 +35,7 @@ const Create = () => {
     setError(null)
 
     try {
-      const response = await axios.post('/api/reviewers', formData, { withCredentials: true })
+      const response = await axios.post('/api/reviewers', { ...formData, title: formData.courseDescription }, { withCredentials: true })
       navigate(`/workspace/${response.data.reviewer.id}`)
     } catch (createError) {
       console.error('Failed to create reviewer:', createError)
@@ -56,12 +52,12 @@ const Create = () => {
   ]
 
   return (
-    <div className="mx-auto max-w-4xl pb-10">
-      <Link to="/" className="mb-6 inline-flex items-center gap-2 text-sm font-extrabold text-muted hover:text-ink">
+    <div className="mx-auto max-w-4xl pb-6">
+      <Link to="/" className="mb-3 inline-flex items-center gap-2 text-sm font-extrabold text-muted hover:text-ink">
         <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back to desk
       </Link>
 
-      <div className="mb-8 flex items-start gap-4">
+      <div className="mb-5 flex items-start gap-4">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-soft border-2 border-stone bg-mint text-ink">
           <BookOpen className="h-6 w-6" aria-hidden="true" />
         </div>
@@ -72,14 +68,14 @@ const Create = () => {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="grid gap-6 lg:grid-cols-[1fr_280px]">
+      <form onSubmit={handleSubmit} className="grid gap-4 lg:grid-cols-[1fr_280px]">
         <div className="rounded-soft border-2 border-stone bg-paper p-6 club-shadow sm:p-8">
           <ErrorAlert className="mb-6">{error}</ErrorAlert>
 
           <div className="space-y-6">
             <div>
-              <label htmlFor="title" className="mb-2 block text-sm font-extrabold text-ink">Reviewer title</label>
-              <input id="title" name="title" value={formData.title} onChange={updateField} required autoFocus placeholder="e.g. Data Structures Midterm" className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-3 text-ink focus:border-accent focus:outline-none" />
+              <label htmlFor="courseDescription" className="mb-2 block text-sm font-extrabold text-ink">Course description</label>
+              <input id="courseDescription" name="courseDescription" value={formData.courseDescription} onChange={updateField} required autoFocus placeholder="e.g. Data Structures and Algorithms" className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-3 text-ink focus:border-accent focus:outline-none" />
             </div>
 
             <div className="grid gap-5 sm:grid-cols-2">
@@ -89,19 +85,16 @@ const Create = () => {
               </div>
               <div>
                 <label htmlFor="semester" className="mb-2 block text-sm font-extrabold text-ink">Semester</label>
-                <input id="semester" name="semester" value={formData.semester} onChange={updateField} required placeholder="e.g. Fall 2026" className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-3 text-ink focus:border-accent focus:outline-none" />
+                <select id="semester" name="semester" value={formData.semester} onChange={updateField} required className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-3 text-ink focus:border-accent focus:outline-none">
+                  <option value="" disabled>Select semester</option><option value="First Semester">First Semester</option><option value="Second Semester">Second Semester</option><option value="Summer">Summer</option>
+                </select>
               </div>
             </div>
 
             <div>
-              <label htmlFor="courseDescription" className="mb-2 block text-sm font-extrabold text-ink">Course description</label>
-              <textarea id="courseDescription" name="courseDescription" value={formData.courseDescription} onChange={updateField} required rows="4" placeholder="What topics will this reviewer cover?" className="w-full resize-y rounded-soft border-2 border-stone bg-paper px-4 py-3 text-ink focus:border-accent focus:outline-none" />
-            </div>
-
-            <div>
-              <label htmlFor="examType" className="mb-2 block text-sm font-extrabold text-ink">Assessment type</label>
+              <label htmlFor="examType" className="mb-2 block text-sm font-extrabold text-ink">Examination period</label>
               <select id="examType" name="examType" value={formData.examType} onChange={updateField} className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-3 text-ink focus:border-accent focus:outline-none">
-                <option value="midterm">Midterm</option><option value="final">Final</option><option value="quiz">Quiz</option><option value="assignment">Assignment</option><option value="other">Other</option>
+                <option value="prelim">Prelim</option><option value="midterm">Midterm</option><option value="final">Finals</option>
               </select>
             </div>
           </div>
@@ -127,17 +120,6 @@ const Create = () => {
             </div>
           </div>
 
-          <div className="rounded-soft border-2 border-stone bg-paper p-5">
-            <h2 className="font-display text-xl font-bold text-ink">Desk palette</h2>
-            <p className="mt-1 text-xs text-muted">Choose a gentle starting mood.</p>
-            <div className="mt-4 grid grid-cols-4 gap-2">
-              {palettes.map((palette) => (
-                <button key={palette.name} type="button" onClick={() => setFormData((previous) => ({ ...previous, colorPalette: palette }))} className="relative h-10 rounded-soft border-2 border-stone" style={{ background: `linear-gradient(135deg, ${palette.primary} 50%, ${palette.accent} 50%)` }} title={palette.name} aria-label={palette.name}>
-                  {formData.colorPalette.name === palette.name && <Check className="absolute inset-0 m-auto h-5 w-5 text-ink" strokeWidth={3} aria-hidden="true" />}
-                </button>
-              ))}
-            </div>
-          </div>
         </aside>
       </form>
     </div>

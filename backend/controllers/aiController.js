@@ -2,6 +2,7 @@ import { extractStudyBlocks, isConfigured } from '../services/openaiService.js'
 import { checkQuota, incrementUsage, getRemainingQuota } from '../models/aiQuotaModel.js'
 import * as blockModel from '../models/blockModel.js'
 import * as reviewerModel from '../models/reviewerModel.js'
+import { delPrefix } from '../utils/cache.js'
 
 const AI_QUOTA_LIMIT = 50
 
@@ -59,6 +60,7 @@ const extractFromUpload = async (req, res) => {
       }))
 
       await blockModel.createMany(blocksToCreate)
+      delPrefix('reviewers:')
     }
 
     const remaining = await getRemainingQuota(req.user.id, AI_QUOTA_LIMIT)

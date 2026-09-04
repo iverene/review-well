@@ -5,8 +5,11 @@ const NotificationItem = ({ notification, onMarkRead }) => {
 
   const getActionText = () => {
     switch (actionType) {
+      case 'save':
       case 'like':
-        return 'liked your reviewer'
+        return 'saved your reviewer'
+      case 'new_reviewer':
+        return 'published a new reviewer'
       case 'follow':
         return 'started following you'
       default:
@@ -29,13 +32,19 @@ const NotificationItem = ({ notification, onMarkRead }) => {
     return date.toLocaleDateString()
   }
 
-  return (
-    <div
-      className={`flex items-start gap-4 border-b border-stone p-4 transition-colors hover:bg-stone/30 ${
-        !isRead ? 'bg-stone/10' : ''
-      }`}
-      onClick={() => !isRead && onMarkRead(notification.id)}
-    >
+  // Every item opens its subject: the reviewer, otherwise the actor's profile.
+  const target = reviewer?.id
+    ? `/reviewer/${reviewer.id}`
+    : actor?.id
+      ? `/profile/${actor.id}`
+      : null
+
+  const handleOpen = () => {
+    if (!isRead) onMarkRead(notification.id)
+  }
+
+  const body = (
+    <>
       {/* Actor Avatar */}
       <div className="flex-shrink-0">
         {actor.avatarUrl ? (
@@ -58,12 +67,9 @@ const NotificationItem = ({ notification, onMarkRead }) => {
           {getActionText()}
         </p>
         {reviewer && (
-          <Link
-            to={`/reviewer/${reviewer.id}`}
-            className="mt-1 block text-sm text-muted hover:text-ink truncate"
-          >
+          <span className="mt-1 block text-sm text-muted truncate">
             {reviewer.title}
-          </Link>
+          </span>
         )}
         <p className="mt-1 text-xs text-muted">{getTimeAgo()}</p>
       </div>
@@ -74,7 +80,30 @@ const NotificationItem = ({ notification, onMarkRead }) => {
           <div className="h-2 w-2 rounded-full bg-ink" />
         </div>
       )}
-    </div>
+    </>
+  )
+
+  const className = `flex items-start gap-4 border-b border-stone p-4 transition-colors hover:bg-stone/30 ${
+    !isRead ? 'bg-stone/10' : ''
+  }`
+
+  if (!target) {
+    return (
+      <div className={className} onClick={handleOpen}>
+        {body}
+      </div>
+    )
+  }
+
+  return (
+    <Link
+      to={target}
+      className={className}
+      onClick={handleOpen}
+      aria-label={`${actor.displayName} ${getActionText()}`}
+    >
+      {body}
+    </Link>
   )
 }
 

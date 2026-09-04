@@ -18,8 +18,8 @@ The platform provides an institutional archival brutalist workspace that enforce
 
 * **Google Docs-Inspired Workspace:** Ergonomic toolbar layout featuring a streamlined menu (`File, Edit, View, Insert, Format`) and customized tools for building strict two-column A4 review sheets with modular academic components (*Main Title Block*, *Topic Header Banners*, *Sub-Topic Banners*, and *Content Blocks*).
 * **AI Slide Extraction:** Upload PDF or PPTX lecture files (max 25MB) to automatically extract key terms and definitions into structured blocks. Enforces a rolling hard limit of **3 generations per 7-day period** per user.
-* **Social Graph & Remixing:** Follow other student creators, like public reviewers, and fork/clone study guides into your own workspace using the creator's remix permission toggle with automated attribution tagging (*"Remixed from [Author]"*).
-* **Notification Bell Center:** Real-time event tracking and unread counter badges for follows, likes, and document remixes.
+* **Social Graph & Remixing:** Follow other student creators, save/bookmark public reviewers, and fork/clone study guides into your own workspace using the creator's remix permission toggle with automated attribution tagging (*"Remixed from [Author]"*).
+* **Notification Bell Center:** Real-time event tracking and unread counter badges for follows, saves, and document remixes.
 * **A4 PDF Export & Watermarking:** Client-side vector rendering ensuring automated page numbering (`Page X`) alongside the tamper-evident watermark: `"Made with Review Well"`.
 
 ---

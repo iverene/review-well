@@ -27,6 +27,30 @@ const upload = multer({
   },
 })
 
+const avatarFileFilter = (req, file, cb) => {
+  const allowedTypes = [
+    'image/jpeg',
+    'image/png',
+    'image/webp',
+    'image/gif',
+  ]
+
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true)
+  } else {
+    cb(new Error('Invalid file type. Allowed: JPG, PNG, WEBP, GIF'), false)
+  }
+}
+
+const uploadAvatar = multer({
+  storage,
+  fileFilter: avatarFileFilter,
+  limits: {
+    fileSize: 2 * 1024 * 1024, // 2MB max
+    files: 1,
+  },
+})
+
 const handleUploadError = (err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     if (err.code === 'LIMIT_FILE_SIZE') {
@@ -43,4 +67,4 @@ const handleUploadError = (err, req, res, next) => {
   next()
 }
 
-export { upload, handleUploadError }
+export { upload, uploadAvatar, handleUploadError }

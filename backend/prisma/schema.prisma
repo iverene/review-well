@@ -22,7 +22,7 @@ model User {
 
   reviewers   Reviewer[]
   aiQuotas    AiQuota[]
-  likes       Like[]
+  saves       Save[]
   follows     Follow[]    @relation("following")
   followers   Follow[]    @relation("follower")
   notifications Notification[] @relation("recipient")
@@ -48,7 +48,7 @@ model Reviewer {
 
   user          User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
   blocks        Block[]
-  likes         Like[]
+  saves         Save[]
   notifications Notification[]
 
   @@map("reviewers")
@@ -82,7 +82,7 @@ model AiQuota {
   @@map("ai_quotas")
 }
 
-model Like {
+model Save {
   userId     String @map("user_id")
   reviewerId String @map("reviewer_id")
 
