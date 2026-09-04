@@ -1,4 +1,5 @@
 import { prisma } from '../config/database.js'
+import { TTL_60_SECONDS, remember } from '../utils/cache.js'
 
 const findByUsers = async (followerId, followingId) => {
   return prisma.follow.findUnique({
@@ -24,7 +25,7 @@ const remove = async (followerId, followingId) => {
 
 const getFollowers = async (userId) => {
   // Note: the follows table has no timestamp column, so results are unordered.
-  return prisma.follow.findMany({
+  return remember(`social:followers:${userId}`, TTL_60_SECONDS, () => prisma.follow.findMany({
     where: { followingId: userId },
     include: {
       follower: {
@@ -37,12 +38,12 @@ const getFollowers = async (userId) => {
         },
       },
     },
-  })
+  }))
 }
 
 const getFollowing = async (userId) => {
   // Note: the follows table has no timestamp column, so results are unordered.
-  return prisma.follow.findMany({
+  return remember(`social:following:${userId}`, TTL_60_SECONDS, () => prisma.follow.findMany({
     where: { followerId: userId },
     include: {
       following: {
@@ -55,19 +56,19 @@ const getFollowing = async (userId) => {
         },
       },
     },
-  })
+  }))
 }
 
 const countFollowers = async (userId) => {
-  return prisma.follow.count({
+  return remember(`social:count:followers:${userId}`, TTL_60_SECONDS, () => prisma.follow.count({
     where: { followingId: userId },
-  })
+  }))
 }
 
 const countFollowing = async (userId) => {
-  return prisma.follow.count({
+  return remember(`social:count:following:${userId}`, TTL_60_SECONDS, () => prisma.follow.count({
     where: { followerId: userId },
-  })
+  }))
 }
 
 const isFollowing = async (followerId, followingId) => {

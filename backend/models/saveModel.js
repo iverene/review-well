@@ -1,4 +1,5 @@
 import { prisma } from '../config/database.js'
+import { TTL_30_SECONDS, TTL_60_SECONDS, remember } from '../utils/cache.js'
 
 const findByUserAndReviewer = async (userId, reviewerId) => {
   return prisma.save.findUnique({
@@ -23,13 +24,13 @@ const remove = async (userId, reviewerId) => {
 }
 
 const countByReviewer = async (reviewerId) => {
-  return prisma.save.count({
+  return remember(`social:savecount:${reviewerId}`, TTL_30_SECONDS, () => prisma.save.count({
     where: { reviewerId },
-  })
+  }))
 }
 
 const findByUser = async (userId) => {
-  return prisma.save.findMany({
+  return remember(`social:saved:${userId}`, TTL_60_SECONDS, () => prisma.save.findMany({
     where: { userId },
     include: {
       reviewer: {
@@ -43,7 +44,7 @@ const findByUser = async (userId) => {
         },
       },
     },
-  })
+  }))
 }
 
 const hasUserSaved = async (userId, reviewerId) => {

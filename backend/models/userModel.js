@@ -1,7 +1,9 @@
 import { prisma } from '../config/database.js'
+import { TTL_30_SECONDS, TTL_60_SECONDS, del, delPrefix, remember } from '../utils/cache.js'
 
 const findById = async (id) => {
-  return prisma.user.findUnique({ where: { id } })
+  // Hot path: runs on every authenticated request via session deserialization
+  return remember(`users:row:${id}`, TTL_60_SECONDS, () => prisma.user.findUnique({ where: { id } }))
 }
 
 const findByGoogleId = async (googleId) => {
@@ -17,7 +19,11 @@ const create = async (data) => {
 }
 
 const update = async (id, data) => {
-  return prisma.user.update({ where: { id }, data })
+  const user = await prisma.user.update({ where: { id }, data })
+  // Self-bust: writers outside controllers (e.g. Google sign-in sync) go through here
+  del(`users:row:${id}`)
+  delPrefix('profile:')
+  return user
 }
 
 const searchUsers = async (query, { take = 20, excludeId = null } = {}) => {
@@ -32,7 +38,8 @@ const searchUsers = async (query, { take = 20, excludeId = null } = {}) => {
     ...(excludeId && { id: { not: excludeId } }),
   }
 
-  return prisma.user.findMany({
+  const key = `profile:search:${query.toLowerCase()}:${take}:${excludeId || '-'}`
+  return remember(key, TTL_30_SECONDS, () => prisma.user.findMany({
     where,
     select: {
       id: true,
@@ -43,11 +50,11 @@ const searchUsers = async (query, { take = 20, excludeId = null } = {}) => {
     },
     orderBy: { displayName: 'asc' },
     take,
-  })
+  }))
 }
 
 const getProfile = async (id) => {
-  return prisma.user.findUnique({
+  return remember(`profile:${id}`, TTL_60_SECONDS, () => prisma.user.findUnique({
     where: { id },
     select: {
       id: true,
@@ -67,7 +74,7 @@ const getProfile = async (id) => {
         },
       },
     },
-  })
+  }))
 }
 
 export { findById, findByGoogleId, findByEmail, create, update, getProfile, searchUsers }

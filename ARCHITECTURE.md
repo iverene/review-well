@@ -51,6 +51,7 @@ The backend is built with Node.js and Express, utilizing **Prisma ORM** connecte
 ### 3.1 Models & Database Management (`/backend/prisma/schema.prisma`)
 * Prisma schema definitions handling relational mappings for Users, Reviewers, Modular Blocks, Follows, Saves (bookmarks), AI Token Usage quotas, and Notifications.
 * Enforces data integrity for public/private visibility flags and user ownership.
+* Hot reads (reviewer lists/detail, profiles, user search, follower lists, save counts) go through a short-TTL in-memory cache (`backend/utils/cache.js`, 30–60s); mutations bust their namespace (`reviewers:`, `profile:`, `social:`) so writes are never stale.
 
 ### 3.2 Views (`/backend/views/` or API Serializers)
 * Since the application is a decoupled SPA, "Views" translate directly to structured JSON response payloads serialization objects for the frontend client (e.g., reviewer payload, block arrays, user profile data).

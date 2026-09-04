@@ -70,11 +70,13 @@ import {
 } from '../../../controllers/reviewerController.js'
 import * as reviewerModel from '../../../models/reviewerModel.js'
 import * as blockModel from '../../../models/blockModel.js'
+import * as cache from '../../../utils/cache.js'
 import { createMockRequest, createMockResponse } from '../../helpers/mocks.js'
 
 describe('Reviewer Controller', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    cache.clearAll()
   })
 
   describe('getPublicReviewers', () => {
@@ -227,6 +229,25 @@ describe('Reviewer Controller', () => {
       await updateReviewer(req, res)
 
       expect(res.status).toHaveBeenCalledWith(403)
+    })
+
+    it('should bust cached reviewer reads after updating', async () => {
+      const req = createMockRequest({
+        params: { id: '1' },
+        user: { id: 'user-123' },
+        validatedBody: { title: 'Updated Title' },
+      })
+      const res = createMockResponse()
+
+      reviewerModel.findById.mockResolvedValue({ id: '1', authorId: 'user-123' })
+      reviewerModel.update.mockResolvedValue({ id: '1', title: 'Updated Title', authorId: 'user-123' })
+      cache.set('reviewers:detail:1', { id: '1', title: 'Stale' }, 60_000)
+      cache.set('reviewers:public:0:20:', { reviewers: [] }, 60_000)
+
+      await updateReviewer(req, res)
+
+      expect(cache.get('reviewers:detail:1')).toBeUndefined()
+      expect(cache.get('reviewers:public:0:20:')).toBeUndefined()
     })
 
     it('should clear the draft flag when sharing as public', async () => {

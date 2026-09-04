@@ -1,5 +1,6 @@
 import * as reviewerModel from '../models/reviewerModel.js'
 import * as blockModel from '../models/blockModel.js'
+import { del, delPrefix } from '../utils/cache.js'
 
 const getPublicReviewers = async (req, res) => {
   try {
@@ -104,6 +105,9 @@ const createReviewer = async (req, res) => {
       authorId: req.user.id,
     })
 
+    delPrefix('reviewers:')
+    del(`profile:${req.user.id}`)
+
     res.status(201).json({ reviewer })
   } catch (error) {
     console.error('Create reviewer error:', error)
@@ -132,6 +136,8 @@ const updateReviewer = async (req, res) => {
     }
 
     const reviewer = await reviewerModel.update(id, data)
+    delPrefix('reviewers:')
+    del(`profile:${existing.authorId}`)
     res.json({ reviewer })
   } catch (error) {
     console.error('Update reviewer error:', error)
@@ -153,6 +159,9 @@ const deleteReviewer = async (req, res) => {
     }
 
     await reviewerModel.remove(id)
+    delPrefix('reviewers:')
+    delPrefix('social:')
+    del(`profile:${existing.authorId}`)
     res.json({ message: 'Reviewer deleted successfully' })
   } catch (error) {
     console.error('Delete reviewer error:', error)
@@ -181,6 +190,7 @@ const addBlock = async (req, res) => {
       sortOrder: maxSortOrder + 1,
     })
 
+    delPrefix('reviewers:')
     res.status(201).json({ block })
   } catch (error) {
     console.error('Add block error:', error)
@@ -204,6 +214,7 @@ const updateBlock = async (req, res) => {
     }
 
     const block = await blockModel.update(blockId, data)
+    delPrefix('reviewers:')
     res.json({ block })
   } catch (error) {
     console.error('Update block error:', error)
@@ -226,6 +237,7 @@ const deleteBlock = async (req, res) => {
     }
 
     await blockModel.remove(blockId)
+    delPrefix('reviewers:')
     res.json({ message: 'Block deleted successfully' })
   } catch (error) {
     console.error('Delete block error:', error)
@@ -248,6 +260,7 @@ const reorderBlocks = async (req, res) => {
     }
 
     await blockModel.reorder(reviewerId, blocks)
+    delPrefix('reviewers:')
     res.json({ message: 'Blocks reordered successfully' })
   } catch (error) {
     console.error('Reorder blocks error:', error)

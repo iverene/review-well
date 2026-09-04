@@ -2,6 +2,7 @@ import * as saveModel from '../models/saveModel.js'
 import * as followModel from '../models/followModel.js'
 import * as notificationModel from '../models/notificationModel.js'
 import * as reviewerModel from '../models/reviewerModel.js'
+import { delPrefix } from '../utils/cache.js'
 
 // Save endpoints
 const saveReviewer = async (req, res) => {
@@ -21,6 +22,8 @@ const saveReviewer = async (req, res) => {
 
     await saveModel.create(userId, reviewerId)
     await notificationModel.createSaveNotification(reviewer.authorId, userId, reviewerId)
+    delPrefix('social:')
+    delPrefix('reviewers:')
 
     const saveCount = await saveModel.countByReviewer(reviewerId)
 
@@ -42,6 +45,8 @@ const unsaveReviewer = async (req, res) => {
     }
 
     await saveModel.remove(userId, reviewerId)
+    delPrefix('social:')
+    delPrefix('reviewers:')
 
     const saveCount = await saveModel.countByReviewer(reviewerId)
 
@@ -97,6 +102,8 @@ const followUser = async (req, res) => {
 
     await followModel.create(followerId, targetUserId)
     await notificationModel.createFollowNotification(targetUserId, followerId)
+    delPrefix('social:')
+    delPrefix('profile:')
 
     const followerCount = await followModel.countFollowers(targetUserId)
 
@@ -118,6 +125,8 @@ const unfollowUser = async (req, res) => {
     }
 
     await followModel.remove(followerId, targetUserId)
+    delPrefix('social:')
+    delPrefix('profile:')
 
     const followerCount = await followModel.countFollowers(targetUserId)
 

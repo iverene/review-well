@@ -1,6 +1,7 @@
 import * as userModel from '../models/userModel.js'
 import * as reviewerModel from '../models/reviewerModel.js'
 import * as followModel from '../models/followModel.js'
+import { del, delPrefix } from '../utils/cache.js'
 import { createStorageAdapter } from '../services/adapters/storage.js'
 
 const searchUsers = async (req, res) => {
@@ -75,6 +76,8 @@ const updateProfile = async (req, res) => {
     if (yearLevel !== undefined) updates.yearLevel = yearLevel
 
     const user = await userModel.update(userId, updates)
+    delPrefix('profile:')
+    del(`users:row:${userId}`)
     const profile = await userModel.getProfile(userId)
 
     res.json({ user: profile })
@@ -98,6 +101,8 @@ const updateAvatar = async (req, res) => {
     // URL-based avatar (e.g. keep an existing one)
     if (!req.file && req.body.avatarUrl) {
       await userModel.update(userId, { avatarUrl: req.body.avatarUrl })
+      delPrefix('profile:')
+      del(`users:row:${userId}`)
       const profile = await userModel.getProfile(userId)
       return res.json({ user: profile })
     }
@@ -122,6 +127,8 @@ const updateAvatar = async (req, res) => {
     }
 
     await userModel.update(userId, { avatarUrl })
+    delPrefix('profile:')
+    del(`users:row:${userId}`)
     const profile = await userModel.getProfile(userId)
 
     res.json({ user: profile })
