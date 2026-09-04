@@ -5,8 +5,9 @@ const NotificationItem = ({ notification, onMarkRead }) => {
 
   const getActionText = () => {
     switch (actionType) {
+      case 'save':
       case 'like':
-        return 'liked your reviewer'
+        return 'saved your reviewer'
       case 'follow':
         return 'started following you'
       default:

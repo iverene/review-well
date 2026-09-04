@@ -37,7 +37,7 @@ const mockReviewer = {
   authorId: 'user-1',
   updatedAt: '2026-09-01T00:00:00.000Z',
   user: { displayName: 'Iverene Grace Causapin' },
-  _count: { likes: 3 },
+  _count: { saves: 3 },
   blocks: [
     { id: 'b1', blockType: 'topic_banner', contentData: { heading: 'Chapter 1' } },
     {
@@ -74,8 +74,8 @@ beforeEach(() => {
   mockGet.mockReset()
   mockPut.mockReset()
   mockGet.mockImplementation((url) => {
-    if (String(url).includes('/like')) {
-      return Promise.resolve({ data: { liked: false, likeCount: 3 } })
+    if (String(url).includes('/save')) {
+      return Promise.resolve({ data: { saved: false, saveCount: 3 } })
     }
     return Promise.resolve({ data: { reviewer: mockReviewer } })
   })
@@ -131,8 +131,8 @@ describe('Reviewer', () => {
 
   it('disables preview actions when the reviewer has no content', async () => {
     mockGet.mockImplementation((url) => {
-      if (String(url).includes('/like')) {
-        return Promise.resolve({ data: { liked: false, likeCount: 0 } })
+      if (String(url).includes('/save')) {
+        return Promise.resolve({ data: { saved: false, saveCount: 0 } })
       }
       return Promise.resolve({ data: { reviewer: { ...mockReviewer, blocks: [] } } })
     })
@@ -148,8 +148,8 @@ describe('Reviewer', () => {
   it('previews the first page inline and paginates the fullscreen view', async () => {
     const manyTerms = Array.from({ length: 10 }, (_, i) => ({ term: `T${i}`, definition: `Definition ${i}` }))
     mockGet.mockImplementation((url) => {
-      if (String(url).includes('/like')) {
-        return Promise.resolve({ data: { liked: false, likeCount: 0 } })
+      if (String(url).includes('/save')) {
+        return Promise.resolve({ data: { saved: false, saveCount: 0 } })
       }
       return Promise.resolve({
         data: {

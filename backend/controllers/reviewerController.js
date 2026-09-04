@@ -24,6 +24,30 @@ const getPublicReviewers = async (req, res) => {
   }
 }
 
+const getAuthorReviewers = async (req, res) => {
+  try {
+    const { userId } = req.params
+    const { page = 1, limit = 50 } = req.query
+    const skip = (parseInt(page) - 1) * parseInt(limit)
+    const take = parseInt(limit)
+
+    const result = await reviewerModel.findPublicByAuthor(userId, { skip, take })
+
+    res.json({
+      reviewers: result.reviewers,
+      pagination: {
+        page: parseInt(page),
+        limit: take,
+        total: result.total,
+        hasMore: result.hasMore,
+      },
+    })
+  } catch (error) {
+    console.error('Get author reviewers error:', error)
+    res.status(500).json({ error: 'Failed to fetch reviewers' })
+  }
+}
+
 const getMyReviewers = async (req, res) => {
   try {
     const { page = 1, limit = 50 } = req.query
@@ -233,6 +257,7 @@ const reorderBlocks = async (req, res) => {
 
 export {
   getPublicReviewers,
+  getAuthorReviewers,
   getMyReviewers,
   getReviewerById,
   createReviewer,

@@ -22,7 +22,7 @@ const ReviewerCard = ({ reviewer, compact = false }) => (
         <BookOpen className="h-5 w-5 shrink-0 text-accent" strokeWidth={2.2} aria-hidden="true" />
       </div>
       <div className="mt-5 flex items-center justify-between gap-2 text-xs text-muted">
-        <span>{reviewer._count?.likes || 0} likes</span>
+        <span>{reviewer._count?.saves || 0} saves</span>
         {reviewer.user?.displayName && <span className="truncate">by {reviewer.user.displayName}</span>}
       </div>
     </div>

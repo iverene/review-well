@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Home, LibraryBig, Globe2, UserRound } from 'lucide-react'
+import { Home, LibraryBig, Globe2, UserPlus, UserRound } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 
 const BottomDock = () => {
@@ -26,6 +26,13 @@ const BottomDock = () => {
       label: 'Public Reviewers',
       icon: (
         <Globe2 className="h-5 w-5" strokeWidth={2.4} aria-hidden="true" />
+      ),
+    },
+    {
+      to: '/friends',
+      label: 'Friends',
+      icon: (
+        <UserPlus className="h-5 w-5" strokeWidth={2.4} aria-hidden="true" />
       ),
     },
     {

@@ -52,7 +52,7 @@ test.describe('Social Features', () => {
             {
               id: 'notif-1',
               actor: { displayName: 'John Doe', avatarUrl: null },
-              actionType: 'like',
+              actionType: 'save',
               reviewer: { title: 'Test Reviewer' },
               isRead: false,
               createdAt: new Date().toISOString(),
@@ -66,6 +66,6 @@ test.describe('Social Features', () => {
     await page.goto('/notifications')
 
     await expect(page.locator('text=John Doe')).toBeVisible()
-    await expect(page.locator('text=liked your reviewer')).toBeVisible()
+    await expect(page.locator('text=saved your reviewer')).toBeVisible()
   })
 })

@@ -21,6 +21,7 @@ const Onboarding = lazy(() => import('./pages/Onboarding'))
 const About = lazy(() => import('./pages/About'))
 const Guide = lazy(() => import('./pages/Guide'))
 const Contact = lazy(() => import('./pages/Contact'))
+const FindFriends = lazy(() => import('./pages/FindFriends'))
 
 // Loading component
 const PageLoader = () => (
@@ -89,6 +90,14 @@ function App() {
                 }
               />
               <Route path="/profile/:userId" element={<Profile />} />
+              <Route
+                path="/friends"
+                element={
+                  <ProtectedRoute>
+                    <FindFriends />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/settings"
                 element={

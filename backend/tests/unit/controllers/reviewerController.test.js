@@ -36,12 +36,13 @@ vi.mock('../../../models/followModel.js', () => ({
   countFollowing: vi.fn(),
   isFollowing: vi.fn(),
 }))
-vi.mock('../../../models/likeModel.js', () => ({
+vi.mock('../../../models/saveModel.js', () => ({
   findByUserAndReviewer: vi.fn(),
   create: vi.fn(),
   remove: vi.fn(),
   countByReviewer: vi.fn(),
-  hasUserLiked: vi.fn(),
+  findByUser: vi.fn(),
+  hasUserSaved: vi.fn(),
 }))
 vi.mock('../../../models/notificationModel.js', () => ({
   create: vi.fn(),
@@ -49,7 +50,7 @@ vi.mock('../../../models/notificationModel.js', () => ({
   markAsRead: vi.fn(),
   markAllAsRead: vi.fn(),
   countUnread: vi.fn(),
-  createLikeNotification: vi.fn(),
+  createSaveNotification: vi.fn(),
   createFollowNotification: vi.fn(),
 }))
 vi.mock('../../../models/aiQuotaModel.js', () => ({

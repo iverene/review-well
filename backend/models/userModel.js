@@ -20,6 +20,32 @@ const update = async (id, data) => {
   return prisma.user.update({ where: { id }, data })
 }
 
+const searchUsers = async (query, { take = 20, excludeId = null } = {}) => {
+  const where = {
+    ...(query && {
+      OR: [
+        { displayName: { contains: query, mode: 'insensitive' } },
+        { email: { contains: query, mode: 'insensitive' } },
+        { school: { contains: query, mode: 'insensitive' } },
+      ],
+    }),
+    ...(excludeId && { id: { not: excludeId } }),
+  }
+
+  return prisma.user.findMany({
+    where,
+    select: {
+      id: true,
+      displayName: true,
+      avatarUrl: true,
+      school: true,
+      program: true,
+    },
+    orderBy: { displayName: 'asc' },
+    take,
+  })
+}
+
 const getProfile = async (id) => {
   return prisma.user.findUnique({
     where: { id },
@@ -44,4 +70,4 @@ const getProfile = async (id) => {
   })
 }
 
-export { findById, findByGoogleId, findByEmail, create, update, getProfile }
+export { findById, findByGoogleId, findByEmail, create, update, getProfile, searchUsers }

@@ -46,14 +46,14 @@ const countUnread = async (recipientId) => {
   })
 }
 
-const createLikeNotification = async (recipientId, actorId, reviewerId) => {
+const createSaveNotification = async (recipientId, actorId, reviewerId) => {
   // Don't notify self
   if (recipientId === actorId) return null
 
   return create({
     recipientId,
     actorId,
-    actionType: 'like',
+    actionType: 'save',
     reviewerId,
   })
 }
@@ -70,4 +70,4 @@ const createFollowNotification = async (recipientId, actorId) => {
   })
 }
 
-export { create, findByRecipient, markAsRead, markAllAsRead, countUnread, createLikeNotification, createFollowNotification }
+export { create, findByRecipient, markAsRead, markAllAsRead, countUnread, createSaveNotification, createFollowNotification }

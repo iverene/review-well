@@ -1,6 +1,7 @@
 import express from 'express'
 import {
   getPublicReviewers,
+  getAuthorReviewers,
   getMyReviewers,
   getReviewerById,
   createReviewer,
@@ -25,6 +26,7 @@ const app = express.Router()
 
 // Public routes
 app.get('/public', getPublicReviewers)
+app.get('/author/:userId', getAuthorReviewers)
 
 // Protected routes - require authentication
 app.get('/my', requireAuth, getMyReviewers)

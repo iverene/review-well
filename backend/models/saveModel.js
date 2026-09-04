@@ -1,7 +1,7 @@
 import { prisma } from '../config/database.js'
 
 const findByUserAndReviewer = async (userId, reviewerId) => {
-  return prisma.like.findUnique({
+  return prisma.save.findUnique({
     where: {
       userId_reviewerId: { userId, reviewerId },
     },
@@ -9,13 +9,13 @@ const findByUserAndReviewer = async (userId, reviewerId) => {
 }
 
 const create = async (userId, reviewerId) => {
-  return prisma.like.create({
+  return prisma.save.create({
     data: { userId, reviewerId },
   })
 }
 
 const remove = async (userId, reviewerId) => {
-  return prisma.like.delete({
+  return prisma.save.delete({
     where: {
       userId_reviewerId: { userId, reviewerId },
     },
@@ -23,13 +23,13 @@ const remove = async (userId, reviewerId) => {
 }
 
 const countByReviewer = async (reviewerId) => {
-  return prisma.like.count({
+  return prisma.save.count({
     where: { reviewerId },
   })
 }
 
 const findByUser = async (userId) => {
-  return prisma.like.findMany({
+  return prisma.save.findMany({
     where: { userId },
     include: {
       reviewer: {
@@ -41,13 +41,12 @@ const findByUser = async (userId) => {
         },
       },
     },
-    orderBy: { createdAt: 'desc' },
   })
 }
 
-const hasUserLiked = async (userId, reviewerId) => {
-  const like = await findByUserAndReviewer(userId, reviewerId)
-  return !!like
+const hasUserSaved = async (userId, reviewerId) => {
+  const save = await findByUserAndReviewer(userId, reviewerId)
+  return !!save
 }
 
-export { findByUserAndReviewer, create, remove, countByReviewer, findByUser, hasUserLiked }
+export { findByUserAndReviewer, create, remove, countByReviewer, findByUser, hasUserSaved }

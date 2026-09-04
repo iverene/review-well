@@ -25,12 +25,13 @@ vi.mock('../../../models/followModel.js', () => ({
   countFollowing: vi.fn(),
   isFollowing: vi.fn(),
 }))
-vi.mock('../../../models/likeModel.js', () => ({
+vi.mock('../../../models/saveModel.js', () => ({
   findByUserAndReviewer: vi.fn(),
   create: vi.fn(),
   remove: vi.fn(),
   countByReviewer: vi.fn(),
-  hasUserLiked: vi.fn(),
+  findByUser: vi.fn(),
+  hasUserSaved: vi.fn(),
 }))
 vi.mock('../../../models/notificationModel.js', () => ({
   create: vi.fn(),
@@ -38,11 +39,11 @@ vi.mock('../../../models/notificationModel.js', () => ({
   markAsRead: vi.fn(),
   markAllAsRead: vi.fn(),
   countUnread: vi.fn(),
-  createLikeNotification: vi.fn(),
+  createSaveNotification: vi.fn(),
   createFollowNotification: vi.fn(),
 }))
 
-import { getProfile, updateProfile, getMyProfile } from '../../../controllers/profileController.js'
+import { getProfile, updateProfile, getMyProfile, searchUsers } from '../../../controllers/profileController.js'
 import * as userModel from '../../../models/userModel.js'
 import * as reviewerModel from '../../../models/reviewerModel.js'
 import * as followModel from '../../../models/followModel.js'
@@ -119,6 +120,37 @@ describe('Profile Controller', () => {
           }),
         })
       )
+    })
+  })
+
+  describe('searchUsers', () => {
+    it('should return matching users with follow state', async () => {
+      const req = createMockRequest({ user: { id: 'user-123' }, query: { q: 'ann' } })
+      const res = createMockResponse()
+
+      userModel.searchUsers = vi.fn().mockResolvedValue([
+        { id: 'user-456', displayName: 'Ann Lee' },
+      ])
+      followModel.isFollowing.mockResolvedValue(true)
+
+      await searchUsers(req, res)
+
+      expect(userModel.searchUsers).toHaveBeenCalledWith('ann', { take: 20, excludeId: 'user-123' })
+      expect(res.json).toHaveBeenCalledWith({
+        users: [{ id: 'user-456', displayName: 'Ann Lee', isFollowing: true }],
+      })
+    })
+
+    it('should exclude the current user from results', async () => {
+      const req = createMockRequest({ user: { id: 'user-123' }, query: {} })
+      const res = createMockResponse()
+
+      userModel.searchUsers = vi.fn().mockResolvedValue([])
+
+      await searchUsers(req, res)
+
+      expect(userModel.searchUsers).toHaveBeenCalledWith('', expect.objectContaining({ excludeId: 'user-123' }))
+      expect(res.json).toHaveBeenCalledWith({ users: [] })
     })
   })
 

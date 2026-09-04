@@ -20,7 +20,7 @@ import {
   X,
 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
-import LikeButton from '../components/social/LikeButton'
+import SaveButton from '../components/social/SaveButton'
 import ReviewerPreview from '../components/reviewer/ReviewerPreview'
 import ErrorAlert from '../components/common/ErrorAlert'
 import { getApiErrorMessage } from '../utils/apiError'
@@ -190,7 +190,7 @@ const Reviewer = () => {
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <Link to="/" className="inline-flex items-center gap-2 text-sm font-extrabold text-muted hover:text-ink"><ArrowLeft className="h-4 w-4" /> Back to desk</Link>
         <div className="flex flex-wrap items-center gap-2">
-          <LikeButton reviewerId={reviewer.id} initialLikeCount={reviewer._count?.likes || 0} />
+          <SaveButton reviewerId={reviewer.id} initialSaveCount={reviewer._count?.saves || 0} />
           <div className="relative">
             <button
               type="button"

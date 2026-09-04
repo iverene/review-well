@@ -49,7 +49,7 @@ review-well/
 The backend is built with Node.js and Express, utilizing **Prisma ORM** connected to a **Supabase PostgreSQL** database for type-safe database queries and seamless migration management (`prisma migrate`).
 
 ### 3.1 Models & Database Management (`/backend/prisma/schema.prisma`)
-* Prisma schema definitions handling relational mappings for Users, Reviewers, Modular Blocks, Follows, Likes, AI Token Usage quotas, and Notifications.
+* Prisma schema definitions handling relational mappings for Users, Reviewers, Modular Blocks, Follows, Saves (bookmarks), AI Token Usage quotas, and Notifications.
 * Enforces data integrity for public/private visibility flags and user ownership.
 
 ### 3.2 Views (`/backend/views/` or API Serializers)

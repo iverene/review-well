@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Home, LibraryBig, Globe2, UserRound, Plus } from 'lucide-react'
+import { Home, LibraryBig, Globe2, UserPlus, UserRound, Plus } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 
 const Sidebar = () => {
@@ -10,6 +10,7 @@ const Sidebar = () => {
     { to: '/', label: 'Home', icon: Home, active: location.pathname === '/' },
     { to: '/reviewer/my', label: 'My Reviewers', icon: LibraryBig, active: location.pathname.startsWith('/reviewer/my') },
     { to: '/reviewer/public', label: 'Public Reviewers', icon: Globe2, active: location.pathname === '/reviewer/public' },
+    { to: '/friends', label: 'Find Friends', icon: UserPlus, active: location.pathname.startsWith('/friends') },
     { to: '/profile', label: 'Profile', icon: UserRound, active: location.pathname.startsWith('/profile') },
   ]
 

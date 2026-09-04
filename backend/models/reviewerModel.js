@@ -18,7 +18,30 @@ const findPublic = async ({ skip = 0, take = 20, search = '' } = {}) => {
       where,
       include: {
         user: { select: { id: true, displayName: true, avatarUrl: true } },
-        _count: { select: { likes: true } },
+        _count: { select: { saves: true } },
+      },
+      orderBy: { updatedAt: 'desc' },
+      skip,
+      take,
+    }),
+    prisma.reviewer.count({ where }),
+  ])
+
+  return {
+    reviewers,
+    total,
+    hasMore: skip + take < total,
+  }
+}
+
+const findPublicByAuthor = async (authorId, { skip = 0, take = 50 } = {}) => {
+  const where = { authorId, visibility: 'public', isDraft: false }
+  const [reviewers, total] = await Promise.all([
+    prisma.reviewer.findMany({
+      where,
+      include: {
+        user: { select: { id: true, displayName: true, avatarUrl: true } },
+        _count: { select: { saves: true } },
       },
       orderBy: { updatedAt: 'desc' },
       skip,
@@ -39,7 +62,7 @@ const findByAuthor = async (authorId, { skip = 0, take = 50 } = {}) => {
     prisma.reviewer.findMany({
       where: { authorId },
       include: {
-        _count: { select: { likes: true } },
+        _count: { select: { saves: true } },
       },
       orderBy: { updatedAt: 'desc' },
       skip,
@@ -61,7 +84,7 @@ const findById = async (id) => {
     include: {
       user: { select: { id: true, displayName: true, avatarUrl: true } },
       blocks: { orderBy: [{ columnIndex: 'asc' }, { sortOrder: 'asc' }] },
-      _count: { select: { likes: true } },
+      _count: { select: { saves: true } },
     },
   })
 }
@@ -93,4 +116,4 @@ const count = async (where = {}) => {
   return prisma.reviewer.count({ where })
 }
 
-export { findPublic, findByAuthor, findById, create, update, remove, count }
+export { findPublic, findPublicByAuthor, findByAuthor, findById, create, update, remove, count }

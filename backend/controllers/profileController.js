@@ -2,6 +2,27 @@ import * as userModel from '../models/userModel.js'
 import * as reviewerModel from '../models/reviewerModel.js'
 import * as followModel from '../models/followModel.js'
 
+const searchUsers = async (req, res) => {
+  try {
+    const { q = '', limit = 20 } = req.query
+    const take = Math.min(parseInt(limit) || 20, 50)
+
+    const users = await userModel.searchUsers(q.trim(), { take, excludeId: req.user.id })
+
+    const usersWithFollow = await Promise.all(
+      users.map(async (user) => ({
+        ...user,
+        isFollowing: await followModel.isFollowing(req.user.id, user.id),
+      }))
+    )
+
+    res.json({ users: usersWithFollow })
+  } catch (error) {
+    console.error('Search users error:', error)
+    res.status(500).json({ error: 'Failed to search users' })
+  }
+}
+
 const getProfile = async (req, res) => {
   try {
     const { userId } = req.params
@@ -106,4 +127,4 @@ const getMyProfile = async (req, res) => {
   }
 }
 
-export { getProfile, updateProfile, updateAvatar, getMyProfile }
+export { getProfile, updateProfile, updateAvatar, getMyProfile, searchUsers }
