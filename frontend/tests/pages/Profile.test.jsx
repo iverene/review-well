@@ -97,12 +97,11 @@ describe('Profile', () => {
     expect(screen.queryByText('My Guide')).toBeNull()
   })
 
-  it('opens the followers modal with a working list', async () => {
+  it('links to dedicated followers and following pages', async () => {
     renderProfile('/profile', '/profile')
     await screen.findByText('Me User')
-    fireEvent.click(screen.getByRole('button', { name: /View followers/ }))
-    expect(await screen.findByRole('dialog', { name: 'Followers' })).toBeInTheDocument()
-    expect(await screen.findByText('Ann Lee')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /View followers/ })).toHaveAttribute('href', '/profile/me/followers')
+    expect(screen.getByRole('link', { name: /View following/ })).toHaveAttribute('href', '/profile/me/following')
   })
 
   it('renders another user profile with follow button and public reviewers', async () => {

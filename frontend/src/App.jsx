@@ -22,6 +22,7 @@ const About = lazy(() => import('./pages/About'))
 const Guide = lazy(() => import('./pages/Guide'))
 const Contact = lazy(() => import('./pages/Contact'))
 const FindFriends = lazy(() => import('./pages/FindFriends'))
+const Followers = lazy(() => import('./pages/Followers'))
 
 // Loading component
 const PageLoader = () => (
@@ -90,6 +91,22 @@ function App() {
                 }
               />
               <Route path="/profile/:userId" element={<Profile />} />
+              <Route
+                path="/profile/:userId/followers"
+                element={
+                  <ProtectedRoute>
+                    <Followers type="followers" />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile/:userId/following"
+                element={
+                  <ProtectedRoute>
+                    <Followers type="following" />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/friends"
                 element={

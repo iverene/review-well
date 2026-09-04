@@ -4,7 +4,6 @@ import axios from 'axios'
 import { Bookmark, GraduationCap, LibraryBig, Settings as SettingsIcon, UserPlus } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import FollowButton from '../components/social/FollowButton'
-import FollowListModal from '../components/profile/FollowListModal'
 import ErrorAlert from '../components/common/ErrorAlert'
 import { getApiErrorMessage } from '../utils/apiError'
 import { ProfileSkeleton } from '../components/common/Skeleton'
@@ -38,7 +37,6 @@ const Profile = () => {
   const [listLoading, setListLoading] = useState(false)
   const [error, setError] = useState(null)
   const [activeTab, setActiveTab] = useState('reviewers')
-  const [followModal, setFollowModal] = useState(null)
   const [following, setFollowing] = useState(false)
   const [followerCount, setFollowerCount] = useState(0)
 
@@ -90,7 +88,6 @@ const Profile = () => {
 
   useEffect(() => {
     setActiveTab('reviewers')
-    setFollowModal(null)
     fetchProfile().then((loaded) => {
       if (loaded) fetchLists(loaded)
     })
@@ -99,11 +96,6 @@ const Profile = () => {
   const handleFollowToggle = (isFollowing, count) => {
     setFollowing(isFollowing)
     if (typeof count === 'number') setFollowerCount(count)
-    fetchProfile(true)
-  }
-
-  const handleCloseFollowModal = () => {
-    setFollowModal(null)
     fetchProfile(true)
   }
 
@@ -195,34 +187,27 @@ const Profile = () => {
         </div>
 
         {/* Stats */}
-        <div className="mt-6 flex gap-2 border-t-2 border-stone pt-4 sm:gap-4">
-          <button
-            type="button"
-            onClick={() => setActiveTab('reviewers')}
-            className="flex-1 rounded-soft px-3 py-2 text-center transition-colors hover:bg-powder"
-            aria-label={`View reviewers, ${profile.reviewerCount || 0}`}
-          >
-            <span className="block font-display text-2xl font-bold text-ink">{profile.reviewerCount || 0}</span>
-            <span className="text-xs font-extrabold uppercase tracking-widest text-muted">Reviewers</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setFollowModal('followers')}
-            className="flex-1 rounded-soft px-3 py-2 text-center transition-colors hover:bg-powder"
+        <div className="mt-5 flex gap-1 border-t-2 border-stone pt-3 sm:gap-3">
+          <div className="flex-1 rounded-soft px-2 py-1.5 text-center" aria-label={`${profile.reviewerCount || 0} reviewers`}>
+            <span className="block font-display text-xl font-bold text-ink">{profile.reviewerCount || 0}</span>
+            <span className="text-[11px] font-extrabold uppercase tracking-widest text-muted">Reviewers</span>
+          </div>
+          <Link
+            to={`/profile/${profile.id}/followers`}
+            className="flex-1 rounded-soft px-2 py-1.5 text-center transition-colors hover:bg-stone/40"
             aria-label={`View followers, ${followerCount}`}
           >
-            <span className="block font-display text-2xl font-bold text-ink">{followerCount}</span>
-            <span className="text-xs font-extrabold uppercase tracking-widest text-muted">Followers</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setFollowModal('following')}
-            className="flex-1 rounded-soft px-3 py-2 text-center transition-colors hover:bg-powder"
+            <span className="block font-display text-xl font-bold text-ink">{followerCount}</span>
+            <span className="text-[11px] font-extrabold uppercase tracking-widest text-muted">Followers</span>
+          </Link>
+          <Link
+            to={`/profile/${profile.id}/following`}
+            className="flex-1 rounded-soft px-2 py-1.5 text-center transition-colors hover:bg-stone/40"
             aria-label={`View following, ${profile.followingCount || 0}`}
           >
-            <span className="block font-display text-2xl font-bold text-ink">{profile.followingCount || 0}</span>
-            <span className="text-xs font-extrabold uppercase tracking-widest text-muted">Following</span>
-          </button>
+            <span className="block font-display text-xl font-bold text-ink">{profile.followingCount || 0}</span>
+            <span className="text-[11px] font-extrabold uppercase tracking-widest text-muted">Following</span>
+          </Link>
         </div>
 
         {profile.bio && (
@@ -281,15 +266,6 @@ const Profile = () => {
           </div>
         )}
       </div>
-
-      {followModal && (
-        <FollowListModal
-          userId={profile.id}
-          type={followModal}
-          onClose={handleCloseFollowModal}
-          onNavigate={handleCloseFollowModal}
-        />
-      )}
     </div>
   )
 }

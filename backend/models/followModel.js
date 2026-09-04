@@ -23,6 +23,7 @@ const remove = async (followerId, followingId) => {
 }
 
 const getFollowers = async (userId) => {
+  // Note: the follows table has no timestamp column, so results are unordered.
   return prisma.follow.findMany({
     where: { followingId: userId },
     include: {
@@ -36,11 +37,11 @@ const getFollowers = async (userId) => {
         },
       },
     },
-    orderBy: { createdAt: 'desc' },
   })
 }
 
 const getFollowing = async (userId) => {
+  // Note: the follows table has no timestamp column, so results are unordered.
   return prisma.follow.findMany({
     where: { followerId: userId },
     include: {
@@ -54,7 +55,6 @@ const getFollowing = async (userId) => {
         },
       },
     },
-    orderBy: { createdAt: 'desc' },
   })
 }
 
