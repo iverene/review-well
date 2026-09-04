@@ -3,7 +3,6 @@ import { Link, useParams } from 'react-router-dom'
 import axios from 'axios'
 import {
   ArrowLeft,
-  BookOpen,
   Check,
   Clock3,
   Copy,
@@ -24,6 +23,8 @@ import { useAuth } from '../contexts/AuthContext'
 import SaveButton from '../components/social/SaveButton'
 import ReviewerPreview from '../components/reviewer/ReviewerPreview'
 import ErrorAlert from '../components/common/ErrorAlert'
+import PageHeader from '../components/common/PageHeader'
+import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
 import { WorkspaceSkeleton } from '../components/common/Skeleton'
 import { exportSheetsToPdf, reviewerPdfFilename } from '../utils/exportPdf'
@@ -187,7 +188,8 @@ const Reviewer = () => {
   )
 
   return (
-    <div className="w-full pb-10">
+    <PageContainer>
+      <PageHeader title="Reviewer" />
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <Link to="/" className="inline-flex items-center gap-2 text-sm font-extrabold text-muted hover:text-ink"><ArrowLeft className="h-4 w-4" /> Back to desk</Link>
         <div className="flex flex-wrap items-center gap-2">
@@ -266,7 +268,7 @@ const Reviewer = () => {
 
       <header className="rounded-soft border-2 border-stone bg-paper p-6 club-shadow sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-5">
-          <div><p className="flex items-center gap-2 font-mono text-xs font-bold uppercase tracking-widest text-accent"><BookOpen className="h-4 w-4" /> Study guide</p><h1 className="mt-3 font-display text-4xl font-bold text-ink">{reviewer.title}</h1><p className="mt-3 text-muted">{reviewer.courseDescription}</p></div>
+          <div><h1 className="mt-3 font-display text-4xl font-bold text-ink">{reviewer.title}</h1><p className="mt-3 text-muted">{reviewer.courseDescription}</p></div>
           {isOwner ? (
             <div>
               <div className="flex items-center gap-1 rounded-full border-2 border-stone bg-paper p-1" role="radiogroup" aria-label="Visibility">
@@ -339,7 +341,7 @@ const Reviewer = () => {
           </div>
         </div>
       )}
-    </div>
+    </PageContainer>
   )
 }
 

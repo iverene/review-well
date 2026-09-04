@@ -83,7 +83,7 @@ describe('Profile', () => {
   it('renders the own profile with Reviewers and Saved Reviewers tabs', async () => {
     renderProfile('/profile', '/profile')
     expect(await screen.findByText('Me User')).toBeInTheDocument()
-    expect(screen.getByText('me@example.com')).toBeInTheDocument()
+    expect(screen.queryByText('me@example.com')).not.toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Reviewers' })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'Saved Reviewers' })).toBeInTheDocument()
     expect(screen.queryByText('Recent Reviewers')).toBeNull()
@@ -114,5 +114,12 @@ describe('Profile', () => {
     expect(screen.queryByRole('tab', { name: /Saved Reviewers/ })).toBeNull()
     expect(screen.getByRole('button', { name: 'Follow' })).toBeInTheDocument()
     expect(await screen.findByText('Ann Public Guide')).toBeInTheDocument()
+  })
+
+  it('shows a fixed Profile header without the kicker', async () => {
+    renderProfile('/profile', '/profile')
+    expect(await screen.findByRole('heading', { name: 'Profile', level: 1 })).toBeInTheDocument()
+    expect(screen.queryByText('Your study desk')).not.toBeInTheDocument()
+    expect(screen.queryByText('Study buddy')).not.toBeInTheDocument()
   })
 })

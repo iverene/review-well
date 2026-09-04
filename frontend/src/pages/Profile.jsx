@@ -6,6 +6,8 @@ import { Bookmark, GraduationCap, LibraryBig, Settings as SettingsIcon, UserPlus
 import { useAuth } from '../contexts/AuthContext'
 import FollowButton from '../components/social/FollowButton'
 import ErrorAlert from '../components/common/ErrorAlert'
+import PageHeader from '../components/common/PageHeader'
+import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
 import { ProfileSkeleton } from '../components/common/Skeleton'
 
@@ -129,7 +131,8 @@ const Profile = () => {
   const visibleReviewers = activeTab === 'saved' ? savedReviewers : reviewers
 
   return (
-    <div className="mx-auto max-w-4xl pb-10">
+    <PageContainer>
+      <PageHeader title="Profile" />
       {/* Profile header card */}
       <section className="rounded-soft border-2 border-stone bg-paper p-6 club-shadow sm:p-8" aria-label="Profile">
         <div className="flex flex-wrap items-start justify-between gap-5">
@@ -146,11 +149,7 @@ const Profile = () => {
               </div>
             )}
             <div>
-              <p className="font-mono text-xs font-bold uppercase tracking-widest text-accent">
-                {isOwnProfile ? 'Your study desk' : 'Study buddy'}
-              </p>
               <h1 className="mt-1 font-display text-3xl font-bold text-ink">{profile.displayName}</h1>
-              {isOwnProfile && profile.email && <p className="text-sm text-muted">{profile.email}</p>}
               {(profile.school || profile.program || profile.major || profile.yearLevel) && (
                 <p className="mt-2 flex items-center gap-1.5 text-sm text-muted">
                   <GraduationCap className="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -267,7 +266,7 @@ const Profile = () => {
           </div>
         )}
       </div>
-    </div>
+    </PageContainer>
   )
 }
 

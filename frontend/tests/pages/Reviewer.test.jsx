@@ -188,4 +188,10 @@ describe('Reviewer', () => {
       expect.objectContaining({ rootId: 'reviewer-preview-root', pageSelector: '.preview-page' })
     ))
   })
+
+  it('shows a fixed Reviewer header above the document card', async () => {
+    renderReviewer()
+    expect(await screen.findByRole('heading', { name: 'Reviewer', level: 1 })).toBeInTheDocument()
+    expect(screen.queryByText('Study guide')).not.toBeInTheDocument()
+  })
 })
