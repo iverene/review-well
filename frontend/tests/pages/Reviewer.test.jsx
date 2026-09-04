@@ -1,6 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import axios from 'axios'
+
 import Reviewer from '../../src/pages/Reviewer'
 
 const { authState } = vi.hoisted(() => ({
@@ -24,7 +26,6 @@ vi.mock('../../src/utils/exportPdf', () => ({
   exportSheetsToPdf: vi.fn(),
 }))
 
-import axios from 'axios'
 
 const mockReviewer = {
   id: 'r1',

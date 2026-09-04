@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import axios from 'axios'
 import { Bookmark, GraduationCap, LibraryBig, Settings as SettingsIcon, UserPlus } from 'lucide-react'
+
 import { useAuth } from '../contexts/AuthContext'
 import FollowButton from '../components/social/FollowButton'
 import ErrorAlert from '../components/common/ErrorAlert'

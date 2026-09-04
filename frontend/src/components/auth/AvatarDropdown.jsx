@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { useAuth } from '../../contexts/AuthContext'
 import { UserRound, Settings, Info, Mail, LogOut } from 'lucide-react'
+
+import { useAuth } from '../../contexts/AuthContext'
 
 const AvatarDropdown = () => {
   const { user, logout } = useAuth()

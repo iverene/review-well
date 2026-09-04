@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { Search, UserPlus } from 'lucide-react'
+
 import FollowButton from '../components/social/FollowButton'
 import ErrorAlert from '../components/common/ErrorAlert'
 import { getApiErrorMessage } from '../utils/apiError'

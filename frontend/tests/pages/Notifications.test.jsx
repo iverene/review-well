@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { render, screen, act } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import axios from 'axios'
+
 import Notifications from '../../src/pages/Notifications'
 
 vi.mock('axios')

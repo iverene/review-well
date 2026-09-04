@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+
 import { estimateBlock, paginateBlocks } from '../../src/utils/paginate'
 
 describe('paginateBlocks', () => {

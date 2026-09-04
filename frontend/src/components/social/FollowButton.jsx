@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import axios from 'axios'
+
 import { useAuth } from '../../contexts/AuthContext'
 import ErrorAlert from '../common/ErrorAlert'
 import { getApiErrorMessage } from '../../utils/apiError'
@@ -7,7 +8,7 @@ import { getApiErrorMessage } from '../../utils/apiError'
 const FollowButton = ({ userId, initialFollowing = false, initialFollowerCount = 0, onToggle }) => {
   const { user, isAuthenticated } = useAuth()
   const [following, setFollowing] = useState(initialFollowing)
-  const [followerCount, setFollowerCount] = useState(initialFollowerCount)
+  const [, setFollowerCount] = useState(initialFollowerCount)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 

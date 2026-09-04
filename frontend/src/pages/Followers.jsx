@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import axios from 'axios'
 import { ArrowLeft, Users } from 'lucide-react'
+
 import FollowButton from '../components/social/FollowButton'
 import ErrorAlert from '../components/common/ErrorAlert'
 import { getApiErrorMessage } from '../utils/apiError'
 
 const Followers = ({ type }) => {
   const { userId } = useParams()
-  const [ownerName, setOwnerName] = useState('')
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -20,11 +20,7 @@ const Followers = ({ type }) => {
       setLoading(true)
       setError(null)
       try {
-        const [profileRes, listRes] = await Promise.all([
-          axios.get(`/api/profile/${userId}`, { withCredentials: true }),
-          axios.get(`/api/social/users/${userId}/${type}`, { withCredentials: true }),
-        ])
-        setOwnerName(profileRes.data.user?.displayName || '')
+        const listRes = await axios.get(`/api/social/users/${userId}/${type}`, { withCredentials: true })
         setUsers(listRes.data.users || [])
       } catch (err) {
         console.error(`Failed to load ${type}:`, err)

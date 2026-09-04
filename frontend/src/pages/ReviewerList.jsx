@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import axios from 'axios'
 import { BookOpen, LibraryBig } from 'lucide-react'
+
 import ErrorAlert from '../components/common/ErrorAlert'
 import { getApiErrorMessage } from '../utils/apiError'
 import { isSameCourse } from '../utils/courseMatching'

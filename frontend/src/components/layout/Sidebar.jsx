@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { Home, LibraryBig, Globe2, UserPlus, UserRound, Plus } from 'lucide-react'
+
 import { useAuth } from '../../contexts/AuthContext'
 
 const Sidebar = () => {

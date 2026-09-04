@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
+
 import FloatingMiniToolbar from '../../../src/components/workspace/FloatingMiniToolbar'
 
 describe('FloatingMiniToolbar', () => {

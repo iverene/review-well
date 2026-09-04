@@ -1,4 +1,5 @@
 import { BookOpen } from 'lucide-react'
+
 import { EXAM_LABELS } from '../../utils/exportPdf'
 import { paginateBlocks } from '../../utils/paginate'
 

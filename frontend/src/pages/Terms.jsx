@@ -1,6 +1,3 @@
-import { Link } from 'react-router-dom'
-import { ArrowLeft, ScrollText } from 'lucide-react'
-
 const Section = ({ title, children }) => (
   <section className="mt-6">
     <h2 className="font-display text-xl font-bold text-ink">{title}</h2>

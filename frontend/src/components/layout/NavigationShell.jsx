@@ -1,10 +1,12 @@
 import { Link, useLocation } from 'react-router-dom'
+
 import { useAuth } from '../../contexts/AuthContext'
-import Sidebar from './Sidebar'
-import BottomDock from './BottomDock'
 import NotificationBadge from '../notifications/NotificationBadge'
 import AvatarDropdown from '../auth/AvatarDropdown'
 import LoginButton from '../auth/LoginButton'
+
+import BottomDock from './BottomDock'
+import Sidebar from './Sidebar'
 
 const NavigationShell = ({ children }) => {
   const { isAuthenticated } = useAuth()

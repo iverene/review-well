@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useLocation, useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
 import { LogOut, Mail, Settings as SettingsIcon, ShieldCheck } from 'lucide-react'
+
 import { useAuth } from '../contexts/AuthContext'
 import EditProfile from '../components/profile/EditProfile'
 import ErrorAlert from '../components/common/ErrorAlert'
