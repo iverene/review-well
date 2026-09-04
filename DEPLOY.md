@@ -1,46 +1,45 @@
-# Deploying Review Well on Vercel
+# Deploying Review Well
 
-Two separate Vercel projects: one for the frontend, one for the backend.
-Separate projects are required because the frontend is a static Vite site
-while the backend is a stateful Express API (sessions, Passport, Prisma).
+Split setup: the **frontend on Vercel** (static site) and the **backend on Render**
+(persistent Node process, which sessions require).
 
-## 1. Backend project (`review-well-api`)
+## 1. Backend on Render (`review-well-api`)
 
-1. Vercel → Add New → Project → import `review-well` → set **Root Directory** to `backend`.
-2. Framework preset: **Other**. Build command is already set in `backend/vercel.json`
-   (`npx prisma generate`); no output directory needed.
-3. Add these **Environment Variables** (Production + Preview):
+1. Render → New → **Web Service** → connect the `review-well` repo.
+2. Set **Root Directory** to `backend`, runtime **Node**.
+3. Build Command: `npm install && npx prisma generate`
+   Start Command: `npm start`
+4. Add these **Environment Variables**:
    - `DATABASE_URL` — Supabase pooler URL (port `6543`) with `?pgbouncer=true` appended
-   - `SESSION_SECRET` — long random string (generate a fresh one, do not reuse dev)
+   - `SESSION_SECRET` — fresh long random string (do not reuse dev)
    - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
-   - `FRONTEND_URL` — your frontend URL, e.g. `https://review-well.vercel.app`
-   - `BACKEND_URL` — this backend URL, e.g. `https://review-well-api.vercel.app`
+   - `FRONTEND_URL` — your Vercel frontend URL, e.g. `https://review-well.vercel.app`
+   - `BACKEND_URL` — this Render URL, e.g. `https://review-well-api.onrender.com`
    - `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, `SUPABASE_STORAGE_BUCKET`
    - `RESEND_API_KEY`, `CONTACT_EMAIL` (optional until contact mail goes live)
    - `NODE_ENV=production`
-4. Deploy and copy the backend URL.
-5. In **Google Cloud Console → Credentials → OAuth client**, add to Authorized
-   redirect URIs: `https://<backend-url>/api/auth/google/callback`.
+5. Deploy and copy the `https://<app>.onrender.com` URL.
+6. In **Google Cloud Console → Credentials → OAuth client**, add to Authorized
+   redirect URIs: `https://<app>.onrender.com/api/auth/google/callback`.
+7. Heads-up: Render's free tier sleeps when idle, so the first request after a
+   pause takes ~30–60s to wake the service. Paid instances stay warm.
 
-## 2. Frontend project (`review-well`)
+## 2. Frontend on Vercel (`review-well`)
 
-1. Add New → Project → import `review-well` again → set **Root Directory** to `frontend`.
-2. Framework preset: **Vite** (defaults are correct, no env vars needed).
-3. In `frontend/vercel.json`, replace `REPLACE-WITH-BACKEND-URL` with the backend
-   URL from step 1, commit, and redeploy. This proxies `/api/*` to the backend,
-   so the app code needs no changes and login cookies stay first-party.
-4. Update the backend project's `FRONTEND_URL` if your frontend URL differs.
+1. Vercel → Add New → Project → import `review-well` → set **Root Directory**
+   to `frontend`. Framework preset: **Vite** (defaults are correct, no env vars needed).
+2. In `frontend/vercel.json`, replace `REPLACE-WITH-BACKEND-URL` with the Render
+   URL from step 1, commit, and redeploy. This proxies `/api/*` to Render, so
+   the app code needs no changes and login cookies stay first-party.
+3. If your frontend URL differs from step 1, update the backend's `FRONTEND_URL`.
 
 ## 3. Important production notes
 
-- **Sessions are in-memory.** On Vercel's serverless functions each request can
-  hit a fresh instance, so users may be logged out at random once traffic spans
-  instances. If that happens, the fix is a shared session store (e.g. Upstash
-  Redis) — say the word and it will be wired into `backend/config/session.js`.
-  For a single-instance host (Render, Railway, Fly) no change is needed.
-- **Prisma client**: `backend/vercel.json` regenerates the client on every
-  build, so schema changes deploy cleanly. No migration step runs automatically;
-  apply schema changes with `npx prisma migrate deploy` (or via Supabase SQL)
-  before deploying code that depends on them.
-- Pushes to `master` trigger production deploys; preview deployments are
-  created for pull requests automatically.
+- **Database schema changes** are never applied automatically. After changing
+  `backend/prisma/schema.prisma`, run `npx prisma migrate deploy` (pointed at
+  production) or apply the SQL in Supabase before deploying dependent code.
+- Pushes to `master` trigger production deploys on both hosts; Vercel creates
+  preview deployments for pull requests automatically.
+- Because Render runs one persistent process, express-session works with no
+  extra store. (Only move the backend to serverless functions if you also add
+  a shared session store such as Upstash Redis.)
