@@ -6,7 +6,9 @@
         },
         "backend": {
             "root": "backend",
-            "entrypoint": "server.js"
+            "entrypoint": "server.js",
+            "installCommand": "npm ci --no-audit --no-fund",
+            "buildCommand": "npx prisma generate"
         }
     },
     "rewrites": [
