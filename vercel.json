@@ -7,8 +7,7 @@
         "backend": {
             "root": "backend",
             "entrypoint": "server.js",
-            "installCommand": "npm ci --no-audit --no-fund",
-            "buildCommand": "npm ci --no-audit --no-fund && ls -la node_modules | head -40 && ls -la node_modules/@prisma 2>&1; ls -la node_modules/.bin/prisma 2>&1; DEBUG=prisma:generator npx prisma generate"
+            "buildCommand": "npx prisma generate"
         }
     },
     "rewrites": [
