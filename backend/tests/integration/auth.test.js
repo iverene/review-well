@@ -40,10 +40,15 @@ vi.mock('../../models/blockModel.js', () => ({
   getMaxSortOrder: vi.fn(),
 }))
 
+import passport from 'passport'
+
 import authRoutes from '../../routes/authRoutes.js'
-import { requireAuth } from '../../middleware/auth.js'
+import { configurePassport } from '../../config/googleOAuth.js'
+import { ensureSessionCompat } from '../../config/session.js'
 import { getMe } from '../../controllers/authController.js'
 import * as userModel from '../../models/userModel.js'
+
+configurePassport()
 
 const createApp = () => {
   const app = express()
@@ -55,6 +60,9 @@ const createApp = () => {
       maxAge: 24 * 60 * 60 * 1000,
     })
   )
+  app.use(ensureSessionCompat)
+  app.use(passport.initialize())
+  app.use(passport.session())
   app.use('/api/auth', authRoutes)
   return app
 }
@@ -99,12 +107,22 @@ describe('Auth Routes', () => {
     })
   })
 
+  describe('GET /api/auth/google', () => {
+    it('redirects to Google with a state parameter for CSRF protection', async () => {
+      const response = await request(app).get('/api/auth/google')
+
+      expect(response.status).toBe(302)
+      expect(response.headers.location).toContain('accounts.google.com')
+      expect(response.headers.location).toMatch(/[?&]state=/)
+    })
+  })
+
   describe('POST /api/auth/logout', () => {
-    it('should return 401 when not authenticated', async () => {
+    it('should succeed even without an active session', async () => {
       const response = await request(app).post('/api/auth/logout')
 
-      expect(response.status).toBe(401)
-      expect(response.body.error).toBe('Authentication required')
+      expect(response.status).toBe(200)
+      expect(response.body.message).toBe('Logged out successfully')
     })
   })
 })

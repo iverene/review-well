@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import axios from 'axios'
 
 import useAuthStore from '../stores/authStore'
@@ -19,11 +19,9 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null)
   const { user, isAuthenticated, isGuest, login, enterGuest, logout } = useAuthStore()
 
-  useEffect(() => {
-    checkAuth()
-  }, [])
-
-  const checkAuth = async () => {
+  // Stable identity so consumers' effects (AuthCallback, Login) fire once,
+  // not on every provider re-render (which doubled /api/auth/me calls)
+  const checkAuth = useCallback(async () => {
     try {
       setError(null)
       const response = await axios.get('/api/auth/me', { withCredentials: true })
@@ -41,7 +39,11 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false)
     }
-  }
+  }, [login])
+
+  useEffect(() => {
+    checkAuth()
+  }, [checkAuth])
 
   const signInWithGoogle = () => {
     window.location.href = '/api/auth/google'

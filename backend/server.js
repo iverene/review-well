@@ -6,7 +6,7 @@ import cors from 'cors'
 import hpp from 'hpp'
 import { pathToFileURL } from 'url'
 import passport from 'passport'
-import { sessionConfig } from './config/session.js'
+import { sessionConfig, ensureSessionCompat } from './config/session.js'
 import { configurePassport } from './config/googleOAuth.js'
 import { getFrontendUrl } from './config/urls.js'
 
@@ -29,6 +29,7 @@ if (process.env.NODE_ENV === 'production') {
 
 // Session
 app.use(sessionConfig)
+app.use(ensureSessionCompat)
 
 // Passport middleware
 app.use(passport.initialize())
