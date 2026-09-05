@@ -1,5 +1,6 @@
 import passport from 'passport'
 import * as userModel from '../models/userModel.js'
+import { getFrontendRedirect } from '../config/urls.js'
 
 const googleAuth = (req, res, next) => {
   passport.authenticate('google', {
@@ -9,14 +10,13 @@ const googleAuth = (req, res, next) => {
 
 const googleCallback = (req, res, next) => {
   passport.authenticate('google', {
-    failureRedirect: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login`,
+    failureRedirect: getFrontendRedirect('/login'),
     failureMessage: true,
   })(req, res, next)
 }
 
 const googleCallbackHandler = (req, res) => {
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
-  res.redirect(`${frontendUrl}/auth/callback`)
+  res.redirect(getFrontendRedirect('/auth/callback'))
 }
 
 const logout = (req, res) => {
