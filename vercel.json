@@ -8,7 +8,7 @@
             "root": "backend",
             "entrypoint": "server.js",
             "installCommand": "npm ci --no-audit --no-fund",
-            "buildCommand": "pwd && ls node_modules | wc -l && ls node_modules/@prisma 2>&1; ls node_modules/express/package.json && npx prisma generate"
+            "buildCommand": "npm ci --no-audit --no-fund && npx prisma generate"
         }
     },
     "rewrites": [
