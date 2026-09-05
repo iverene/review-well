@@ -24,15 +24,10 @@ const logout = (req, res) => {
     if (err) {
       return res.status(500).json({ error: 'Failed to logout' })
     }
-    // express-session API: destroy the server-side session and clear the cookie
-    // (req.session = null belongs to cookie-session and leaves both behind)
-    req.session.destroy((destroyErr) => {
-      if (destroyErr) {
-        return res.status(500).json({ error: 'Failed to logout' })
-      }
-      res.clearCookie('session')
-      res.json({ message: 'Logged out successfully' })
-    })
+    // cookie-session is stateless: nulling the session clears the cookie,
+    // with no server-side store to destroy
+    req.session = null
+    res.json({ message: 'Logged out successfully' })
   })
 }
 
