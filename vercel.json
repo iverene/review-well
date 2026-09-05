@@ -7,7 +7,7 @@
         "backend": {
             "root": "backend",
             "entrypoint": "server.js",
-            "buildCommand": "../node_modules/.bin/prisma generate --schema ./prisma/schema.prisma"
+            "buildCommand": "pwd && npm root && npx prisma generate"
         }
     },
     "rewrites": [
