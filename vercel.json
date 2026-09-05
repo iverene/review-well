@@ -7,7 +7,7 @@
         "backend": {
             "root": "backend",
             "entrypoint": "server.js",
-            "buildCommand": "pwd && npm root && npx prisma generate"
+            "buildCommand": "npx prisma generate"
         }
     },
     "rewrites": [
