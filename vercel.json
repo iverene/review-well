@@ -8,7 +8,7 @@
             "root": "backend",
             "entrypoint": "server.js",
             "installCommand": "npm ci --no-audit --no-fund",
-            "buildCommand": "node --version && npm --version && pwd && node -p \"require('./node_modules/@prisma/client/package.json').version\" && node -e \"console.log(require.resolve('@prisma/client/package.json'));console.log(require('fs').realpathSync('./node_modules/@prisma/client'))\" && npx prisma generate"
+            "buildCommand": "pwd && ls node_modules | wc -l && ls node_modules/@prisma 2>&1; ls node_modules/express/package.json && npx prisma generate"
         }
     },
     "rewrites": [
