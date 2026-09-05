@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
-import { LogIn, Mail, PartyPopper, Send } from 'lucide-react'
+import { LogIn, PartyPopper, Send } from 'lucide-react'
 
 import { useAuth } from '../contexts/AuthContext'
 import ErrorAlert from '../components/common/ErrorAlert'

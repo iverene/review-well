@@ -8,13 +8,14 @@ import { pathToFileURL } from 'url'
 import passport from 'passport'
 import { sessionConfig } from './config/session.js'
 import { configurePassport } from './config/googleOAuth.js'
+import { getFrontendUrl } from './config/urls.js'
 
 const app = express()
 const PORT = process.env.PORT || 3000
 
 // Security middleware
 app.use(helmet())
-app.use(cors({ origin: process.env.FRONTEND_URL || 'http://localhost:5173', credentials: true }))
+app.use(cors({ origin: getFrontendUrl(), credentials: true }))
 app.use(hpp())
 
 // Body parsing
