@@ -2,6 +2,10 @@ import cookieSession from 'cookie-session'
 
 const isProduction = process.env.NODE_ENV === 'production'
 
+if (isProduction && !process.env.SESSION_SECRET) {
+  throw new Error('SESSION_SECRET must be set in production (unpredictable sessions otherwise)')
+}
+
 // Stateless signed-cookie sessions: no server-side store, so sign-in
 // survives across serverless function instances (MemoryStore does not).
 // The cookie is re-issued on every response, refreshing the 24h expiry.
