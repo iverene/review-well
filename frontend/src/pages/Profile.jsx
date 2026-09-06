@@ -134,22 +134,22 @@ const Profile = () => {
     <PageContainer>
       <PageHeader title="Profile" />
       {/* Profile header card */}
-      <section className="rounded-soft border-2 border-stone bg-paper p-6 mt-5 club-shadow sm:p-8" aria-label="Profile">
+      <section className="rounded-soft border-2 border-stone bg-paper p-4 mt-5 club-shadow sm:p-8" aria-label="Profile">
         <div className="flex flex-wrap items-start justify-between gap-5">
           <div className="flex items-center gap-5">
             {profile.avatarUrl ? (
               <img
                 src={profile.avatarUrl}
                 alt={profile.displayName}
-                className="h-24 w-24 rounded-full border-2 border-stone object-cover"
+                className="h-20 w-20 rounded-full border-2 border-stone object-cover md:h-24 md:w-24"
               />
             ) : (
-              <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-stone bg-blush font-display text-4xl font-bold text-ink" aria-hidden="true">
+              <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-stone bg-blush font-display text-3xl font-bold text-ink md:h-24 md:w-24 md:text-4xl" aria-hidden="true">
                 {profile.displayName?.charAt(0).toUpperCase() || 'U'}
               </div>
             )}
             <div>
-              <h1 className="mt-1 font-display text-3xl font-bold text-ink">{profile.displayName}</h1>
+              <h1 className="mt-1 font-display text-2xl font-bold text-ink md:text-3xl">{profile.displayName}</h1>
               {(profile.school || profile.program || profile.major || profile.yearLevel) && (
                 <p className="mt-2 flex items-center gap-1.5 text-sm text-muted">
                   <GraduationCap className="h-4 w-4 shrink-0" aria-hidden="true" />

@@ -84,7 +84,7 @@ const Onboarding = () => {
             <p className="text-xs font-extrabold uppercase tracking-widest text-accent">
               Step {stepIndex + 1} of {steps.length}
             </p>
-            <h1 id="onboarding-title" className="mt-2 text-3xl font-extrabold text-ink">
+            <h1 id="onboarding-title" className="mt-2 text-2xl font-extrabold text-ink md:text-3xl">
               {currentStep.title}
             </h1>
           </div>
@@ -208,7 +208,7 @@ const Onboarding = () => {
             <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full border-2 border-stone bg-mint text-3xl font-extrabold text-ink" aria-hidden="true">
               OK
             </div>
-            <h2 id="welcome-title" className="text-3xl font-extrabold text-ink">Welcome to Review Well!</h2>
+            <h2 id="welcome-title" className="text-2xl font-extrabold text-ink md:text-3xl">Welcome to Review Well!</h2>
             <p className="mt-3 text-muted">Your study space is ready. Let&apos;s make something worth reviewing.</p>
             <button
               type="button"

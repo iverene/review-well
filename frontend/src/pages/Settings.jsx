@@ -91,8 +91,8 @@ const Settings = () => {
   }
 
   return (
-    <div className="mx-auto max-w-2xl pb-10">
-      <h1 className="mt-1 font-display text-4xl font-bold text-ink">
+      <div className="mx-auto max-w-2xl pb-10">
+      <h1 className="mt-1 font-display text-3xl font-bold text-ink md:text-4xl">
         {location.state?.onboarding ? 'Complete your profile' : 'Settings'}
       </h1>
       {location.state?.onboarding && (
@@ -110,7 +110,7 @@ const Settings = () => {
       )}
 
       {profile && (
-        <section className="mt-5 rounded-soft border-2 border-stone bg-paper p-6 club-shadow sm:p-8" aria-label="Edit profile">
+        <section className="mt-5 rounded-soft border-2 border-stone bg-paper p-4 club-shadow sm:p-8" aria-label="Edit profile">
           <EditProfile
             profile={profile}
             onSave={handleSave}

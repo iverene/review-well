@@ -75,10 +75,10 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
             <img
               src={preview || profile.avatarUrl}
               alt={profile.displayName}
-              className="h-20 w-20 rounded-full border-2 border-stone object-cover"
+              className="h-16 w-16 rounded-full border-2 border-stone object-cover md:h-20 md:w-20"
             />
           ) : (
-            <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-stone bg-blush font-display text-2xl font-bold text-ink" aria-hidden="true">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-stone bg-blush font-display text-xl font-bold text-ink md:h-20 md:w-20 md:text-2xl" aria-hidden="true">
               {formData.displayName?.charAt(0).toUpperCase() || 'U'}
             </div>
           )}

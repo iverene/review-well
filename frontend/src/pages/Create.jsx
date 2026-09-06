@@ -63,13 +63,13 @@ const Create = () => {
         </div>
         <div>
           <p className="font-mono text-xs font-bold uppercase tracking-widest text-accent">New study guide</p>
-          <h1 className="mt-1 font-display text-4xl font-bold text-ink">Create a reviewer</h1>
+          <h1 className="mt-1 font-display text-3xl font-bold text-ink md:text-4xl">Create a reviewer</h1>
           <p className="mt-2 text-muted">Set the essentials now. You can shape every block in the workspace next.</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit} className="grid gap-4 lg:grid-cols-[1fr_280px]">
-        <div className="rounded-soft border-2 border-stone bg-paper p-6 club-shadow sm:p-8">
+        <div className="rounded-soft border-2 border-stone bg-paper p-4 club-shadow sm:p-8">
           <ErrorAlert className="mb-6">{error}</ErrorAlert>
 
           <div className="space-y-6">
