@@ -180,9 +180,9 @@ const Profile = () => {
         )}
 
         {/* Stats */}
-        <div className="mt-5 flex gap-1 border-t-2 border-stone pt-3 sm:gap-3">
+        <div className="mt-5 flex gap-1 sm:gap-3">
           <div className="flex-1 rounded-soft px-2 py-1.5 text-center" aria-label={`${profile.reviewerCount || 0} reviewers`}>
-            <span className="block font-display text-xl font-bold text-ink">{profile.reviewerCount || 0}</span>
+            <span className="block font-display text-lg font-bold text-ink md:text-xl">{profile.reviewerCount || 0}</span>
             <span className="text-[11px] font-extrabold uppercase tracking-widest text-muted">Reviewers</span>
           </div>
           <Link
@@ -190,7 +190,7 @@ const Profile = () => {
             className="flex-1 rounded-soft px-2 py-1.5 text-center transition-colors hover:bg-stone/40"
             aria-label={`View followers, ${followerCount}`}
           >
-            <span className="block font-display text-xl font-bold text-ink">{followerCount}</span>
+            <span className="block font-display text-lg font-bold text-ink md:text-xl">{followerCount}</span>
             <span className="text-[11px] font-extrabold uppercase tracking-widest text-muted">Followers</span>
           </Link>
           <Link
@@ -198,17 +198,10 @@ const Profile = () => {
             className="flex-1 rounded-soft px-2 py-1.5 text-center transition-colors hover:bg-stone/40"
             aria-label={`View following, ${profile.followingCount || 0}`}
           >
-            <span className="block font-display text-xl font-bold text-ink">{profile.followingCount || 0}</span>
+            <span className="block font-display text-lg font-bold text-ink md:text-xl">{profile.followingCount || 0}</span>
             <span className="text-[11px] font-extrabold uppercase tracking-widest text-muted">Following</span>
           </Link>
         </div>
-
-        {profile.bio && (
-          <div className="mt-4 rounded-soft bg-mint/40 p-4">
-            <h2 className="text-xs font-extrabold uppercase tracking-widest text-muted">About</h2>
-            <p className="mt-1 text-sm leading-relaxed text-ink">{profile.bio}</p>
-          </div>
-        )}
       </div>
 
       {/* Tabs */}

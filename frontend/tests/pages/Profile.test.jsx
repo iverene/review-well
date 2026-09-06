@@ -28,6 +28,7 @@ const ownProfile = {
   reviewerCount: 2,
   followerCount: 5,
   followingCount: 3,
+  bio: 'I love soil science.',
 }
 
 const otherProfile = {
@@ -136,5 +137,11 @@ describe('Profile', () => {
     await screen.findByText('Ann Lee')
     expect(screen.queryByRole('link', { name: 'Settings' })).toBeNull()
     expect(screen.getByRole('button', { name: 'Follow' })).toBeInTheDocument()
+  })
+
+  it('never renders a bio section', async () => {
+    renderProfile('/profile', '/profile')
+    await screen.findByText('Me User')
+    expect(screen.queryByText('I love soil science.')).toBeNull()
   })
 })
