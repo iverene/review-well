@@ -8,7 +8,7 @@ export default {
     extend: {
       colors: {
         'ink': '#604a3a',
-        'paper': '#fff7e8',
+        'paper': '#F8F9FA',
         'stone': '#eadfce',
         'accent': '#c96a83',
         'muted': '#8b7768',
