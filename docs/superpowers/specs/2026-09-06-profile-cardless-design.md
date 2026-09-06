@@ -7,11 +7,13 @@ Date: 2026-09-06. Approach: restructure in place (no new components).
 No card, border, or shadow anywhere on the page header area. Directly under
 the `Profile` page header: a left-aligned row with the avatar at
 `h-14 w-14` (`md:h-20 md:w-20` on desktop), the display name beside it at
-`text-xl md:text-3xl`, and the school/program/major/yearLevel line beneath
-the name at `text-xs md:text-sm`. Same data, alt text, and avatar fallback
-(initial) as today. Own profile shows a settings gear icon button
-(aria-label "Settings", links to `/settings`) pinned to the top-right of the
-header area; the Find friends button is removed entirely.
+`text-xl md:text-3xl`, and the school/program/major/yearLevel details beneath
+the name as wrapping powder pills (accent graduation-cap icon + one pill per
+present field) instead of plain joined text. Same data, alt text, and avatar
+fallback (initial) as today. Own profile shows a borderless settings gear
+icon button (aria-label "Settings", links to `/settings`) aligned in the
+identity row after the name block (`ml-auto self-center`); the Find friends
+button is removed entirely.
 
 ## 2. Buttons + stats (approved)
 

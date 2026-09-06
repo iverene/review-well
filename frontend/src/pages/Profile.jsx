@@ -134,17 +134,7 @@ const Profile = () => {
     <PageContainer>
       <PageHeader title="Profile" />
       {/* Profile header (cardless) */}
-      <div className="relative mt-5" aria-label="Profile">
-        {isOwnProfile && (
-          <Link
-            to="/settings"
-            aria-label="Settings"
-            title="Settings"
-            className="absolute right-0 top-0 inline-flex items-center justify-center rounded-soft border-2 border-stone bg-paper p-2.5 text-ink hover:bg-powder"
-          >
-            <SettingsIcon className="h-5 w-5" aria-hidden="true" />
-          </Link>
-        )}
+      <div className="mt-5" aria-label="Profile">
         <div className="flex items-center gap-4">
           {profile.avatarUrl ? (
             <img
@@ -157,15 +147,31 @@ const Profile = () => {
               {profile.displayName?.charAt(0).toUpperCase() || 'U'}
             </div>
           )}
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h1 className="font-display text-xl font-bold text-ink md:text-3xl">{profile.displayName}</h1>
             {(profile.school || profile.program || profile.major || profile.yearLevel) && (
-              <p className="mt-1 flex items-center gap-1.5 text-xs text-muted md:text-sm">
-                <GraduationCap className="h-4 w-4 shrink-0" aria-hidden="true" />
-                {[profile.school, profile.program, profile.major, profile.yearLevel].filter(Boolean).join(' • ')}
-              </p>
+              <div className="mt-1.5 flex flex-wrap items-center gap-1.5" aria-label="School information">
+                <GraduationCap className="h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
+                {[profile.school, profile.program, profile.major, profile.yearLevel]
+                  .filter(Boolean)
+                  .map((detail) => (
+                    <span key={detail} className="rounded-full bg-powder px-2.5 py-0.5 text-xs font-bold text-ink">
+                      {detail}
+                    </span>
+                  ))}
+              </div>
             )}
           </div>
+          {isOwnProfile && (
+            <Link
+              to="/settings"
+              aria-label="Settings"
+              title="Settings"
+              className="ml-auto inline-flex shrink-0 items-center justify-center self-center rounded-soft p-2.5 text-muted hover:bg-powder hover:text-ink"
+            >
+              <SettingsIcon className="h-5 w-5" aria-hidden="true" />
+            </Link>
+          )}
         </div>
 
         {!isOwnProfile && (
