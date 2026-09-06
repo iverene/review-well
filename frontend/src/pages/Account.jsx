@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
-import { useLocation, Link } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
 import axios from 'axios'
-import { ArrowLeft } from 'lucide-react'
+import { Mail } from 'lucide-react'
 
 import { useAuth } from '../contexts/AuthContext'
 import EditProfile from '../components/profile/EditProfile'
@@ -12,7 +12,7 @@ import { getApiErrorMessage } from '../utils/apiError'
 import { ProfileSkeleton } from '../components/common/Skeleton'
 
 const Account = () => {
-  const { refreshUser } = useAuth()
+  const { user, refreshUser } = useAuth()
   const location = useLocation()
   const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -84,10 +84,18 @@ const Account = () => {
 
   return (
     <PageContainer>
-      <Link to="/settings" className="mb-3 inline-flex items-center gap-2 text-sm font-extrabold text-muted hover:text-ink">
-        <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back to settings
-      </Link>
       <PageHeader title={isOnboarding ? 'Complete your profile' : 'Account'} />
+      {user?.email && (
+        <div className="mt-3 flex items-center gap-3" aria-label="Signed in">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-powder" aria-hidden="true">
+            <Mail className="h-4 w-4 text-ink" />
+          </span>
+          <span>
+            <span className="block text-xs font-extrabold uppercase tracking-widest text-muted">Signed in as</span>
+            <span className="block text-sm font-bold text-ink">{user.email}</span>
+          </span>
+        </div>
+      )}
       {isOnboarding && (
         <p className="mt-2 text-muted">
           Add your academic information before you continue.

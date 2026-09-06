@@ -46,7 +46,7 @@ describe('Settings', () => {
   it('links to the account page from the Account section', async () => {
     render(<MemoryRouter><Settings /></MemoryRouter>)
     await screen.findByRole('heading', { name: 'Settings' })
-    expect(screen.getByText('me@example.com')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /Account information/ })).toHaveAttribute('href', '/settings/account')
+    expect(screen.queryByText('me@example.com')).toBeNull()
   })
 })

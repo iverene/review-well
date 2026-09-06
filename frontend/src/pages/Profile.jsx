@@ -1,12 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import axios from 'axios'
-import { Bookmark, GraduationCap, LibraryBig, Pencil } from 'lucide-react'
+import { Bookmark, LibraryBig, Pencil } from 'lucide-react'
 
 import { useAuth } from '../contexts/AuthContext'
 import FollowButton from '../components/social/FollowButton'
 import ErrorAlert from '../components/common/ErrorAlert'
-import PageHeader from '../components/common/PageHeader'
 import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
 import { formatYearLevel } from '../utils/profile'
@@ -133,33 +132,29 @@ const Profile = () => {
 
   return (
     <PageContainer>
-      <PageHeader title="Profile" />
       {/* Profile header (cardless) */}
       <div className="mt-5" aria-label="Profile">
-        <div className="flex items-center gap-4">
+        <h1 className="font-display text-2xl font-bold text-ink md:text-3xl">{profile.displayName}</h1>
+        <div className="mt-3 flex items-center gap-4">
           {profile.avatarUrl ? (
             <img
               src={profile.avatarUrl}
               alt={profile.displayName}
-              className="h-14 w-14 rounded-full border-2 border-stone object-cover md:h-20 md:w-20"
+              className="h-16 w-16 rounded-full border-2 border-stone object-cover md:h-24 md:w-24"
             />
           ) : (
-            <div className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-stone bg-blush font-display text-xl font-bold text-ink md:h-20 md:w-20 md:text-2xl" aria-hidden="true">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-stone bg-blush font-display text-2xl font-bold text-ink md:h-24 md:w-24 md:text-3xl" aria-hidden="true">
               {profile.displayName?.charAt(0).toUpperCase() || 'U'}
             </div>
           )}
           <div className="min-w-0 flex-1">
-            <h1 className="font-display text-xl font-bold text-ink md:text-3xl">{profile.displayName}</h1>
             {(profile.school || profile.program || profile.major || profile.yearLevel) && (
-              <div className="mt-1.5 space-y-0.5" aria-label="School information">
+              <div className="space-y-0.5" aria-label="School information">
                 {profile.school && (
-                  <p className="flex items-center gap-1.5 text-sm font-bold text-ink">
-                    <GraduationCap className="h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
-                    {profile.school}
-                  </p>
+                  <p className="text-sm font-bold text-ink">{profile.school}</p>
                 )}
                 {(profile.program || profile.major || profile.yearLevel) && (
-                  <p className="pl-[22px] text-xs text-muted">
+                  <p className="mt-0.5 text-xs text-muted">
                     {[profile.program, profile.major, formatYearLevel(profile.yearLevel)].filter(Boolean).join(' • ')}
                   </p>
                 )}

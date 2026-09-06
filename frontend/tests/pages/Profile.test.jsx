@@ -117,9 +117,9 @@ describe('Profile', () => {
     expect(await screen.findByText('Ann Public Guide')).toBeInTheDocument()
   })
 
-  it('shows a fixed Profile header without the kicker', async () => {
+  it('shows the display name as the page header', async () => {
     renderProfile('/profile', '/profile')
-    expect(await screen.findByRole('heading', { name: 'Profile', level: 1 })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Me User', level: 1 })).toBeInTheDocument()
     expect(screen.queryByText('Your study desk')).not.toBeInTheDocument()
     expect(screen.queryByText('Study buddy')).not.toBeInTheDocument()
   })

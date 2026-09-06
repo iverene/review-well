@@ -28,15 +28,17 @@ describe('Account', () => {
     URL.createObjectURL = vi.fn(() => 'blob:preview')
     URL.revokeObjectURL = vi.fn()
     useAuth.mockReturnValue({
+      user: { email: 'me@example.com' },
       refreshUser: vi.fn().mockResolvedValue({}),
     })
     axios.get.mockResolvedValue({ data: { user: profile } })
   })
 
-  it('renders the account form with a back link to settings', async () => {
+  it('renders the signed-in email and the account form', async () => {
     render(<MemoryRouter><Account /></MemoryRouter>)
     expect(await screen.findByRole('heading', { name: 'Account' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Back to settings/ })).toHaveAttribute('href', '/settings')
+    expect(screen.getByText('me@example.com')).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /Back to settings/ })).toBeNull()
   })
 
   it('uploads a new avatar when a valid image is chosen', async () => {
