@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import axios from 'axios'
-import { Bookmark, GraduationCap, LibraryBig, Settings as SettingsIcon } from 'lucide-react'
+import { Bookmark, GraduationCap, LibraryBig, Pencil } from 'lucide-react'
 
 import { useAuth } from '../contexts/AuthContext'
 import FollowButton from '../components/social/FollowButton'
@@ -9,6 +9,7 @@ import ErrorAlert from '../components/common/ErrorAlert'
 import PageHeader from '../components/common/PageHeader'
 import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
+import { formatYearLevel } from '../utils/profile'
 import { ProfileSkeleton } from '../components/common/Skeleton'
 
 const ReviewerTile = ({ reviewer, showVisibility }) => (
@@ -150,26 +151,29 @@ const Profile = () => {
           <div className="min-w-0 flex-1">
             <h1 className="font-display text-xl font-bold text-ink md:text-3xl">{profile.displayName}</h1>
             {(profile.school || profile.program || profile.major || profile.yearLevel) && (
-              <div className="mt-1.5 flex flex-wrap items-center gap-1.5" aria-label="School information">
-                <GraduationCap className="h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
-                {[profile.school, profile.program, profile.major, profile.yearLevel]
-                  .filter(Boolean)
-                  .map((detail) => (
-                    <span key={detail} className="rounded-full bg-powder px-2.5 py-0.5 text-xs font-bold text-ink">
-                      {detail}
-                    </span>
-                  ))}
+              <div className="mt-1.5 space-y-0.5" aria-label="School information">
+                {profile.school && (
+                  <p className="flex items-center gap-1.5 text-sm font-bold text-ink">
+                    <GraduationCap className="h-4 w-4 shrink-0 text-accent" aria-hidden="true" />
+                    {profile.school}
+                  </p>
+                )}
+                {(profile.program || profile.major || profile.yearLevel) && (
+                  <p className="pl-[22px] text-xs text-muted">
+                    {[profile.program, profile.major, formatYearLevel(profile.yearLevel)].filter(Boolean).join(' • ')}
+                  </p>
+                )}
               </div>
             )}
           </div>
           {isOwnProfile && (
             <Link
-              to="/settings"
-              aria-label="Settings"
-              title="Settings"
+              to="/settings/account"
+              aria-label="Edit account"
+              title="Edit account"
               className="ml-auto inline-flex shrink-0 items-center justify-center self-center rounded-soft p-2.5 text-muted hover:bg-powder hover:text-ink"
             >
-              <SettingsIcon className="h-5 w-5" aria-hidden="true" />
+              <Pencil className="h-5 w-5" aria-hidden="true" />
             </Link>
           )}
         </div>

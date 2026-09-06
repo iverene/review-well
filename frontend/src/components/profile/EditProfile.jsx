@@ -1,6 +1,8 @@
 import { useState, useRef } from 'react'
 import { Camera, Loader2 } from 'lucide-react'
 
+import { YEAR_LEVELS } from '../../utils/profile'
+
 const AVATAR_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 const AVATAR_MAX_BYTES = 2 * 1024 * 1024
 
@@ -56,15 +58,7 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
     }
   }
 
-  const yearLevels = [
-    { value: 'freshman', label: 'Freshman' },
-    { value: 'sophomore', label: 'Sophomore' },
-    { value: 'junior', label: 'Junior' },
-    { value: 'senior', label: 'Senior' },
-    { value: 'graduate', label: 'Graduate' },
-    { value: 'phd', label: 'PhD' },
-    { value: 'other', label: 'Other' },
-  ]
+  const yearLevels = YEAR_LEVELS
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">

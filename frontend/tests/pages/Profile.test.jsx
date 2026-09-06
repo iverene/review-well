@@ -127,7 +127,7 @@ describe('Profile', () => {
   it('shows a cardless header with settings gear and no find-friends button', async () => {
     renderProfile('/profile', '/profile')
     await screen.findByText('Me User')
-    expect(screen.getByRole('link', { name: 'Settings' })).toHaveAttribute('href', '/settings')
+    expect(screen.getByRole('link', { name: 'Edit account' })).toHaveAttribute('href', '/settings/account')
     expect(screen.queryByRole('link', { name: /Find friends/ })).toBeNull()
     expect(screen.queryByText('Your study desk')).toBeNull()
   })
@@ -135,7 +135,7 @@ describe('Profile', () => {
   it('shows no settings gear on other profiles', async () => {
     renderProfile('/profile/user-9', '/profile/:userId')
     await screen.findByText('Ann Lee')
-    expect(screen.queryByRole('link', { name: 'Settings' })).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Edit account' })).toBeNull()
     expect(screen.getByRole('button', { name: 'Follow' })).toBeInTheDocument()
   })
 
