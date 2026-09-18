@@ -83,6 +83,17 @@ describe('Reviewer File Routes', () => {
       expect(response.body.error).toBe('guest-write-blocked')
     })
 
+    it('should return 401 (not 400) for guests even with a disallowed file type', async () => {
+      const app = createApp(null)
+      const response = await request(app)
+        .post('/api/reviewer-files')
+        .field('reviewerId', ownedReviewer.id)
+        .attach('file', Buffer.from('MZ fake exe'), 'malware.exe')
+
+      expect(response.status).toBe(401)
+      expect(response.body.error).toBe('guest-write-blocked')
+    })
+
     it('should return 403 when the reviewer belongs to someone else', async () => {
       reviewerModel.findById.mockResolvedValue(ownedReviewer)
 
@@ -146,6 +157,30 @@ describe('Reviewer File Routes', () => {
 
       expect(response.status).toBe(401)
       expect(response.body.error).toBe('guest-write-blocked')
+    })
+
+    it('should return 403 when the reviewer belongs to someone else', async () => {
+      reviewerModel.findById.mockResolvedValue(ownedReviewer)
+
+      const app = createApp({ id: 'user-other' })
+      const response = await request(app)
+        .put(`/api/reviewer-files/${ownedReviewer.id}`)
+        .attach('file', pdfBuffer, 'notes.pdf')
+
+      expect(response.status).toBe(403)
+    })
+
+    it('should return 400 for oversize (>25 MB) uploads', async () => {
+      reviewerModel.findById.mockResolvedValue(ownedReviewer)
+
+      const bigBuffer = Buffer.alloc(26 * 1024 * 1024, 0)
+      const app = createApp(OWNER)
+      const response = await request(app)
+        .put(`/api/reviewer-files/${ownedReviewer.id}`)
+        .attach('file', bigBuffer, 'huge.pdf')
+
+      expect(response.status).toBe(400)
+      expect(response.body.error).toBe('File too large. Maximum size is 25MB')
     })
   })
 })

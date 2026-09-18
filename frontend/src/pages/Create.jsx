@@ -142,14 +142,27 @@ const Create = () => {
     }
 
     setSaving(true)
+    let reviewerId = null
     try {
       const response = await axios.post('/api/reviewers', { ...formData }, { withCredentials: true })
-      const reviewerId = response.data.reviewer.id
+      reviewerId = response.data.reviewer.id
       await uploadSourceFile(reviewerId, sourceFile)
       navigate(`/workspace/${reviewerId}`)
     } catch (createError) {
       console.error('Failed to create reviewer:', createError)
-      setError(getApiErrorMessage(createError, 'Unable to create your reviewer. Please try again.'))
+      // Roll back the just-created reviewer when the file upload step fails,
+      // so no orphan file-less reviewer remains (plan error-handling section).
+      // Best-effort: ignore delete errors and surface the upload error.
+      if (reviewerId && createError.config?.url === '/api/reviewer-files') {
+        try {
+          await axios.delete(`/api/reviewers/${reviewerId}`, { withCredentials: true })
+        } catch (rollbackError) {
+          console.error('Failed to roll back orphan reviewer:', rollbackError)
+        }
+        setError(getApiErrorMessage(createError, 'File upload failed, so your reviewer was not created. Please try again! 💌'))
+      } else {
+        setError(getApiErrorMessage(createError, 'Unable to create your reviewer. Please try again.'))
+      }
     } finally {
       setSaving(false)
     }
