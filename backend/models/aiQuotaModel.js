@@ -55,4 +55,69 @@ const getRemainingQuota = async (userId, limit = 50) => {
   return Math.max(0, limit - quota.generationsUsed)
 }
 
-export { getQuota, checkQuota, incrementUsage, getRemainingQuota }
+// Blurting AI grade bucket: 5 grades per rolling 7-day window per user,
+// tracked via gradesUsed/gradesResetAt (mirrors the generation quota above).
+const GRADE_LIMIT = 5
+
+const getGradeQuota = async (userId) => {
+  const now = new Date()
+  const windowStart = new Date(now)
+  windowStart.setDate(windowStart.getDate() - 7) // Rolling 7-day window
+
+  const quota = await prisma.aiQuota.findFirst({
+    where: {
+      userId,
+      gradesResetAt: { gte: windowStart },
+    },
+    orderBy: { gradesResetAt: 'desc' },
+  })
+
+  return quota || { gradesUsed: 0, gradesResetAt: windowStart }
+}
+
+const checkGradeQuota = async (userId, limit = GRADE_LIMIT) => {
+  const quota = await getGradeQuota(userId)
+  return quota.gradesUsed < limit
+}
+
+const incrementGradeUsage = async (userId) => {
+  const now = new Date()
+  const windowStart = new Date(now)
+  windowStart.setDate(windowStart.getDate() - 7) // Rolling 7-day window
+
+  const latest = await prisma.aiQuota.findFirst({
+    where: { userId },
+    orderBy: { gradesResetAt: 'desc' },
+  })
+
+  if (latest && latest.gradesResetAt >= windowStart) {
+    return prisma.aiQuota.update({
+      where: { id: latest.id },
+      data: { gradesUsed: latest.gradesUsed + 1 },
+    })
+  }
+
+  if (latest) {
+    return prisma.aiQuota.update({
+      where: { id: latest.id },
+      data: { gradesUsed: 1, gradesResetAt: now },
+    })
+  }
+
+  return prisma.aiQuota.create({
+    data: {
+      userId,
+      generationsUsed: 0,
+      windowResetAt: now,
+      gradesUsed: 1,
+      gradesResetAt: now,
+    },
+  })
+}
+
+const getRemainingGrades = async (userId, limit = GRADE_LIMIT) => {
+  const quota = await getGradeQuota(userId)
+  return Math.max(0, limit - quota.gradesUsed)
+}
+
+export { getQuota, checkQuota, incrementUsage, getRemainingQuota, GRADE_LIMIT, getGradeQuota, checkGradeQuota, incrementGradeUsage, getRemainingGrades }

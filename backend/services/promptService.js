@@ -100,3 +100,29 @@ export const buildSummaryPrompt = (text) => {
     user: `Summarize the following content in 2-3 sentences:\n\n${text}`,
   }
 }
+
+export const GRADE_SYSTEM_PROMPT = `You are an academic recall grader. Grade a student's blurting dump (free recall written from memory) against the reference material.
+
+You must return ONLY valid JSON with the following structure:
+{
+  "score": 7,
+  "feedback": "1-3 sentences on what was recalled well and what was missed",
+  "missedPoints": ["Short phrases for each key point the dump missed"]
+}
+
+Rules:
+1. Score is an integer from 0 to 10 for coverage and accuracy of the recall
+2. Feedback is encouraging but honest about gaps
+3. missedPoints lists only genuinely missed key ideas (empty array when none)
+4. Return ONLY valid JSON, no additional text`
+
+export const buildGradePrompt = (promptText, dumpText, referenceText = '') => {
+  let userPrompt = `Blurting prompt:\n${promptText}\n\nStudent recall:\n${dumpText}`
+  if (referenceText) {
+    userPrompt += `\n\nReference material:\n${referenceText}`
+  }
+  return {
+    system: GRADE_SYSTEM_PROMPT,
+    user: userPrompt,
+  }
+}

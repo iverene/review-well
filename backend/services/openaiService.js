@@ -1,5 +1,5 @@
 import OpenAI from 'openai'
-import { buildExtractionPrompt, buildDeckPrompt } from './promptService.js'
+import { buildExtractionPrompt, buildDeckPrompt, buildGradePrompt } from './promptService.js'
 
 const MAX_DECK_CARDS = 40
 const MAX_DECK_PROMPTS = 5
@@ -167,4 +167,67 @@ const extractDeckAndPrompts = async (text, context = {}) => {
   return parseDeckContent(content)
 }
 
-export { extractStudyBlocks, getMockExtraction, isConfigured, extractDeckAndPrompts, capDeck, MAX_DECK_CARDS, MAX_DECK_PROMPTS }
+const parseGradeContent = (content) => {
+  let parsed
+  try {
+    parsed = JSON.parse(content)
+  } catch (error) {
+    const parseError = new Error('Failed to parse grade JSON')
+    parseError.code = 'GRADE_PARSE_FAILED'
+    throw parseError
+  }
+
+  const score = Number(parsed.score)
+  if (!Number.isInteger(score) || score < 0 || score > 10) {
+    const rangeError = new Error('Grade score out of range')
+    rangeError.code = 'GRADE_PARSE_FAILED'
+    throw rangeError
+  }
+
+  const missedPoints = Array.isArray(parsed.missedPoints)
+    ? parsed.missedPoints.filter((point) => typeof point === 'string' && point.trim().length > 0)
+    : []
+
+  return {
+    score,
+    feedback: typeof parsed.feedback === 'string' ? parsed.feedback : '',
+    missedPoints,
+  }
+}
+
+const gradeDump = async ({ promptText, dumpText, referenceText = '' } = {}, context = {}) => {
+  const openai = getClient()
+
+  if (!openai) {
+    console.log('OpenRouter not configured, returning mock grade')
+    return { score: 7, feedback: 'Good recall of the main ideas. Add more detail from the material.', missedPoints: [] }
+  }
+
+  const { system, user } = buildGradePrompt(promptText, dumpText, referenceText)
+
+  let response
+  try {
+    response = await openai.chat.completions.create({
+      model: context.model || 'openai/gpt-4',
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: user },
+      ],
+      temperature: 0.3,
+      max_tokens: 1000,
+      response_format: { type: 'json_object' },
+    })
+  } catch (error) {
+    console.error('OpenRouter grade error:', error)
+    const llmError = new Error('AI grading failed')
+    llmError.code = /timeout|timed out|abort|ETIMEDOUT|ECONNABORTED/i.test(error.message || '')
+      ? 'GRADE_TIMEOUT'
+      : 'GRADE_LLM_FAILED'
+    throw llmError
+  }
+
+  const content = response.choices[0].message.content
+  return parseGradeContent(content)
+}
+
+export { extractStudyBlocks, getMockExtraction, isConfigured, extractDeckAndPrompts, gradeDump, capDeck, MAX_DECK_CARDS, MAX_DECK_PROMPTS }

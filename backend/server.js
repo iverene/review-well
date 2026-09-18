@@ -45,6 +45,7 @@ app.use('/api/social', (await import('./routes/socialRoutes.js')).default)
 app.use('/api/profile', (await import('./routes/profileRoutes.js')).default)
 app.use('/api/contact', (await import('./routes/contactRoutes.js')).default)
 app.use('/api', (await import('./routes/flashcardRoutes.js')).default)
+app.use('/api', (await import('./routes/blurtingRoutes.js')).default)
 
 // Health check
 app.get('/api/health', (req, res) => {
