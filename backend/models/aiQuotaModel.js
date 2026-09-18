@@ -3,8 +3,7 @@ import { prisma } from '../config/database.js'
 const getQuota = async (userId) => {
   const now = new Date()
   const windowStart = new Date(now)
-  windowStart.setHours(0, 0, 0, 0)
-  windowStart.setDate(windowStart.getDate() - 1) // Last 24 hours
+  windowStart.setDate(windowStart.getDate() - 7) // Rolling 7-day window
 
   const quota = await prisma.aiQuota.findFirst({
     where: {
@@ -25,7 +24,7 @@ const checkQuota = async (userId, limit = 50) => {
 const incrementUsage = async (userId) => {
   const now = new Date()
   const windowStart = new Date(now)
-  windowStart.setHours(0, 0, 0, 0)
+  windowStart.setDate(windowStart.getDate() - 7) // Rolling 7-day window
 
   const existingQuota = await prisma.aiQuota.findFirst({
     where: {

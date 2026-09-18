@@ -52,6 +52,48 @@ export const buildExtractionPrompt = (text, context = {}) => {
   }
 }
 
+export const DECK_SYSTEM_PROMPT = `You are an academic study guide generator. Your task is to generate flashcards and blurting prompts from educational content.
+
+You must return ONLY valid JSON with the following structure:
+{
+  "cards": [
+    { "front": "Term or Concept", "back": "Definition or explanation" }
+  ],
+  "prompts": [
+    "Open-ended recall question about the material"
+  ]
+}
+
+Rules:
+1. Extract ALL important concepts, terms, and definitions as flashcards
+2. Generate up to 5 open-ended blurting prompts that test recall of big ideas
+3. Keep fronts short (a term or question) and backs concise (1-3 sentences)
+4. Preserve the original meaning and context
+5. Return ONLY valid JSON, no additional text`
+
+export const buildDeckPrompt = (text, context = {}) => {
+  const { courseCode, courseDescription, examType } = context
+
+  let userPrompt = 'Generate flashcards and blurting prompts from the following content:\n\n'
+
+  if (courseCode) {
+    userPrompt += `Course: ${courseCode}\n`
+  }
+  if (courseDescription) {
+    userPrompt += `Description: ${courseDescription}\n`
+  }
+  if (examType) {
+    userPrompt += `Exam Type: ${examType}\n`
+  }
+
+  userPrompt += `\nContent:\n${text}`
+
+  return {
+    system: DECK_SYSTEM_PROMPT,
+    user: userPrompt,
+  }
+}
+
 export const buildSummaryPrompt = (text) => {
   return {
     system: 'You are a helpful assistant that summarizes academic content.',

@@ -1,7 +1,7 @@
 import express from 'express'
 import { extractFromUpload, getQuotaStatus } from '../controllers/aiController.js'
 import { requireAuth } from '../middleware/auth.js'
-import { upload, handleUploadError } from '../middleware/upload.js'
+import { uploadReviewerFile, handleReviewerFileUploadError } from '../middleware/upload.js'
 
 const app = express.Router()
 
@@ -9,8 +9,8 @@ const app = express.Router()
 app.post(
   '/extract',
   requireAuth,
-  upload.single('file'),
-  handleUploadError,
+  uploadReviewerFile.single('file'),
+  handleReviewerFileUploadError,
   extractFromUpload
 )
 
