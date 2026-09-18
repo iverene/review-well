@@ -17,16 +17,8 @@ vi.mock('../../../models/reviewerModel.js', () => ({
   remove: vi.fn(),
   count: vi.fn(),
 }))
-vi.mock('../../../models/blockModel.js', () => ({
-  findByReviewer: vi.fn(),
-  findById: vi.fn(),
-  create: vi.fn(),
-  createMany: vi.fn(),
-  update: vi.fn(),
-  remove: vi.fn(),
-  removeAllByReviewer: vi.fn(),
-  reorder: vi.fn(),
-  getMaxSortOrder: vi.fn(),
+vi.mock('../../../models/reviewerFileModel.js', () => ({
+  findByReviewerId: vi.fn(),
 }))
 vi.mock('../../../models/followModel.js', () => ({
   findByUsers: vi.fn(),
@@ -71,6 +63,9 @@ vi.mock('../../../models/reviewerFileModel.js', () => ({
 vi.mock('../../../models/flashcardModel.js', () => ({
   findByReviewer: vi.fn(),
 }))
+vi.mock('../../../services/adapters/storage.js', () => ({
+  createStorageAdapter: vi.fn(),
+}))
 
 import {
   getPublicReviewers,
@@ -81,11 +76,11 @@ import {
   deleteReviewer,
 } from '../../../controllers/reviewerController.js'
 import * as reviewerModel from '../../../models/reviewerModel.js'
-import * as blockModel from '../../../models/blockModel.js'
 import * as followModel from '../../../models/followModel.js'
 import * as notificationModel from '../../../models/notificationModel.js'
 import * as reviewerFileModel from '../../../models/reviewerFileModel.js'
 import * as flashcardModel from '../../../models/flashcardModel.js'
+import { createStorageAdapter } from '../../../services/adapters/storage.js'
 import * as cache from '../../../utils/cache.js'
 import { createMockRequest, createMockResponse } from '../../helpers/mocks.js'
 
@@ -399,6 +394,12 @@ describe('Reviewer Controller', () => {
   })
 
   describe('deleteReviewer', () => {
+    beforeEach(() => {
+      createStorageAdapter.mockReturnValue({
+        removePrefix: vi.fn().mockResolvedValue({ error: null, removed: 1 }),
+      })
+    })
+
     it('should delete reviewer when owner', async () => {
       const req = createMockRequest({
         params: { id: '1' },
@@ -428,6 +429,44 @@ describe('Reviewer Controller', () => {
       await deleteReviewer(req, res)
 
       expect(res.status).toHaveBeenCalledWith(403)
+    })
+
+    it('should remove versioned storage objects when the owner deletes', async () => {
+      const req = createMockRequest({
+        params: { id: '1' },
+        user: { id: 'user-123' },
+      })
+      const res = createMockResponse()
+      const removePrefix = vi.fn().mockResolvedValue({ error: null, removed: 2 })
+      createStorageAdapter.mockReturnValue({ removePrefix })
+
+      reviewerModel.findById.mockResolvedValue({ id: '1', authorId: 'user-123' })
+      reviewerModel.remove.mockResolvedValue({ id: '1' })
+
+      await deleteReviewer(req, res)
+
+      expect(reviewerModel.remove).toHaveBeenCalledWith('1')
+      expect(removePrefix).toHaveBeenCalledWith('user-123/1')
+      expect(res.json).toHaveBeenCalledWith({ message: 'Reviewer deleted successfully' })
+    })
+
+    it('should still delete when storage cleanup fails', async () => {
+      const req = createMockRequest({
+        params: { id: '1' },
+        user: { id: 'user-123' },
+      })
+      const res = createMockResponse()
+      createStorageAdapter.mockReturnValue({
+        removePrefix: vi.fn().mockResolvedValue({ error: 'boom' }),
+      })
+
+      reviewerModel.findById.mockResolvedValue({ id: '1', authorId: 'user-123' })
+      reviewerModel.remove.mockResolvedValue({ id: '1' })
+
+      await deleteReviewer(req, res)
+
+      expect(reviewerModel.remove).toHaveBeenCalledWith('1')
+      expect(res.json).toHaveBeenCalledWith({ message: 'Reviewer deleted successfully' })
     })
   })
 })

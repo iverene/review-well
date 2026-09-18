@@ -90,7 +90,6 @@ const findById = async (id) => {
     where: { id },
     include: {
       user: { select: { id: true, displayName: true, avatarUrl: true } },
-      blocks: { orderBy: [{ columnIndex: 'asc' }, { sortOrder: 'asc' }] },
       _count: { select: { saves: true } },
     },
   }))

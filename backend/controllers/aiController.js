@@ -1,11 +1,9 @@
 import { extractDeckAndPrompts, isConfigured } from '../services/openaiService.js'
 import { checkQuota, incrementUsage, getRemainingQuota } from '../models/aiQuotaModel.js'
+import { DECK_QUOTA_LIMIT } from '../constants/quotas.js'
 import * as flashcardModel from '../models/flashcardModel.js'
 import * as reviewerModel from '../models/reviewerModel.js'
 import { delPrefix } from '../utils/cache.js'
-
-// Deck quota: 3 AI generations per rolling 7-day window per user.
-const DECK_QUOTA_LIMIT = 3
 
 const wantsOverwrite = (value) => value === true || value === 'true'
 

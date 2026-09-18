@@ -28,18 +28,6 @@ vi.mock('../../models/followModel.js', () => ({
   countFollowing: vi.fn(),
   isFollowing: vi.fn(),
 }))
-vi.mock('../../models/blockModel.js', () => ({
-  findByReviewer: vi.fn(),
-  findById: vi.fn(),
-  create: vi.fn(),
-  createMany: vi.fn(),
-  update: vi.fn(),
-  remove: vi.fn(),
-  removeAllByReviewer: vi.fn(),
-  reorder: vi.fn(),
-  getMaxSortOrder: vi.fn(),
-}))
-
 import passport from 'passport'
 
 import authRoutes from '../../routes/authRoutes.js'

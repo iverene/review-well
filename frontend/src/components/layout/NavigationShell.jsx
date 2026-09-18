@@ -11,22 +11,12 @@ import Sidebar from './Sidebar'
 const NavigationShell = ({ children }) => {
   const { isAuthenticated } = useAuth()
   const location = useLocation()
-  const isWorkspace = location.pathname.startsWith('/workspace')
   // Reviewer reading view keeps a visible scrollbar; everything else hides it.
   const reviewerSegment = location.pathname.split('/')[2]
   const isReviewerDetail = location.pathname.startsWith('/reviewer/')
     && !!reviewerSegment
     && reviewerSegment !== 'my'
     && reviewerSegment !== 'public'
-
-  // Defensive: never render global chrome inside the fullscreen study desk.
-  if (isWorkspace) {
-    return (
-      <div className="workspace-shell" style={{ width: '100vw', height: '100vh', overflow: 'hidden', background: '#F8F9FA' }}>
-        {children}
-      </div>
-    )
-  }
 
   return (
     <div className="relative flex h-screen bg-paper">

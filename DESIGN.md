@@ -37,7 +37,7 @@ Define the visual system with CSS variables so the palette remains consistent:
 - **Butter `#F9E4A8`:** AI tools, study prompts, and highlights.
 - **Berry `#C96A83`:** primary action emphasis and important focus states.
 
-Cream and cocoa form the foundation. Pastels should be used as accents, tags, block headers, illustration details, and selected surfaces. Maintain readable contrast and never communicate state with color alone.
+Cream and cocoa form the foundation. Pastels should be used as accents, tags, headers, illustration details, and selected surfaces. Maintain readable contrast and never communicate state with color alone.
 
 Do not default to a dark interface. Do not use large gradients, floating color orbs, bokeh, or a one-color screen.
 
@@ -53,11 +53,11 @@ Use friendly weight and generous line height instead of extreme size. Keep text 
 
 ## 5. Shape, Texture, and Components
 
-- Use rounded corners from 10px to 16px for cards, buttons, inputs, avatars, and study blocks.
+- Use rounded corners from 10px to 16px for cards, buttons, inputs, avatars, and study surfaces.
 - Use soft cocoa borders, occasional offset outlines, and tiny sticker-like labels to create a handmade feel.
 - Use subtle notebook dots, paper grain, washi-tape strips, and star marks as low-contrast texture.
 - Keep decorative elements sparse and anchored to nearby content.
-- Reserve cards for repeated content, dialogs, study blocks, and framed tools. Do not nest cards inside cards.
+- Reserve cards for repeated content, dialogs, study tools, and framed tools. Do not nest cards inside cards.
 - Keep controls at stable dimensions so icons, labels, and state text never cause layout shifts.
 - Use icon plus text for unfamiliar actions, and familiar icons with tooltips for compact tools.
 
@@ -68,7 +68,7 @@ Buttons should feel like friendly stationery labels, not pills floating in space
 The header should resemble the top of a decorated study notebook:
 
 - Left: `logo.png` icon plus `word-logo.png` wordmark.
-- Center or below on workspace pages: a concise page title or reviewer context.
+- Center or below on reviewer pages: a concise page title or reviewer context.
 - Right: account controls and the most relevant action.
 - Authenticated users see profile, notifications, and creation actions.
 - Guests see `Guest - View only` and a clear `Sign in with Google` action.
@@ -119,19 +119,18 @@ Public reviewer browsing should include:
 
 The public browsing path must work for both guests and Google users. Guest interactions stop at reading: save, follow, create, edit, AI, and notifications remain authenticated-only.
 
-## 9. Reviewer Workspace
+## 9. Reviewer Study Hub
 
-The workspace should feel like arranging colorful index cards on a clean desk.
+The reviewer detail view is a study hub with tabbed modes plus a focus dock, all in kawaii tokens:
 
-- Use a calm Cream canvas with a clear content boundary.
-- Give each block type a restrained pastel accent and a simple icon.
-- Use Cocoa text and outlines for reliable readability.
-- Keep the two-column study layout stable and comfortable on desktop.
-- Make add, save, reorder, and export controls obvious.
-- Show save feedback as a friendly state: `Saving`, `Saved`, or `Needs attention`.
-- Use sticker-like block labels sparingly so the study content stays primary.
-- Style the AI extraction action with Butter and a small sparkle detail.
-- Keep destructive actions behind confirmation or undo.
+- Use a calm Cream page with the reviewer header (title, course meta, visibility control) on a Paper card.
+- **Source tab:** the uploaded file (embedded viewer or download link) on Paper.
+- **Flashcards tab:** Butter accents for the AI deck action and quota states (`decksLeft`); Mint for known/complete states; flip, add, edit, and delete stay inline.
+- **Blurting tab:** open-ended recall prompts with AI grades (score, feedback, missed points) in Powder info surfaces; self-rating fallback when the grade quota runs out.
+- **Pomodoro dock:** focus timer linked to the reviewer with streaks and the daily goal, styled as a compact Mint/Butter companion panel.
+- Guest nudges (`returnTo` links) use Powder surfaces with Cocoa text — never color alone.
+- Keep destructive actions (card delete, reviewer delete) behind confirmation.
+- Show quota and save feedback as friendly states: `Saving`, `Saved`, or `Needs attention`.
 
 ## 10. Motion and Feedback
 
@@ -139,7 +138,7 @@ Motion should feel gentle and hand-placed, not hyperactive:
 
 - Welcome content fades in with a short stagger.
 - Menus open with a small soft pop from their trigger.
-- New study blocks settle into place with a short ease.
+- New study cards settle into place with a short ease.
 - Buttons use subtle press feedback.
 - Saved states can briefly show a tiny sparkle or color transition.
 - Empty-state illustrations may have a slow, occasional bob if it does not distract.
@@ -153,7 +152,7 @@ Respect `prefers-reduced-motion`. Avoid constant floating, exaggerated bouncing,
 - Keep keyboard focus visible and rounded to match the component language.
 - Keep touch targets at least 44px where practical.
 - Ensure long wordmark and button labels wrap or resize without overlap.
-- Use stable dimensions for headers, docks, toolbars, cards, and block tiles.
+- Use stable dimensions for headers, docks, toolbars, cards, and study tiles.
 - Never rely on color alone for permissions or status.
 - Make `Guest - View only` visible in both text and behavior.
 - Test the branded shell at mobile, tablet, and desktop widths.
@@ -165,6 +164,6 @@ Respect `prefers-reduced-motion`. Avoid constant floating, exaggerated bouncing,
 3. Redesign login around Google and Guest choices.
 4. Build public discovery as the guest's primary destination.
 5. Rework desktop and mobile navigation with authenticated and guest states.
-6. Restyle reviewer blocks, workspace controls, and save feedback.
+6. Restyle the study hub, quota feedback, and save feedback.
 7. Add restrained kawaii details, illustration moments, and reduced-motion fallbacks.
 8. Validate contrast, responsive layout, guest restrictions, and Google sign-in behavior.

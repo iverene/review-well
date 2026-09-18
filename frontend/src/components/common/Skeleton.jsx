@@ -30,8 +30,8 @@ const NotificationsSkeleton = () => (
   </div>
 )
 
-const WorkspaceSkeleton = () => (
-  <div className="space-y-4" role="status" aria-label="Loading workspace"><Skeleton className="h-14 w-full" /><div className="mx-auto min-h-[420px] max-w-[210mm] space-y-5 border-2 border-stone bg-paper p-8"><Skeleton className="h-10 w-3/5" /><Skeleton className="h-4 w-1/3" /><Skeleton className="h-24 w-full" /><Skeleton className="h-24 w-full" /></div></div>
+const ReviewerSkeleton = () => (
+  <div className="space-y-4" role="status" aria-label="Loading reviewer"><Skeleton className="h-14 w-full" /><div className="mx-auto min-h-[420px] max-w-[210mm] space-y-5 border-2 border-stone bg-paper p-8"><Skeleton className="h-10 w-3/5" /><Skeleton className="h-4 w-1/3" /><Skeleton className="h-24 w-full" /><Skeleton className="h-24 w-full" /></div></div>
 )
 
-export { Skeleton, ReviewerGridSkeleton, ProfileSkeleton, NotificationsSkeleton, WorkspaceSkeleton }
+export { Skeleton, ReviewerGridSkeleton, ProfileSkeleton, NotificationsSkeleton, ReviewerSkeleton }

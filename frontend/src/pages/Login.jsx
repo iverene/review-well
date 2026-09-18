@@ -9,7 +9,14 @@ const Login = () => {
   const { isAuthenticated, isGuest, loading, continueAsGuest } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const from = location.state?.from?.pathname || '/'
+  // Guest nudges link here as `/login?returnTo=<hub URL>`; ProtectedRoute
+  // redirects use `location.state.from`. Prefer the query param, accept only
+  // internal paths so a crafted link can't bounce users off-site.
+  const searchParams = new URLSearchParams(location.search)
+  const returnTo = searchParams.get('returnTo')
+  const from = (returnTo?.startsWith('/') && !returnTo.startsWith('//'))
+    ? returnTo
+    : location.state?.from?.pathname || '/'
 
   useEffect(() => {
     if ((isAuthenticated || isGuest) && !loading) {

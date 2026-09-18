@@ -28,11 +28,11 @@ const About = () => (
     </section>
 
     <div className="mt-6 grid gap-4 sm:grid-cols-2">
-      <Feature icon={FileText} title="Docs-style workspace">
-        Arrange lesson banners, topics, tables, and terms cards on bounded, printable sheets with themes and paper sizes.
+      <Feature icon={FileText} title="Upload your slides">
+        Attach a PDF or PPTX and open it in the study hub alongside AI-built flashcards, blurting prompts, and a focus timer.
       </Feature>
-      <Feature icon={Sparkles} title="AI extraction">
-        Upload lecture slides and watch them unfold into structured notes, headings, and summaries.
+      <Feature icon={Sparkles} title="AI study decks">
+        Generate flashcard decks and recall prompts from your file — 3 generations per rolling 7-day window.
       </Feature>
       <Feature icon={Users} title="Study buddies">
         Find friends, follow their guides, bookmark favorites, and share reviewers with a link.

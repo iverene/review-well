@@ -32,32 +32,7 @@ const updateReviewerSchema = z.object({
   }).optional(),
 })
 
-const createBlockSchema = z.object({
-  blockType: z.enum(['topic_banner', 'sub_topic_banner', 'content_block', 'table', 'lesson_banner', 'image', 'divider', 'two_column', 'terms_card', 'page_break']),
-  columnIndex: z.number().int().min(1).max(2).default(1),
-  sortOrder: z.number().int().min(0),
-  contentData: z.record(z.any()),
-})
-
-const updateBlockSchema = z.object({
-  blockType: z.enum(['topic_banner', 'sub_topic_banner', 'content_block', 'table', 'lesson_banner', 'image', 'divider', 'two_column', 'terms_card', 'page_break']).optional(),
-  columnIndex: z.number().int().min(1).max(2).optional(),
-  sortOrder: z.number().int().min(0).optional(),
-  contentData: z.record(z.any()).optional(),
-})
-
-const reorderBlocksSchema = z.object({
-  blocks: z.array(z.object({
-    id: z.string().uuid(),
-    columnIndex: z.number().int().min(1).max(2),
-    sortOrder: z.number().int().min(0),
-  })),
-})
-
 export {
   createReviewerSchema,
   updateReviewerSchema,
-  createBlockSchema,
-  updateBlockSchema,
-  reorderBlocksSchema,
 }

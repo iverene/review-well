@@ -1,16 +1,12 @@
 import * as reviewerModel from '../models/reviewerModel.js'
-import * as blockModel from '../models/blockModel.js'
 import * as followModel from '../models/followModel.js'
 import * as notificationModel from '../models/notificationModel.js'
 import * as reviewerFileModel from '../models/reviewerFileModel.js'
 import * as flashcardModel from '../models/flashcardModel.js'
 import { getRemainingQuota, getRemainingGrades, GRADE_LIMIT } from '../models/aiQuotaModel.js'
+import { DECK_QUOTA_LIMIT } from '../constants/quotas.js'
 import { createStorageAdapter } from '../services/adapters/storage.js'
 import { del, delPrefix } from '../utils/cache.js'
-
-// Deck quota mirrors aiController.DECK_QUOTA_LIMIT (3 AI generations per
-// rolling 7-day window per user).
-const DECK_QUOTA_LIMIT = 3
 
 const isVisibleToFollowers = (reviewer) => reviewer.visibility === 'public' && reviewer.isDraft === false
 
@@ -230,6 +226,18 @@ const deleteReviewer = async (req, res) => {
     }
 
     await reviewerModel.remove(id)
+    // Best-effort: remove versioned source objects ({authorId}/{id}/v*).
+    // File DB rows cascade via Prisma; storage cleanup must never fail the
+    // request, so failures are logged and swallowed.
+    try {
+      const storage = createStorageAdapter()
+      const { error: storageError } = await storage.removePrefix(`${existing.authorId}/${id}`)
+      if (storageError) {
+        console.error('Reviewer storage cleanup error:', storageError)
+      }
+    } catch (error) {
+      console.error('Reviewer storage cleanup error:', error)
+    }
     delPrefix('reviewers:')
     delPrefix('social:')
     del(`profile:${existing.authorId}`)
@@ -237,105 +245,6 @@ const deleteReviewer = async (req, res) => {
   } catch (error) {
     console.error('Delete reviewer error:', error)
     res.status(500).json({ error: 'Failed to delete reviewer' })
-  }
-}
-
-const addBlock = async (req, res) => {
-  try {
-    const { reviewerId } = req.params
-    const data = req.validatedBody
-
-    const reviewer = await reviewerModel.findById(reviewerId)
-    if (!reviewer) {
-      return res.status(404).json({ error: 'Reviewer not found' })
-    }
-
-    if (reviewer.authorId !== req.user.id) {
-      return res.status(403).json({ error: 'Not authorized to modify this reviewer' })
-    }
-
-    const maxSortOrder = await blockModel.getMaxSortOrder(reviewerId, data.columnIndex)
-    const block = await blockModel.create({
-      ...data,
-      reviewerId,
-      sortOrder: maxSortOrder + 1,
-    })
-
-    delPrefix('reviewers:')
-    res.status(201).json({ block })
-  } catch (error) {
-    console.error('Add block error:', error)
-    res.status(500).json({ error: 'Failed to add block' })
-  }
-}
-
-const updateBlock = async (req, res) => {
-  try {
-    const { blockId } = req.params
-    const data = req.validatedBody
-
-    const existing = await blockModel.findById(blockId)
-    if (!existing) {
-      return res.status(404).json({ error: 'Block not found' })
-    }
-
-    const reviewer = await reviewerModel.findById(existing.reviewerId)
-    if (reviewer.authorId !== req.user.id) {
-      return res.status(403).json({ error: 'Not authorized to modify this block' })
-    }
-
-    const block = await blockModel.update(blockId, data)
-    delPrefix('reviewers:')
-    res.json({ block })
-  } catch (error) {
-    console.error('Update block error:', error)
-    res.status(500).json({ error: 'Failed to update block' })
-  }
-}
-
-const deleteBlock = async (req, res) => {
-  try {
-    const { blockId } = req.params
-
-    const existing = await blockModel.findById(blockId)
-    if (!existing) {
-      return res.status(404).json({ error: 'Block not found' })
-    }
-
-    const reviewer = await reviewerModel.findById(existing.reviewerId)
-    if (reviewer.authorId !== req.user.id) {
-      return res.status(403).json({ error: 'Not authorized to delete this block' })
-    }
-
-    await blockModel.remove(blockId)
-    delPrefix('reviewers:')
-    res.json({ message: 'Block deleted successfully' })
-  } catch (error) {
-    console.error('Delete block error:', error)
-    res.status(500).json({ error: 'Failed to delete block' })
-  }
-}
-
-const reorderBlocks = async (req, res) => {
-  try {
-    const { reviewerId } = req.params
-    const { blocks } = req.validatedBody
-
-    const reviewer = await reviewerModel.findById(reviewerId)
-    if (!reviewer) {
-      return res.status(404).json({ error: 'Reviewer not found' })
-    }
-
-    if (reviewer.authorId !== req.user.id) {
-      return res.status(403).json({ error: 'Not authorized to modify this reviewer' })
-    }
-
-    await blockModel.reorder(reviewerId, blocks)
-    delPrefix('reviewers:')
-    res.json({ message: 'Blocks reordered successfully' })
-  } catch (error) {
-    console.error('Reorder blocks error:', error)
-    res.status(500).json({ error: 'Failed to reorder blocks' })
   }
 }
 
@@ -347,8 +256,4 @@ export {
   createReviewer,
   updateReviewer,
   deleteReviewer,
-  addBlock,
-  updateBlock,
-  deleteBlock,
-  reorderBlocks,
 }

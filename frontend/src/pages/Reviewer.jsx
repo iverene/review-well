@@ -20,7 +20,7 @@ import ErrorAlert from '../components/common/ErrorAlert'
 import PageHeader from '../components/common/PageHeader'
 import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
-import { WorkspaceSkeleton } from '../components/common/Skeleton'
+import { ReviewerSkeleton } from '../components/common/Skeleton'
 
 const recentReviewersKey = (userId) => `review-well-recent-reviewers:${userId}`
 
@@ -74,7 +74,7 @@ const Reviewer = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isAuthenticated, user])
 
-  if (loading) return <WorkspaceSkeleton />
+  if (loading) return <ReviewerSkeleton />
 
   if (error || !reviewer) {
     return <div className="mx-auto max-w-xl py-16"><ErrorAlert>{error || 'Reviewer not found'}</ErrorAlert><Link to="/" className="mt-5 inline-flex items-center gap-2 font-extrabold text-muted hover:text-ink"><ArrowLeft className="h-4 w-4" /> Back home</Link></div>

@@ -11,7 +11,7 @@ import { useAuth } from '../contexts/AuthContext'
 const MAX_FILE_BYTES = 25 * 1024 * 1024
 const ACCEPTED_EXTENSIONS = ['.pdf', '.pptx']
 
-// Default theme applied at creation; theming lives in the workspace Format menu.
+// Default theme applied at creation; shown in the study-hub header.
 const defaultPalette = { name: 'Cocoa Classic', primary: '#7C6B5D', secondary: '#F5EAD3', accent: '#FCF7EC' }
 
 const isAcceptedFile = (file) => {
@@ -125,7 +125,7 @@ const Create = () => {
           payload.append('file', sourceFile)
           await axios.put(`/api/reviewer-files/${editReviewerId}`, payload, { withCredentials: true })
         }
-        navigate(`/workspace/${editReviewerId}`)
+        navigate(`/reviewer/${editReviewerId}`)
       } catch (saveError) {
         console.error('Failed to update reviewer:', saveError)
         setError(getApiErrorMessage(saveError, 'Unable to save your reviewer. Please try again.'))
@@ -147,7 +147,7 @@ const Create = () => {
       const response = await axios.post('/api/reviewers', { ...formData }, { withCredentials: true })
       reviewerId = response.data.reviewer.id
       await uploadSourceFile(reviewerId, sourceFile)
-      navigate(`/workspace/${reviewerId}`)
+      navigate(`/reviewer/${reviewerId}`)
     } catch (createError) {
       console.error('Failed to create reviewer:', createError)
       // Roll back the just-created reviewer when the file upload step fails,
