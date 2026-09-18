@@ -2,7 +2,15 @@ import * as reviewerModel from '../models/reviewerModel.js'
 import * as blockModel from '../models/blockModel.js'
 import * as followModel from '../models/followModel.js'
 import * as notificationModel from '../models/notificationModel.js'
+import * as reviewerFileModel from '../models/reviewerFileModel.js'
+import * as flashcardModel from '../models/flashcardModel.js'
+import { getRemainingQuota, getRemainingGrades, GRADE_LIMIT } from '../models/aiQuotaModel.js'
+import { createStorageAdapter } from '../services/adapters/storage.js'
 import { del, delPrefix } from '../utils/cache.js'
+
+// Deck quota mirrors aiController.DECK_QUOTA_LIMIT (3 AI generations per
+// rolling 7-day window per user).
+const DECK_QUOTA_LIMIT = 3
 
 const isVisibleToFollowers = (reviewer) => reviewer.visibility === 'public' && reviewer.isDraft === false
 
@@ -116,7 +124,35 @@ const getReviewerById = async (req, res) => {
       // Unlisted reviewers are accessible via direct link but not listed
     }
 
-    res.json({ reviewer })
+    // Study-hub enrichment (strictly additive — existing fields untouched):
+    // fileUrl honors visibility (public → public URL; unlisted/private →
+    // 60s signed URL; private non-owner already 403'd above, before any URL).
+    let fileUrl = null
+    const file = await reviewerFileModel.findByReviewerId(id)
+    if (file) {
+      const storage = createStorageAdapter()
+      if (reviewer.visibility === 'public') {
+        const { data } = storage.getPublicUrl(file.storagePath)
+        fileUrl = data?.publicUrl || null
+      } else if (typeof storage.getSignedUrl === 'function') {
+        const { data } = await storage.getSignedUrl(file.storagePath, 60)
+        fileUrl = data?.signedUrl || null
+      } else {
+        const { data } = storage.getPublicUrl(file.storagePath)
+        fileUrl = data?.publicUrl || null
+      }
+    }
+
+    const cards = await flashcardModel.findByReviewer(id)
+    const prompts = Array.isArray(reviewer.aiPrompts) ? reviewer.aiPrompts : []
+    const quota = req.user
+      ? {
+          decksLeft: await getRemainingQuota(req.user.id, DECK_QUOTA_LIMIT),
+          gradesLeft: await getRemainingGrades(req.user.id, GRADE_LIMIT),
+        }
+      : { decksLeft: 0, gradesLeft: 0 }
+
+    res.json({ reviewer: { ...reviewer, fileUrl, cards, prompts, quota } })
   } catch (error) {
     console.error('Get reviewer error:', error)
     res.status(500).json({ error: 'Failed to fetch reviewer' })

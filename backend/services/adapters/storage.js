@@ -9,6 +9,7 @@ const createStorageAdapter = () => {
     return {
       upload: async () => ({ data: null, error: 'Storage not configured' }),
       getPublicUrl: () => ({ data: { publicUrl: '' } }),
+      getSignedUrl: async () => ({ data: null, error: 'Storage not configured' }),
       delete: async () => ({ error: 'Storage not configured' }),
     }
   }
@@ -54,7 +55,21 @@ const createStorageAdapter = () => {
     }
   }
 
-  return { upload, getPublicUrl, delete: deleteFiles }
+  // Short-lived signed URL for unlisted/private source files (60s default).
+  const getSignedUrl = async (path, expiresIn = 60) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .createSignedUrl(path, expiresIn)
+      if (error) throw error
+      return { data, error: null }
+    } catch (error) {
+      console.error('Signed URL error:', error)
+      return { data: null, error: error.message }
+    }
+  }
+
+  return { upload, getPublicUrl, getSignedUrl, delete: deleteFiles }
 }
 
 export { createStorageAdapter }

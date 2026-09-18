@@ -1,7 +1,8 @@
 import { BookOpen } from 'lucide-react'
 
-import { EXAM_LABELS } from '../../utils/exportPdf'
 import { paginateBlocks } from '../../utils/paginate'
+
+const EXAM_LABELS = { prelim: 'Prelim', midterm: 'Midterm', final: 'Finals' }
 
 const FALLBACK_THEME = { primary: '#7C6B5D', secondary: '#F5EAD3', accent: '#FCF7EC' }
 

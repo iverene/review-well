@@ -11,21 +11,17 @@ const { authState } = vi.hoisted(() => ({
 
 const mockGet = vi.hoisted(() => vi.fn())
 const mockPut = vi.hoisted(() => vi.fn())
+const mockPatch = vi.hoisted(() => vi.fn())
+const mockPost = vi.hoisted(() => vi.fn())
+const mockDelete = vi.hoisted(() => vi.fn())
 
 vi.mock('axios', () => ({
-  default: { get: mockGet, put: mockPut },
+  default: { get: mockGet, put: mockPut, patch: mockPatch, post: mockPost, delete: mockDelete },
 }))
 
 vi.mock('../../src/contexts/AuthContext', () => ({
   useAuth: () => authState,
 }))
-
-vi.mock('../../src/utils/exportPdf', () => ({
-  EXAM_LABELS: { prelim: 'Prelim', midterm: 'Midterm', final: 'Finals' },
-  reviewerPdfFilename: (reviewer) => `${reviewer?.courseDescription || 'reviewer'}.pdf`,
-  exportSheetsToPdf: vi.fn(),
-}))
-
 
 const mockReviewer = {
   id: 'r1',
@@ -39,28 +35,13 @@ const mockReviewer = {
   updatedAt: '2026-09-01T00:00:00.000Z',
   user: { displayName: 'Iverene Grace Causapin' },
   _count: { saves: 3 },
-  blocks: [
-    { id: 'b1', blockType: 'topic_banner', contentData: { heading: 'Chapter 1' } },
-    {
-      id: 'b2',
-      blockType: 'table',
-      contentData: { headers: ['Term', 'Meaning'], rows: [['Alpha', 'First'], ['Beta', 'Second']] },
-    },
-    {
-      id: 'b3',
-      blockType: 'terms_card',
-      contentData: {
-        title: 'Key Terms',
-        terms: [
-          { term: 'T1', definition: 'D1' },
-          { term: 'T2', definition: 'D2' },
-          { term: 'T3', definition: 'D3' },
-          { term: 'T4', definition: 'D4' },
-        ],
-      },
-    },
-    { id: 'b4', blockType: 'content_block', contentData: { heading: 'Notes', body: 'Some study notes here.' } },
+  fileUrl: 'https://storage.example.com/v1.pdf',
+  cards: [
+    { id: 'card-1', front: 'Front 1', back: 'Back 1', known: false },
+    { id: 'card-2', front: 'Front 2', back: 'Back 2', known: true },
   ],
+  prompts: ['Explain the light reactions'],
+  quota: { decksLeft: 3, gradesLeft: 5 },
 }
 
 const renderReviewer = () => render(
@@ -74,6 +55,9 @@ const renderReviewer = () => render(
 beforeEach(() => {
   mockGet.mockReset()
   mockPut.mockReset()
+  mockPatch.mockReset()
+  mockPost.mockReset()
+  mockDelete.mockReset()
   mockGet.mockImplementation((url) => {
     if (String(url).includes('/save')) {
       return Promise.resolve({ data: { saved: false, saveCount: 3 } })
@@ -86,15 +70,57 @@ beforeEach(() => {
 })
 
 describe('Reviewer', () => {
-  it('renders a truncated preview instead of the exact blocks', async () => {
+  it('renders the study hub with Source, Flashcards, and Blurting tabs', async () => {
     renderReviewer()
-    const preview = await screen.findByLabelText('Reviewer preview')
-    expect(preview).toBeInTheDocument()
-    expect(screen.getByText('Chapter 1')).toBeInTheDocument()
-    expect(screen.getByText('+1 more terms')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'View' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Download' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Print' })).toBeInTheDocument()
+    expect(await screen.findByLabelText('Study hub')).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Source' })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Flashcards' })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Blurting' })).toBeInTheDocument()
+    expect(screen.getByTestId('study-source-pdf')).toBeInTheDocument()
+    expect(screen.getByLabelText('Pomodoro timer')).toBeInTheDocument()
+  })
+
+  it('wires flashcards with real data and persists Known toggles', async () => {
+    mockPatch.mockResolvedValue({ data: { card: { ...mockReviewer.cards[0], known: true } } })
+    renderReviewer()
+    fireEvent.click(await screen.findByRole('tab', { name: 'Flashcards' }))
+    expect(await screen.findByText('Front 1')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Mark as known' }))
+    await waitFor(() => expect(axios.patch).toHaveBeenCalledWith('/api/cards/card-1', { known: true }, { withCredentials: true }))
+  })
+
+  it('wires the blurting prompt with remaining grades', async () => {
+    renderReviewer()
+    fireEvent.click(await screen.findByRole('tab', { name: 'Blurting' }))
+    expect(await screen.findByTestId('blurting-prompt')).toHaveTextContent('Explain the light reactions')
+    expect(screen.getByTestId('blurting-counter')).toHaveTextContent('5/5 AI reviews left')
+  })
+
+  it('shows the owner upload banner when the reviewer has no source file', async () => {
+    mockGet.mockImplementation((url) => {
+      if (String(url).includes('/save')) {
+        return Promise.resolve({ data: { saved: false, saveCount: 3 } })
+      }
+      return Promise.resolve({ data: { reviewer: { ...mockReviewer, fileUrl: null } } })
+    })
+    renderReviewer()
+    expect(await screen.findByTestId('study-upload-banner')).toHaveTextContent(
+      'Please upload the source file to enable study modes'
+    )
+  })
+
+  it('shows guests a sign-in nudge with a return URL and zero writes', async () => {
+    authState.user = null
+    authState.isAuthenticated = false
+    renderReviewer()
+    const nudge = await screen.findByTestId('study-guest-nudge')
+    expect(nudge).toBeInTheDocument()
+    expect(nudge.querySelector('a')).toHaveAttribute('href', '/login?returnTo=%2Freviewer%2Fr1')
+    fireEvent.click(screen.getByRole('tab', { name: 'Flashcards' }))
+    expect(await screen.findByTestId('deck-guest-banner')).toBeInTheDocument()
+    expect(mockPost).not.toHaveBeenCalled()
+    expect(mockPatch).not.toHaveBeenCalled()
+    expect(mockDelete).not.toHaveBeenCalled()
   })
 
   it('lets the owner change visibility', async () => {
@@ -110,7 +136,7 @@ describe('Reviewer', () => {
   it('shows a static visibility badge to non-owners', async () => {
     authState.user = { id: 'someone-else' }
     renderReviewer()
-    await screen.findByLabelText('Reviewer preview')
+    await screen.findByLabelText('Study hub')
     expect(screen.queryByRole('radiogroup', { name: 'Visibility' })).toBeNull()
     expect(screen.getByText('private')).toBeInTheDocument()
   })
@@ -119,7 +145,7 @@ describe('Reviewer', () => {
     const writeText = vi.fn().mockResolvedValue()
     Object.assign(navigator, { clipboard: { writeText } })
     renderReviewer()
-    await screen.findByLabelText('Reviewer preview')
+    await screen.findByLabelText('Study hub')
     fireEvent.click(screen.getByRole('button', { name: 'Share' }))
     expect(screen.getByRole('dialog', { name: 'Share this reviewer' })).toBeInTheDocument()
     expect(screen.getAllByText((content, el) => el?.textContent === 'Unlisted — only people with the shared link can view it.')).toHaveLength(2)
@@ -130,66 +156,7 @@ describe('Reviewer', () => {
     expect(await screen.findByRole('button', { name: 'Copied' })).toBeInTheDocument()
   })
 
-  it('disables preview actions when the reviewer has no content', async () => {
-    mockGet.mockImplementation((url) => {
-      if (String(url).includes('/save')) {
-        return Promise.resolve({ data: { saved: false, saveCount: 0 } })
-      }
-      return Promise.resolve({ data: { reviewer: { ...mockReviewer, blocks: [] } } })
-    })
-    renderReviewer()
-    await screen.findByText('No content to preview yet')
-    expect(screen.queryByLabelText('Reviewer preview')).toBeNull()
-    expect(screen.getByRole('button', { name: 'View' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Download' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Print' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Share' })).not.toBeDisabled()
-  })
-
-  it('previews the first page inline and paginates the fullscreen view', async () => {
-    const manyTerms = Array.from({ length: 10 }, (_, i) => ({ term: `T${i}`, definition: `Definition ${i}` }))
-    mockGet.mockImplementation((url) => {
-      if (String(url).includes('/save')) {
-        return Promise.resolve({ data: { saved: false, saveCount: 0 } })
-      }
-      return Promise.resolve({
-        data: {
-          reviewer: {
-            ...mockReviewer,
-            blocks: [
-              ...mockReviewer.blocks,
-              { id: 'b5', blockType: 'terms_card', contentData: { title: 'More Terms', terms: manyTerms } },
-            ],
-          },
-        },
-      })
-    })
-    renderReviewer()
-    await screen.findByText('Page 1 / 2')
-    // Inline preview is restricted to the first page
-    expect(document.getElementById('reviewer-preview-root')).toHaveClass('preview-first-only')
-    fireEvent.click(screen.getByRole('button', { name: 'View' }))
-    expect(screen.getByRole('dialog', { name: 'Fullscreen reviewer preview' })).toBeInTheDocument()
-    // Scrollable view carries a live page indicator
-    expect(screen.getByText('Page 2 / 2')).toBeInTheDocument()
-    expect(screen.getByTestId('page-indicator')).toHaveTextContent('Page 1 / 2')
-  })
-
-  it('opens a fullscreen preview with View and exports with Download', async () => {
-    const { exportSheetsToPdf } = await import('../../src/utils/exportPdf')
-    renderReviewer()
-    await screen.findByLabelText('Reviewer preview')
-    fireEvent.click(screen.getByRole('button', { name: 'View' }))
-    expect(screen.getByRole('dialog', { name: 'Fullscreen reviewer preview' })).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Close preview' }))
-    expect(screen.queryByRole('dialog', { name: 'Fullscreen reviewer preview' })).toBeNull()
-    fireEvent.click(screen.getByRole('button', { name: 'Download' }))
-    await waitFor(() => expect(exportSheetsToPdf).toHaveBeenCalledWith(
-      expect.objectContaining({ rootId: 'reviewer-preview-root', pageSelector: '.preview-page' })
-    ))
-  })
-
-  it('shows a fixed Reviewer header above the document card', async () => {
+  it('shows a fixed Reviewer header above the study hub', async () => {
     renderReviewer()
     expect(await screen.findByRole('heading', { name: 'Reviewer', level: 1 })).toBeInTheDocument()
     expect(screen.queryByText('Study guide')).not.toBeInTheDocument()

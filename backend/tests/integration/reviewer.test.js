@@ -3,6 +3,8 @@ import request from 'supertest'
 import express from 'express'
 import reviewerRoutes from '../../routes/reviewerRoutes.js'
 import * as reviewerModel from '../../models/reviewerModel.js'
+import * as reviewerFileModel from '../../models/reviewerFileModel.js'
+import * as flashcardModel from '../../models/flashcardModel.js'
 
 vi.mock('../../models/reviewerModel.js', () => ({
   findPublic: vi.fn(),
@@ -12,6 +14,17 @@ vi.mock('../../models/reviewerModel.js', () => ({
   update: vi.fn(),
   remove: vi.fn(),
   count: vi.fn(),
+}))
+vi.mock('../../models/reviewerFileModel.js', () => ({
+  findByReviewerId: vi.fn(),
+}))
+vi.mock('../../models/flashcardModel.js', () => ({
+  findByReviewer: vi.fn(),
+}))
+vi.mock('../../models/aiQuotaModel.js', () => ({
+  getRemainingQuota: vi.fn(),
+  getRemainingGrades: vi.fn(),
+  GRADE_LIMIT: 5,
 }))
 
 const createApp = () => {
@@ -89,11 +102,17 @@ describe('Reviewer Routes', () => {
       }
 
       reviewerModel.findById.mockResolvedValue(mockReviewer)
+      reviewerFileModel.findByReviewerId.mockResolvedValue(null)
+      flashcardModel.findByReviewer.mockResolvedValue([])
 
       const response = await request(app).get('/api/reviewers/1')
 
       expect(response.status).toBe(200)
-      expect(response.body.reviewer).toEqual(mockReviewer)
+      // Study-hub enrichment is strictly additive — existing fields intact.
+      expect(response.body.reviewer).toMatchObject(mockReviewer)
+      expect(response.body.reviewer.fileUrl).toBeNull()
+      expect(response.body.reviewer.cards).toEqual([])
+      expect(response.body.reviewer.prompts).toEqual([])
     })
 
     it('should return 404 when not found', async () => {

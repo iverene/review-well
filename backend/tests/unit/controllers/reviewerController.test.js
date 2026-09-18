@@ -62,6 +62,14 @@ vi.mock('../../../models/aiQuotaModel.js', () => ({
   checkQuota: vi.fn(),
   incrementUsage: vi.fn(),
   getRemainingQuota: vi.fn(),
+  getRemainingGrades: vi.fn(),
+  GRADE_LIMIT: 5,
+}))
+vi.mock('../../../models/reviewerFileModel.js', () => ({
+  findByReviewerId: vi.fn(),
+}))
+vi.mock('../../../models/flashcardModel.js', () => ({
+  findByReviewer: vi.fn(),
 }))
 
 import {
@@ -76,6 +84,8 @@ import * as reviewerModel from '../../../models/reviewerModel.js'
 import * as blockModel from '../../../models/blockModel.js'
 import * as followModel from '../../../models/followModel.js'
 import * as notificationModel from '../../../models/notificationModel.js'
+import * as reviewerFileModel from '../../../models/reviewerFileModel.js'
+import * as flashcardModel from '../../../models/flashcardModel.js'
 import * as cache from '../../../utils/cache.js'
 import { createMockRequest, createMockResponse } from '../../helpers/mocks.js'
 
@@ -143,10 +153,21 @@ describe('Reviewer Controller', () => {
       }
 
       reviewerModel.findById.mockResolvedValue(mockReviewer)
+      reviewerFileModel.findByReviewerId.mockResolvedValue(null)
+      flashcardModel.findByReviewer.mockResolvedValue([])
 
       await getReviewerById(req, res)
 
-      expect(res.json).toHaveBeenCalledWith({ reviewer: mockReviewer })
+      // Study-hub enrichment is strictly additive — existing fields intact.
+      expect(res.json).toHaveBeenCalledWith({
+        reviewer: {
+          ...mockReviewer,
+          fileUrl: null,
+          cards: [],
+          prompts: [],
+          quota: { decksLeft: undefined, gradesLeft: undefined },
+        },
+      })
     })
 
     it('should return 404 when not found', async () => {

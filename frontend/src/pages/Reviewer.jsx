@@ -1,34 +1,26 @@
-import { useEffect, useRef, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios'
 import {
   ArrowLeft,
   Check,
   Clock3,
   Copy,
-  Download,
-  Eye,
   Globe2,
   Link2,
-  Loader2,
   LockKeyhole,
-  Pencil,
-  Printer,
   Share2,
   UsersRound,
-  X,
 } from 'lucide-react'
 
 import { useAuth } from '../contexts/AuthContext'
 import SaveButton from '../components/social/SaveButton'
-import ReviewerPreview from '../components/reviewer/ReviewerPreview'
+import StudyTabs from '../components/StudyTabs'
 import ErrorAlert from '../components/common/ErrorAlert'
 import PageHeader from '../components/common/PageHeader'
 import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
 import { WorkspaceSkeleton } from '../components/common/Skeleton'
-import { exportSheetsToPdf, reviewerPdfFilename } from '../utils/exportPdf'
-import { paginateBlocks } from '../utils/paginate'
 
 const recentReviewersKey = (userId) => `review-well-recent-reviewers:${userId}`
 
@@ -40,72 +32,47 @@ const VISIBILITY_OPTIONS = [
 
 const Reviewer = () => {
   const { id } = useParams()
+  const navigate = useNavigate()
   const { user, isAuthenticated } = useAuth()
   const [reviewer, setReviewer] = useState(null)
+  const [cards, setCards] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [visSaving, setVisSaving] = useState(false)
   const [visError, setVisError] = useState(null)
-  const [downloading, setDownloading] = useState(false)
-  const [previewOpen, setPreviewOpen] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [currentPage, setCurrentPage] = useState(0)
-  const scrollRef = useRef(null)
+
+  const guest = !isAuthenticated
+  const loginReturnTo = `/reviewer/${id}`
+  const loginHref = `/login?returnTo=${encodeURIComponent(loginReturnTo)}`
+  const sendGuestToLogin = () => navigate(loginHref)
+
+  const loadReviewer = async () => {
+    try {
+      const response = await axios.get(`/api/reviewers/${id}`, { withCredentials: true })
+      const loadedReviewer = response.data.reviewer
+      setReviewer(loadedReviewer)
+      setCards(Array.isArray(loadedReviewer.cards) ? loadedReviewer.cards : [])
+
+      if (isAuthenticated && user?.id) {
+        const key = recentReviewersKey(user.id)
+        const recent = JSON.parse(window.localStorage.getItem(key) || '[]')
+        const withoutCurrent = recent.filter((item) => item.id !== loadedReviewer.id)
+        window.localStorage.setItem(key, JSON.stringify([loadedReviewer, ...withoutCurrent].slice(0, 5)))
+      }
+    } catch (loadError) {
+      console.error('Failed to load reviewer:', loadError)
+      setError(getApiErrorMessage(loadError, 'Unable to load this reviewer.'))
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    const loadReviewer = async () => {
-      try {
-        const response = await axios.get(`/api/reviewers/${id}`, { withCredentials: true })
-        const loadedReviewer = response.data.reviewer
-        setReviewer(loadedReviewer)
-
-        if (isAuthenticated && user?.id) {
-          const key = recentReviewersKey(user.id)
-          const recent = JSON.parse(window.localStorage.getItem(key) || '[]')
-          const withoutCurrent = recent.filter((item) => item.id !== loadedReviewer.id)
-          window.localStorage.setItem(key, JSON.stringify([loadedReviewer, ...withoutCurrent].slice(0, 5)))
-        }
-      } catch (loadError) {
-        console.error('Failed to load reviewer:', loadError)
-        setError(getApiErrorMessage(loadError, 'Unable to load this reviewer.'))
-      } finally {
-        setLoading(false)
-      }
-    }
     loadReviewer()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isAuthenticated, user])
-
-  // Lock background scroll while the fullscreen preview is open
-  useEffect(() => {
-    if (!previewOpen) return
-    const previous = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    return () => {
-      document.body.style.overflow = previous
-    }
-  }, [previewOpen])
-
-  // Track the most visible page for the fullscreen page indicator
-  useEffect(() => {
-    if (!previewOpen || typeof IntersectionObserver === 'undefined') return
-    const root = scrollRef.current
-    if (!root) return
-    const seen = new Map()
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        const idx = entry.target.dataset.index
-        if (entry.isIntersecting) seen.set(idx, entry.intersectionRatio)
-        else seen.delete(idx)
-      })
-      if (seen.size > 0) {
-        const best = [...seen.entries()].sort((a, b) => b[1] - a[1])[0][0]
-        setCurrentPage(Number(best))
-      }
-    }, { root, threshold: [0, 0.25, 0.5, 0.75, 1] })
-    root.querySelectorAll('[data-preview-page]').forEach((el) => observer.observe(el))
-    return () => observer.disconnect()
-  }, [previewOpen])
 
   if (loading) return <WorkspaceSkeleton />
 
@@ -114,9 +81,6 @@ const Reviewer = () => {
   }
 
   const isOwner = !!user?.id && user.id === reviewer.authorId
-  const contentBlocks = (reviewer.blocks || []).filter((b) => b.blockType !== 'page_break')
-  const hasContent = contentBlocks.length > 0
-  const totalPages = Math.max(1, paginateBlocks(contentBlocks, 'A4').pages.length)
   const shareUrl = `${window.location.origin}/reviewer/${reviewer.id}`
 
   const handleVisibilityChange = async (visibility) => {
@@ -155,37 +119,107 @@ const Reviewer = () => {
     setTimeout(() => setCopied(false), 2000)
   }
 
-  const handleDownload = async () => {
-    if (downloading) return
-    setDownloading(true)
-    setError(null)
-    // The inline preview shows the first page only; reveal all pages so the
-    // download always compiles the complete document.
-    const root = document.getElementById('reviewer-preview-root')
-    root?.classList.add('export-all')
+  // Guest progress stays in React state only — zero writes.
+  const handleToggleKnown = async (cardId, known) => {
+    if (guest) {
+      setCards((prev) => prev.map((card) => (card.id === cardId ? { ...card, known } : card)))
+      return
+    }
     try {
-      await exportSheetsToPdf({
-        rootId: 'reviewer-preview-root',
-        pageSelector: '.preview-page',
-        filename: reviewerPdfFilename(reviewer),
-        format: 'a4',
-      })
-    } catch (downloadError) {
-      console.error('Failed to download PDF:', downloadError)
-      setError(getApiErrorMessage(downloadError, 'Unable to download the PDF.'))
-    } finally {
-      root?.classList.remove('export-all')
-      setDownloading(false)
+      const response = await axios.patch(`/api/cards/${cardId}`, { known }, { withCredentials: true })
+      const updated = response.data?.card
+      setCards((prev) => prev.map((card) => (card.id === cardId ? updated || { ...card, known } : card)))
+    } catch (toggleError) {
+      console.error('Failed to update card:', toggleError)
+      setError(getApiErrorMessage(toggleError, 'Unable to update this card.'))
     }
   }
 
-  const handlePrint = () => window.print()
+  const handleAddCard = async ({ front, back }) => {
+    if (guest) {
+      sendGuestToLogin()
+      return
+    }
+    try {
+      const response = await axios.post(`/api/reviewers/${id}/cards`, { front, back }, { withCredentials: true })
+      if (response.data?.card) setCards((prev) => [...prev, response.data.card])
+    } catch (addError) {
+      console.error('Failed to add card:', addError)
+      setError(getApiErrorMessage(addError, 'Unable to add this card.'))
+    }
+  }
 
-  const previewNode = (
-    <div id="reviewer-preview-root" className={previewOpen ? undefined : 'preview-first-only'}>
-      <ReviewerPreview reviewer={reviewer} />
-    </div>
-  )
+  const handleEditCard = async (cardId, { front, back }) => {
+    if (guest) {
+      sendGuestToLogin()
+      return
+    }
+    try {
+      const response = await axios.patch(`/api/cards/${cardId}`, { front, back }, { withCredentials: true })
+      const updated = response.data?.card
+      setCards((prev) => prev.map((card) => (card.id === cardId ? updated || { ...card, front, back } : card)))
+    } catch (editError) {
+      console.error('Failed to edit card:', editError)
+      setError(getApiErrorMessage(editError, 'Unable to edit this card.'))
+    }
+  }
+
+  const handleDeleteCard = async (cardId) => {
+    if (guest) {
+      sendGuestToLogin()
+      return
+    }
+    try {
+      await axios.delete(`/api/cards/${cardId}`, { withCredentials: true })
+      setCards((prev) => prev.filter((card) => card.id !== cardId))
+    } catch (deleteError) {
+      console.error('Failed to delete card:', deleteError)
+      setError(getApiErrorMessage(deleteError, 'Unable to delete this card.'))
+    }
+  }
+
+  const handleGenerateDeck = () => {
+    if (guest) {
+      sendGuestToLogin()
+      return
+    }
+    const input = document.createElement('input')
+    input.type = 'file'
+    input.accept = '.pdf,.pptx,.ppt,.txt'
+    input.onchange = async () => {
+      const file = input.files?.[0]
+      if (!file) return
+      setError(null)
+      try {
+        const form = new FormData()
+        form.append('file', file)
+        form.append('reviewerId', id)
+        if (cards.length > 0) form.append('confirm', 'true')
+        if (reviewer?.courseCode) form.append('courseCode', reviewer.courseCode)
+        if (reviewer?.courseDescription) form.append('courseDescription', reviewer.courseDescription)
+        await axios.post('/api/ai/extract', form, { withCredentials: true })
+        setLoading(true)
+        await loadReviewer()
+      } catch (generateError) {
+        console.error('Failed to generate deck:', generateError)
+        setError(getApiErrorMessage(generateError, 'Unable to generate the starter deck.'))
+      }
+    }
+    input.click()
+  }
+
+  const handleBlurtingSubmit = async (dumpText) => {
+    const response = await axios.post(`/api/reviewers/${id}/blurting`, { dumpText }, { withCredentials: true })
+    return response.data
+  }
+
+  const handleBlurtingRate = async (attemptId, rating) => {
+    try {
+      await axios.patch(`/api/blurting/${attemptId}`, { selfRating: rating }, { withCredentials: true })
+    } catch (rateError) {
+      console.error('Failed to save self-rating:', rateError)
+    }
+  }
 
   return (
     <PageContainer>
@@ -235,34 +269,6 @@ const Reviewer = () => {
               </>
             )}
           </div>
-          <button
-            type="button"
-            onClick={() => { setCurrentPage(0); setPreviewOpen(true) }}
-            disabled={!hasContent}
-            title={hasContent ? 'Open fullscreen preview' : 'Add content before previewing'}
-            className="inline-flex items-center gap-2 rounded-soft border-2 border-stone bg-paper px-4 py-2 text-sm font-extrabold text-ink hover:bg-powder disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <Eye className="h-4 w-4" aria-hidden="true" /> View
-          </button>
-          <button
-            type="button"
-            onClick={handleDownload}
-            disabled={downloading || !hasContent}
-            title={hasContent ? 'Download as PDF' : 'Add content before downloading'}
-            className="inline-flex items-center gap-2 rounded-soft border-2 border-stone bg-paper px-4 py-2 text-sm font-extrabold text-ink hover:bg-powder disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {downloading ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <Download className="h-4 w-4" aria-hidden="true" />} Download
-          </button>
-          <button
-            type="button"
-            onClick={handlePrint}
-            disabled={!hasContent}
-            title={hasContent ? 'Print the preview' : 'Add content before printing'}
-            className="inline-flex items-center gap-2 rounded-soft border-2 border-stone bg-paper px-4 py-2 text-sm font-extrabold text-ink hover:bg-powder disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <Printer className="h-4 w-4" aria-hidden="true" /> Print
-          </button>
-          {isOwner && <Link to={`/workspace/${reviewer.id}`} className="inline-flex items-center gap-2 rounded-soft border-2 border-mint bg-mint px-4 py-2 text-sm font-extrabold text-ink hover:bg-butter"><Pencil className="h-4 w-4" /> Open workspace</Link>}
         </div>
       </div>
 
@@ -299,48 +305,26 @@ const Reviewer = () => {
       </header>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_220px]">
-        <main className="min-w-0" aria-label="Reviewer preview section">
-          <p className="mb-2 flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-muted"><Eye className="h-3.5 w-3.5" aria-hidden="true" /> Preview</p>
-          {hasContent ? (
-            <>
-              {!previewOpen && previewNode}
-              {previewOpen && (
-                <div className="rounded-soft border-2 border-dashed border-stone p-8 text-center text-sm text-muted">
-                  Preview is open in fullscreen view.
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="rounded-soft border-2 border-dashed border-stone p-8 text-center text-sm text-muted">
-              <p className="font-extrabold text-ink">No content to preview yet</p>
-              <p className="mt-1">Add blocks in the workspace to enable preview, view, download, and print.</p>
-            </div>
-          )}
+        <main className="min-w-0" aria-label="Study hub section">
+          <StudyTabs
+            reviewer={reviewer}
+            cards={cards}
+            guest={guest}
+            gradesLeft={reviewer.quota?.gradesLeft}
+            decksLeft={reviewer.quota?.decksLeft}
+            isOwner={isOwner}
+            loginReturnTo={loginReturnTo}
+            onToggleKnown={handleToggleKnown}
+            onAdd={handleAddCard}
+            onEdit={handleEditCard}
+            onDelete={handleDeleteCard}
+            onGenerate={handleGenerateDeck}
+            onBlurtingSubmit={handleBlurtingSubmit}
+            onBlurtingRate={handleBlurtingRate}
+          />
         </main>
         <aside className="h-fit rounded-soft border-2 border-stone bg-mint/40 p-5"><h2 className="font-display text-xl font-bold text-ink">Study details</h2><dl className="mt-4 space-y-4 text-sm"><div><dt className="font-extrabold text-muted">Assessment</dt><dd className="mt-1 text-ink">{reviewer.examType}</dd></div><div><dt className="font-extrabold text-muted">Semester</dt><dd className="mt-1 text-ink">{reviewer.semester}</dd></div><div><dt className="font-extrabold text-muted">Last updated</dt><dd className="mt-1 flex items-center gap-1 text-ink"><Clock3 className="h-4 w-4" /> {new Date(reviewer.updatedAt).toLocaleDateString()}</dd></div></dl></aside>
       </div>
-
-      {previewOpen && (
-        <div className="fixed inset-0 z-[60] flex flex-col bg-black/50" onClick={() => setPreviewOpen(false)} role="dialog" aria-modal="true" aria-label="Fullscreen reviewer preview">
-          <div className="no-print flex shrink-0 items-center justify-center gap-3 px-4 py-3" onClick={(e) => e.stopPropagation()}>
-            <span className="rounded-full bg-paper px-3 py-1 text-xs font-extrabold text-ink shadow" aria-live="polite" data-testid="page-indicator">
-              Page {`${currentPage + 1} / ${totalPages}`}
-            </span>
-            <button
-              type="button"
-              onClick={() => setPreviewOpen(false)}
-              className="inline-flex items-center gap-2 rounded-full bg-paper px-4 py-2 text-sm font-extrabold text-ink shadow hover:bg-stone"
-            >
-              <X className="h-4 w-4" aria-hidden="true" /> Close preview
-            </button>
-          </div>
-          <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto px-4 pb-10 sm:px-8" onClick={(e) => e.stopPropagation()}>
-            <div className="mx-auto max-w-3xl space-y-6">
-              {previewNode}
-            </div>
-          </div>
-        </div>
-      )}
     </PageContainer>
   )
 }

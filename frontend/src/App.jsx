@@ -14,7 +14,6 @@ const Create = lazy(() => import('./pages/Create'))
 const Review = lazy(() => import('./pages/Review'))
 const Login = lazy(() => import('./pages/Login'))
 const AuthCallback = lazy(() => import('./pages/AuthCallback'))
-const Workspace = lazy(() => import('./pages/Workspace'))
 const Notifications = lazy(() => import('./pages/Notifications'))
 const Profile = lazy(() => import('./pages/Profile'))
 const Settings = lazy(() => import('./pages/Settings'))
@@ -63,14 +62,6 @@ function App() {
               <Route path="/reviewer/my" element={<ProtectedRoute><ReviewerList mine /></ProtectedRoute>} />
               <Route path="/reviewer/public" element={<ReviewerList />} />
               <Route path="/reviewer/:id" element={<Reviewer />} />
-              <Route
-                path="/workspace/:id"
-                element={
-                  <ProtectedRoute>
-                    <Workspace />
-                  </ProtectedRoute>
-                }
-              />
               <Route
                 path="/create"
                 element={
