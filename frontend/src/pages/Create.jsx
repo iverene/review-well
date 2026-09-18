@@ -1,19 +1,45 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import axios from 'axios'
-import { ArrowLeft, BookOpen, Globe2, LockKeyhole, UsersRound } from 'lucide-react'
+import { ArrowLeft, BookOpen, FileUp, Globe2, LockKeyhole, RefreshCcw, UsersRound } from 'lucide-react'
 
 import ErrorAlert from '../components/common/ErrorAlert'
 import { getApiErrorMessage } from '../utils/apiError'
+import { useAuth } from '../contexts/AuthContext'
+
+// Kawaii tokens (spec): Cream #FFF7E8 Cocoa #604A3A Blush #F6C6D2 Powder #C9E6F2 Mint #CDE8D2 Butter #F9E4A8 Berry #C96A83
+const MAX_FILE_BYTES = 25 * 1024 * 1024
+const ACCEPTED_EXTENSIONS = ['.pdf', '.pptx']
 
 // Default theme applied at creation; theming lives in the workspace Format menu.
 const defaultPalette = { name: 'Cocoa Classic', primary: '#7C6B5D', secondary: '#F5EAD3', accent: '#FCF7EC' }
 
+const isAcceptedFile = (file) => {
+  if (!file) return false
+  const name = file.name.toLowerCase()
+  return ACCEPTED_EXTENSIONS.some((ext) => name.endsWith(ext))
+}
+
+// Friendly client-side pre-check (server re-enforces type + 25 MB in multer).
+const validateSourceFile = (file) => {
+  if (!file) return 'Please attach your PDF or PPTX so we can build your reviewer! 📎'
+  if (!isAcceptedFile(file)) return 'Oops! Only PDF or PPTX files can join the study party. 💌'
+  if (file.size > MAX_FILE_BYTES) return 'That file is a bit too chunky — please keep it under 25 MB! 🍰'
+  return null
+}
+
 const Create = () => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const { isGuest } = useAuth()
+  const editReviewerId = searchParams.get('edit')
+
   const [saving, setSaving] = useState(false)
+  const [loadingEdit, setLoadingEdit] = useState(Boolean(editReviewerId))
   const [error, setError] = useState(null)
+  const [fileError, setFileError] = useState(null)
   const [formData, setFormData] = useState({
+    title: '',
     courseCode: '',
     courseDescription: '',
     semester: '',
@@ -22,6 +48,36 @@ const Create = () => {
     isDraft: true,
     colorPalette: defaultPalette,
   })
+  const [sourceFile, setSourceFile] = useState(null)
+
+  // Edit mode for your own reviewer (?edit=<id>): metadata form + replace-file.
+  useEffect(() => {
+    if (!editReviewerId) return
+    let cancelled = false
+    const loadReviewer = async () => {
+      setLoadingEdit(true)
+      try {
+        const response = await axios.get(`/api/reviewers/${editReviewerId}`, { withCredentials: true })
+        if (cancelled) return
+        const reviewer = response.data.reviewer
+        setFormData((previous) => ({
+          ...previous,
+          title: reviewer.title || '',
+          courseCode: reviewer.courseCode || '',
+          courseDescription: reviewer.courseDescription || '',
+          semester: reviewer.semester || '',
+          examType: reviewer.examType || 'midterm',
+          visibility: reviewer.visibility || 'private',
+        }))
+      } catch (loadError) {
+        if (!cancelled) setError(getApiErrorMessage(loadError, 'Unable to load your reviewer for editing.'))
+      } finally {
+        if (!cancelled) setLoadingEdit(false)
+      }
+    }
+    loadReviewer()
+    return () => { cancelled = true }
+  }, [editReviewerId])
 
   const updateField = (event) => {
     const { name, value } = event.target
@@ -29,14 +85,68 @@ const Create = () => {
     setError(null)
   }
 
+  const handleFileChange = (event) => {
+    const file = event.target.files?.[0] || null
+    setSourceFile(file)
+    setFileError(file ? validateSourceFile(file) : null)
+  }
+
+  const uploadSourceFile = async (reviewerId, file) => {
+    const payload = new FormData()
+    payload.append('reviewerId', reviewerId)
+    payload.append('file', file)
+    await axios.post('/api/reviewer-files', payload, { withCredentials: true })
+  }
+
   const handleSubmit = async (event) => {
     event.preventDefault()
-    setSaving(true)
     setError(null)
 
+    if (isGuest) {
+      setError('Guests cannot create reviewers. Please sign in to upload! 🔑')
+      return
+    }
+
+    if (editReviewerId) {
+      const problem = sourceFile ? validateSourceFile(sourceFile) : null
+      if (problem) {
+        setFileError(problem)
+        return
+      }
+      if (sourceFile && !window.confirm('Replacing may stale the AI deck — keep or regenerate after upload. Replace the file?')) {
+        return
+      }
+      setSaving(true)
+      try {
+        const { title, courseCode, courseDescription, semester, examType, visibility } = formData
+        await axios.put(`/api/reviewers/${editReviewerId}`, { title, courseCode, courseDescription, semester, examType, visibility }, { withCredentials: true })
+        if (sourceFile) {
+          const payload = new FormData()
+          payload.append('file', sourceFile)
+          await axios.put(`/api/reviewer-files/${editReviewerId}`, payload, { withCredentials: true })
+        }
+        navigate(`/workspace/${editReviewerId}`)
+      } catch (saveError) {
+        console.error('Failed to update reviewer:', saveError)
+        setError(getApiErrorMessage(saveError, 'Unable to save your reviewer. Please try again.'))
+      } finally {
+        setSaving(false)
+      }
+      return
+    }
+
+    const problem = validateSourceFile(sourceFile)
+    if (problem) {
+      setFileError(problem)
+      return
+    }
+
+    setSaving(true)
     try {
-      const response = await axios.post('/api/reviewers', { ...formData, title: formData.courseDescription }, { withCredentials: true })
-      navigate(`/workspace/${response.data.reviewer.id}`)
+      const response = await axios.post('/api/reviewers', { ...formData }, { withCredentials: true })
+      const reviewerId = response.data.reviewer.id
+      await uploadSourceFile(reviewerId, sourceFile)
+      navigate(`/workspace/${reviewerId}`)
     } catch (createError) {
       console.error('Failed to create reviewer:', createError)
       setError(getApiErrorMessage(createError, 'Unable to create your reviewer. Please try again.'))
@@ -63,8 +173,8 @@ const Create = () => {
         </div>
         <div>
           <p className="font-mono text-xs font-bold uppercase tracking-widest text-accent">New study guide</p>
-          <h1 className="mt-1 font-display text-3xl font-bold text-ink md:text-4xl">Create a reviewer</h1>
-          <p className="mt-2 text-muted">Set the essentials now. You can shape every block in the workspace next.</p>
+          <h1 className="mt-1 font-display text-3xl font-bold text-ink md:text-4xl">{editReviewerId ? 'Edit your reviewer' : 'Create a reviewer'}</h1>
+          <p className="mt-2 text-muted">{editReviewerId ? 'Tweak the details or swap in a fresh file.' : 'Upload your PDF or PPTX now — AI decks and study modes build on it next.'}</p>
         </div>
       </div>
 
@@ -72,10 +182,18 @@ const Create = () => {
         <div className="rounded-soft border-2 border-stone bg-paper p-4 club-shadow sm:p-8">
           <ErrorAlert className="mb-6">{error}</ErrorAlert>
 
+          {loadingEdit ? (
+            <p className="text-sm text-muted">Loading your reviewer… 🎀</p>
+          ) : (
           <div className="space-y-6">
             <div>
+              <label htmlFor="title" className="mb-2 block text-sm font-extrabold text-ink">Title</label>
+              <input id="title" name="title" value={formData.title} onChange={updateField} required autoFocus placeholder="e.g. Data Structures Midterm Guide" className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-3 text-ink focus:border-accent focus:outline-none" />
+            </div>
+
+            <div>
               <label htmlFor="courseDescription" className="mb-2 block text-sm font-extrabold text-ink">Course description</label>
-              <input id="courseDescription" name="courseDescription" value={formData.courseDescription} onChange={updateField} required autoFocus placeholder="e.g. Data Structures and Algorithms" className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-3 text-ink focus:border-accent focus:outline-none" />
+              <input id="courseDescription" name="courseDescription" value={formData.courseDescription} onChange={updateField} required placeholder="e.g. Data Structures and Algorithms" className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-3 text-ink focus:border-accent focus:outline-none" />
             </div>
 
             <div className="grid gap-5 sm:grid-cols-2">
@@ -97,11 +215,36 @@ const Create = () => {
                 <option value="prelim">Prelim</option><option value="midterm">Midterm</option><option value="final">Finals</option>
               </select>
             </div>
+
+            <div className="rounded-soft border-2 border-stone bg-[#FFF7E8] p-4">
+              <label htmlFor="sourceFile" className="mb-2 flex items-center gap-2 text-sm font-extrabold text-[#604A3A]">
+                {editReviewerId ? <RefreshCcw className="h-4 w-4" aria-hidden="true" /> : <FileUp className="h-4 w-4" aria-hidden="true" />}
+                {editReviewerId ? 'Replace file (optional)' : 'Source file'}
+              </label>
+              <input
+                id="sourceFile"
+                type="file"
+                accept=".pdf,.pptx"
+                onChange={handleFileChange}
+                required={!editReviewerId}
+                className="w-full rounded-soft border-2 border-dashed border-[#F6C6D2] bg-paper px-4 py-3 text-sm text-ink file:mr-3 file:rounded-soft file:border-2 file:border-[#604A3A] file:bg-[#F9E4A8] file:px-3 file:py-1 file:text-xs file:font-extrabold file:text-[#604A3A]"
+              />
+              <p className="mt-2 text-xs text-muted">PDF or PPTX only, max 25 MB. {editReviewerId ? 'Swapping files may stale the AI deck.' : 'Your deck, flashcards, and study modes grow from this file! 🌸'}</p>
+              {sourceFile && !fileError && (
+                <p className="mt-2 rounded-soft bg-[#CDE8D2] px-3 py-2 text-xs font-bold text-[#604A3A]">
+                  {sourceFile.name} ({(sourceFile.size / 1024 / 1024).toFixed(2)} MB) looks perfect! ✨
+                </p>
+              )}
+              {fileError && (
+                <p role="alert" className="mt-2 rounded-soft bg-[#F6C6D2] px-3 py-2 text-xs font-bold text-[#604A3A]">{fileError}</p>
+              )}
+            </div>
           </div>
+          )}
 
           <div className="mt-8 flex justify-end border-t-2 border-stone pt-6">
-            <button type="submit" disabled={saving} className="inline-flex items-center gap-2 rounded-soft border-2 border-accent bg-accent px-6 py-3 text-sm font-extrabold text-paper hover:-translate-y-0.5 disabled:opacity-60">
-              {saving ? 'Creating...' : 'Create reviewer'}
+            <button type="submit" disabled={saving || loadingEdit} className="inline-flex items-center gap-2 rounded-soft border-2 border-accent bg-accent px-6 py-3 text-sm font-extrabold text-paper hover:-translate-y-0.5 disabled:opacity-60">
+              {saving ? (editReviewerId ? 'Saving...' : 'Creating...') : (editReviewerId ? 'Save changes' : 'Create reviewer')}
             </button>
           </div>
         </div>

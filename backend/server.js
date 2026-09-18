@@ -39,6 +39,7 @@ configurePassport()
 // Routes
 app.use('/api/auth', (await import('./routes/authRoutes.js')).default)
 app.use('/api/reviewers', (await import('./routes/reviewerRoutes.js')).default)
+app.use('/api/reviewer-files', (await import('./routes/reviewerFileRoutes.js')).default)
 app.use('/api/ai', (await import('./routes/aiRoutes.js')).default)
 app.use('/api/social', (await import('./routes/socialRoutes.js')).default)
 app.use('/api/profile', (await import('./routes/profileRoutes.js')).default)
