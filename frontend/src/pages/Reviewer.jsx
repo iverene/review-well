@@ -266,9 +266,9 @@ const Reviewer = () => {
         </div>
       </div>
 
-      <header className="rounded-soft border-2 border-stone bg-paper p-6 club-shadow sm:p-8">
+      <header className="rounded-soft border-2 border-stone bg-paper p-4 club-shadow sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-5">
-          <div><h1 className="mt-3 font-display text-4xl font-bold text-ink">{reviewer.title}</h1><p className="mt-3 text-muted">{reviewer.courseDescription}</p></div>
+          <div><h1 className="mt-3 font-display text-3xl font-bold text-ink md:text-4xl">{reviewer.title}</h1><p className="mt-3 text-muted">{reviewer.courseDescription}</p></div>
           {isOwner ? (
             <div>
               <div className="flex items-center gap-1 rounded-full border-2 border-stone bg-paper p-1" role="radiogroup" aria-label="Visibility">

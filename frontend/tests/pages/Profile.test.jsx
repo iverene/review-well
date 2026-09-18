@@ -28,6 +28,7 @@ const ownProfile = {
   reviewerCount: 2,
   followerCount: 5,
   followingCount: 3,
+  bio: 'I love soil science.',
 }
 
 const otherProfile = {
@@ -116,10 +117,31 @@ describe('Profile', () => {
     expect(await screen.findByText('Ann Public Guide')).toBeInTheDocument()
   })
 
-  it('shows a fixed Profile header without the kicker', async () => {
+  it('shows the display name as the page header', async () => {
     renderProfile('/profile', '/profile')
-    expect(await screen.findByRole('heading', { name: 'Profile', level: 1 })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Me User', level: 1 })).toBeInTheDocument()
     expect(screen.queryByText('Your study desk')).not.toBeInTheDocument()
     expect(screen.queryByText('Study buddy')).not.toBeInTheDocument()
+  })
+
+  it('shows a cardless header with settings gear and no find-friends button', async () => {
+    renderProfile('/profile', '/profile')
+    await screen.findByText('Me User')
+    expect(screen.getByRole('link', { name: 'Edit account' })).toHaveAttribute('href', '/settings/account')
+    expect(screen.queryByRole('link', { name: /Find friends/ })).toBeNull()
+    expect(screen.queryByText('Your study desk')).toBeNull()
+  })
+
+  it('shows no settings gear on other profiles', async () => {
+    renderProfile('/profile/user-9', '/profile/:userId')
+    await screen.findByText('Ann Lee')
+    expect(screen.queryByRole('link', { name: 'Edit account' })).toBeNull()
+    expect(screen.getByRole('button', { name: 'Follow' })).toBeInTheDocument()
+  })
+
+  it('never renders a bio section', async () => {
+    renderProfile('/profile', '/profile')
+    await screen.findByText('Me User')
+    expect(screen.queryByText('I love soil science.')).toBeNull()
   })
 })

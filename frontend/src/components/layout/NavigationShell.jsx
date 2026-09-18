@@ -62,7 +62,7 @@ const NavigationShell = ({ children }) => {
         </header>
 
         {/* Page Content */}
-        <main className={`relative flex-1 overflow-y-auto pb-24 pt-20 md:pb-0 md:pt-24${isReviewerDetail ? ' show-scroll' : ''}`}>{children}</main>
+        <main className={`relative flex-1 overflow-y-auto pb-24 pt-10 md:pb-0 md:pt-16${isReviewerDetail ? ' show-scroll' : ''}`}>{children}</main>
       </div>
 
       {/* Mobile Bottom Dock */}

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import axios from 'axios'
 
@@ -43,25 +43,10 @@ describe('Settings', () => {
     expect(screen.getByRole('button', { name: /Sign out/ })).toBeInTheDocument()
   })
 
-  it('uploads a new avatar when a valid image is chosen', async () => {
-    axios.put.mockResolvedValue({ data: { user: { ...profile, avatarUrl: 'https://cdn.example.com/a.png' } } })
+  it('links to the account page from the Account section', async () => {
     render(<MemoryRouter><Settings /></MemoryRouter>)
     await screen.findByRole('heading', { name: 'Settings' })
-    const file = new File(['avatar'], 'avatar.png', { type: 'image/png' })
-    fireEvent.change(screen.getByLabelText('Upload profile photo'), { target: { files: [file] } })
-    await waitFor(() => expect(axios.put).toHaveBeenCalledWith(
-      '/api/profile/me/avatar',
-      expect.any(FormData),
-      expect.objectContaining({ withCredentials: true })
-    ))
-  })
-
-  it('rejects non-image files before uploading', async () => {
-    render(<MemoryRouter><Settings /></MemoryRouter>)
-    await screen.findByRole('heading', { name: 'Settings' })
-    const file = new File(['data'], 'notes.txt', { type: 'text/plain' })
-    fireEvent.change(screen.getByLabelText('Upload profile photo'), { target: { files: [file] } })
-    expect(await screen.findByText(/JPG, PNG, WEBP, or GIF/)).toBeInTheDocument()
-    expect(axios.put).not.toHaveBeenCalled()
+    expect(screen.getByRole('link', { name: /Account information/ })).toHaveAttribute('href', '/settings/account')
+    expect(screen.queryByText('me@example.com')).toBeNull()
   })
 })

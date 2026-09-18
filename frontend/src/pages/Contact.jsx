@@ -36,8 +36,8 @@ const Contact = () => {
   if (!isAuthenticated) {
     return (
       <div className="mx-auto max-w-2xl pb-10">
-        <h1 className="mt-1 font-display text-4xl font-bold text-ink">Contact</h1>
-        <section className="mt-5 rounded-soft border-2 border-stone bg-paper p-6 text-center club-shadow sm:p-8" aria-label="Sign in required">
+        <h1 className="mt-1 font-display text-3xl font-bold text-ink md:text-4xl">Contact</h1>
+        <section className="mt-5 rounded-soft border-2 border-stone bg-paper p-4 text-center club-shadow sm:p-8" aria-label="Sign in required">
           <LogIn className="mx-auto h-10 w-10 text-accent" aria-hidden="true" />
           <p className="mt-3 font-display text-xl font-bold text-ink">Sign in to send a message</p>
           <p className="mt-1 text-sm text-muted">
@@ -56,13 +56,13 @@ const Contact = () => {
 
   return (
     <div className="mx-auto max-w-2xl pb-10">
-      <h1 className="mt-1 font-display text-4xl font-bold text-ink">Contact</h1>
+      <h1 className="mt-1 font-display text-3xl font-bold text-ink md:text-4xl">Contact</h1>
       <p className="mt-2 leading-relaxed text-muted">
         Questions, ideas, or a study-club story to share? Send a message and it lands directly
         in the developer inbox.
       </p>
 
-      <section className="mt-5 rounded-soft border-2 border-stone bg-paper p-6 club-shadow sm:p-8" aria-label="Contact form">
+      <section className="mt-5 rounded-soft border-2 border-stone bg-paper p-4 club-shadow sm:p-8" aria-label="Contact form">
         {sent ? (
           <div className="py-6 text-center" role="status">
             <PartyPopper className="mx-auto h-10 w-10 text-accent" aria-hidden="true" />

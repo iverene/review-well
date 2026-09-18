@@ -1,14 +1,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import axios from 'axios'
-import { Bookmark, GraduationCap, LibraryBig, Settings as SettingsIcon, UserPlus } from 'lucide-react'
+import { Bookmark, LibraryBig, Pencil } from 'lucide-react'
 
 import { useAuth } from '../contexts/AuthContext'
 import FollowButton from '../components/social/FollowButton'
 import ErrorAlert from '../components/common/ErrorAlert'
-import PageHeader from '../components/common/PageHeader'
 import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
+import { formatYearLevel } from '../utils/profile'
 import { ProfileSkeleton } from '../components/common/Skeleton'
 
 const ReviewerTile = ({ reviewer, showVisibility }) => (
@@ -132,64 +132,62 @@ const Profile = () => {
 
   return (
     <PageContainer>
-      <PageHeader title="Profile" />
-      {/* Profile header card */}
-      <section className="rounded-soft border-2 border-stone bg-paper p-6 mt-5 club-shadow sm:p-8" aria-label="Profile">
-        <div className="flex flex-wrap items-start justify-between gap-5">
-          <div className="flex items-center gap-5">
-            {profile.avatarUrl ? (
-              <img
-                src={profile.avatarUrl}
-                alt={profile.displayName}
-                className="h-24 w-24 rounded-full border-2 border-stone object-cover"
-              />
-            ) : (
-              <div className="flex h-24 w-24 items-center justify-center rounded-full border-2 border-stone bg-blush font-display text-4xl font-bold text-ink" aria-hidden="true">
-                {profile.displayName?.charAt(0).toUpperCase() || 'U'}
+      {/* Profile header (cardless) */}
+      <div aria-label="Profile">
+        <h1 className="font-display text-3xl font-bold text-ink md:text-4xl">{profile.displayName}</h1>
+        <div className="mt-3 flex items-center gap-4">
+          {profile.avatarUrl ? (
+            <img
+              src={profile.avatarUrl}
+              alt={profile.displayName}
+              className="h-16 w-16 rounded-full border-2 border-stone object-cover md:h-24 md:w-24"
+            />
+          ) : (
+            <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-stone bg-blush font-display text-2xl font-bold text-ink md:h-24 md:w-24 md:text-3xl" aria-hidden="true">
+              {profile.displayName?.charAt(0).toUpperCase() || 'U'}
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            {(profile.school || profile.program || profile.major || profile.yearLevel) && (
+              <div className="space-y-0.5" aria-label="School information">
+                {profile.school && (
+                  <p className="text-sm font-bold text-ink">{profile.school}</p>
+                )}
+                {(profile.program || profile.major || profile.yearLevel) && (
+                  <p className="mt-0.5 text-xs text-muted">
+                    {[profile.program, profile.major, formatYearLevel(profile.yearLevel)].filter(Boolean).join(' • ')}
+                  </p>
+                )}
               </div>
             )}
-            <div>
-              <h1 className="mt-1 font-display text-3xl font-bold text-ink">{profile.displayName}</h1>
-              {(profile.school || profile.program || profile.major || profile.yearLevel) && (
-                <p className="mt-2 flex items-center gap-1.5 text-sm text-muted">
-                  <GraduationCap className="h-4 w-4 shrink-0" aria-hidden="true" />
-                  {[profile.school, profile.program, profile.major, profile.yearLevel].filter(Boolean).join(' • ')}
-                </p>
-              )}
-            </div>
           </div>
-
-          <div className="flex flex-wrap gap-2">
-            {isOwnProfile ? (
-              <>
-                <Link
-                  to="/friends"
-                  className="inline-flex items-center gap-2 rounded-soft border-2 border-stone bg-butter px-4 py-2 text-sm font-extrabold text-ink hover:brightness-95"
-                >
-                  <UserPlus className="h-4 w-4" aria-hidden="true" /> Find friends
-                </Link>
-                <Link
-                  to="/settings"
-                  className="inline-flex items-center gap-2 rounded-soft border-2 border-stone bg-paper px-4 py-2 text-sm font-extrabold text-ink hover:bg-stone"
-                >
-                  <SettingsIcon className="h-4 w-4" aria-hidden="true" /> Edit Profile
-                </Link>
-              </>
-            ) : (
-              <FollowButton
-                userId={profile.id}
-                initialFollowing={following}
-                initialFollowerCount={followerCount}
-                onToggle={handleFollowToggle}
-              />
-            )}
-          </div>
+          {isOwnProfile && (
+            <Link
+              to="/settings/account"
+              aria-label="Edit account"
+              title="Edit account"
+              className="ml-auto inline-flex shrink-0 items-center justify-center self-center rounded-soft p-2.5 text-muted hover:bg-powder hover:text-ink"
+            >
+              <Pencil className="h-5 w-5" aria-hidden="true" />
+            </Link>
+          )}
         </div>
 
+        {!isOwnProfile && (
+          <div className="mt-4">
+            <FollowButton
+              userId={profile.id}
+              initialFollowing={following}
+              initialFollowerCount={followerCount}
+              onToggle={handleFollowToggle}
+            />
+          </div>
+        )}
+
         {/* Stats */}
-        <div className="mt-5 flex gap-1 border-t-2 border-stone pt-3 sm:gap-3">
+        <div className="mt-5 flex gap-1 sm:gap-3">
           <div className="flex-1 rounded-soft px-2 py-1.5 text-center" aria-label={`${profile.reviewerCount || 0} reviewers`}>
-            <span className="block font-display text-xl font-bold text-ink">{profile.reviewerCount || 0}</span>
+            <span className="block font-display text-lg font-bold text-ink md:text-xl">{profile.reviewerCount || 0}</span>
             <span className="text-[11px] font-extrabold uppercase tracking-widest text-muted">Reviewers</span>
           </div>
           <Link
@@ -197,7 +195,7 @@ const Profile = () => {
             className="flex-1 rounded-soft px-2 py-1.5 text-center transition-colors hover:bg-stone/40"
             aria-label={`View followers, ${followerCount}`}
           >
-            <span className="block font-display text-xl font-bold text-ink">{followerCount}</span>
+            <span className="block font-display text-lg font-bold text-ink md:text-xl">{followerCount}</span>
             <span className="text-[11px] font-extrabold uppercase tracking-widest text-muted">Followers</span>
           </Link>
           <Link
@@ -205,18 +203,11 @@ const Profile = () => {
             className="flex-1 rounded-soft px-2 py-1.5 text-center transition-colors hover:bg-stone/40"
             aria-label={`View following, ${profile.followingCount || 0}`}
           >
-            <span className="block font-display text-xl font-bold text-ink">{profile.followingCount || 0}</span>
+            <span className="block font-display text-lg font-bold text-ink md:text-xl">{profile.followingCount || 0}</span>
             <span className="text-[11px] font-extrabold uppercase tracking-widest text-muted">Following</span>
           </Link>
         </div>
-
-        {profile.bio && (
-          <div className="mt-4 rounded-soft bg-mint/40 p-4">
-            <h2 className="text-xs font-extrabold uppercase tracking-widest text-muted">About</h2>
-            <p className="mt-1 text-sm leading-relaxed text-ink">{profile.bio}</p>
-          </div>
-        )}
-      </section>
+      </div>
 
       {/* Tabs */}
       <div className="mt-6 flex gap-2 rounded-soft border-2 border-stone bg-paper p-1.5" role="tablist" aria-label="Profile collections">

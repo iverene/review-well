@@ -1,6 +1,8 @@
 import { useState, useRef } from 'react'
 import { Camera, Loader2 } from 'lucide-react'
 
+import { YEAR_LEVELS } from '../../utils/profile'
+
 const AVATAR_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 const AVATAR_MAX_BYTES = 2 * 1024 * 1024
 
@@ -56,15 +58,7 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
     }
   }
 
-  const yearLevels = [
-    { value: 'freshman', label: 'Freshman' },
-    { value: 'sophomore', label: 'Sophomore' },
-    { value: 'junior', label: 'Junior' },
-    { value: 'senior', label: 'Senior' },
-    { value: 'graduate', label: 'Graduate' },
-    { value: 'phd', label: 'PhD' },
-    { value: 'other', label: 'Other' },
-  ]
+  const yearLevels = YEAR_LEVELS
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -75,10 +69,10 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
             <img
               src={preview || profile.avatarUrl}
               alt={profile.displayName}
-              className="h-20 w-20 rounded-full border-2 border-stone object-cover"
+              className="h-16 w-16 rounded-full border-2 border-stone object-cover md:h-20 md:w-20"
             />
           ) : (
-            <div className="flex h-20 w-20 items-center justify-center rounded-full border-2 border-stone bg-blush font-display text-2xl font-bold text-ink" aria-hidden="true">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-stone bg-blush font-display text-xl font-bold text-ink md:h-20 md:w-20 md:text-2xl" aria-hidden="true">
               {formData.displayName?.charAt(0).toUpperCase() || 'U'}
             </div>
           )}

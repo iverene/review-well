@@ -18,8 +18,8 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/login" state={{ from: location }} replace />
   }
 
-  if (!['/settings', '/onboarding'].includes(location.pathname) && !isProfileComplete(user)) {
-    return <Navigate to="/settings" state={{ onboarding: true }} replace />
+  if (!['/settings/account', '/onboarding'].includes(location.pathname) && !isProfileComplete(user)) {
+    return <Navigate to="/settings/account" state={{ onboarding: true }} replace />
   }
 
   return children

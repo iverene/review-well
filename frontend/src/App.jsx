@@ -18,6 +18,7 @@ const Workspace = lazy(() => import('./pages/Workspace'))
 const Notifications = lazy(() => import('./pages/Notifications'))
 const Profile = lazy(() => import('./pages/Profile'))
 const Settings = lazy(() => import('./pages/Settings'))
+const Account = lazy(() => import('./pages/Account'))
 const Onboarding = lazy(() => import('./pages/Onboarding'))
 const About = lazy(() => import('./pages/About'))
 const Guide = lazy(() => import('./pages/Guide'))
@@ -125,6 +126,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Settings />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/settings/account"
+                element={
+                  <ProtectedRoute>
+                    <Account />
                   </ProtectedRoute>
                 }
               />
