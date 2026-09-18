@@ -45,6 +45,7 @@ const incrementUsage = async (userId) => {
         userId,
         generationsUsed: 1,
         windowResetAt: now,
+        gradesResetAt: now,
       },
     })
   }
