@@ -26,10 +26,13 @@ describe('study-mode schema', () => {
     }
   })
 
-  it('creates a reviewer with file, card, attempt, and session rows', () => {
-    // Shape-level contract for the row creation Task 2+ relies on: required
+  it('declares reviewer/file/card/attempt/session shape and defaults', () => {
+    // DMMF shape contract for the row creation Task 2+ relies on: required
     // fields, column mappings, and defaults (file.version === 1,
-    // card.known === false) as declared in schema.prisma.
+    // card.known === false) as declared in schema.prisma. Live creates are
+    // deferred until a provisioned test DB exists — the repo suite is fully
+    // mocked and tests/setup.js pins DATABASE_URL to an unprovisioned
+    // localhost DB, so no test here performs DB writes.
     const reviewerFile = getModel('ReviewerFile')
     const flashcard = getModel('Flashcard')
     const attempt = getModel('BlurtingAttempt')
