@@ -137,10 +137,10 @@ const getReviewerById = async (req, res) => {
       } else if (typeof storage.getSignedUrl === 'function') {
         const { data } = await storage.getSignedUrl(file.storagePath, 60)
         fileUrl = data?.signedUrl || null
-      } else {
-        const { data } = storage.getPublicUrl(file.storagePath)
-        fileUrl = data?.publicUrl || null
       }
+      // No public-URL fallback here by design: a long-lived public URL would
+      // leak unlisted/private files, so without signed-URL support the file
+      // stays unserved (fileUrl: null, which the hub already handles).
     }
 
     const cards = await flashcardModel.findByReviewer(id)

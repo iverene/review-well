@@ -193,4 +193,24 @@ describe('Guest study-hub guards (Task 7)', () => {
     expect(response.status).toBe(200)
     expect(response.body.reviewer.quota).toEqual({ decksLeft: 3, gradesLeft: 5 })
   })
+
+  it('serves fileUrl null (never a public URL) when the adapter lacks getSignedUrl', async () => {
+    const unlisted = { ...publicReviewer, id: 'reviewer-unlisted', visibility: 'unlisted' }
+    const unlistedFile = { ...storedFile, reviewerId: unlisted.id }
+    reviewerModel.findById.mockResolvedValue(unlisted)
+    reviewerFileModel.findByReviewerId.mockResolvedValue(unlistedFile)
+    flashcardModel.findByReviewer.mockResolvedValue([])
+    createStorageAdapter.mockReturnValue({
+      upload: vi.fn(),
+      getPublicUrl: vi.fn(() => ({ data: { publicUrl: 'https://storage.example.com/v1.pdf' } })),
+      delete: vi.fn(),
+    })
+
+    const app = createGuestApp()
+    const response = await request(app).get(`/api/reviewers/${unlisted.id}`)
+
+    expect(response.status).toBe(200)
+    expect(response.body.reviewer.fileUrl).toBeNull()
+    expect(JSON.stringify(response.body)).not.toContain('storage.example.com')
+  })
 })
