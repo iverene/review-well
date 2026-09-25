@@ -195,7 +195,7 @@ const PomodoroDock = ({ reviewerId, guest }) => {
 
       {preset === 'Custom' && (
         <div>
-          <label htmlFor="pomodoro-custom-focus">Focus minutes</label>
+          <label htmlFor="pomodoro-custom-focus">Focus Minutes</label>
           <input
             id="pomodoro-custom-focus"
             type="number"
@@ -213,7 +213,7 @@ const PomodoroDock = ({ reviewerId, guest }) => {
               }
             }}
           />
-          <label htmlFor="pomodoro-custom-break">Break minutes</label>
+          <label htmlFor="pomodoro-custom-break">Break Minutes</label>
           <input
             id="pomodoro-custom-break"
             type="number"
@@ -247,7 +247,7 @@ const PomodoroDock = ({ reviewerId, guest }) => {
       <button
         type="button"
         onClick={() => setMuted((m) => !m)}
-        aria-label={muted ? 'Unmute chime' : 'Mute chime'}
+        aria-label={muted ? 'Unmute Chime' : 'Mute Chime'}
         aria-pressed={muted}
       >
         {muted ? 'Unmute' : 'Mute'}

@@ -46,8 +46,8 @@ const About = () => (
       <section className="mt-6 rounded-soft border-2 border-stone bg-paper p-4 club-shadow sm:p-6" aria-label="More from Review Well">
       <h2 className="font-display text-xl font-bold text-ink">More from Review Well</h2>
       <div className="mt-3 flex flex-col gap-1 text-sm font-bold">
-        <Link to="/guide" className="rounded-soft px-2 py-2 text-ink hover:bg-powder">Review Well guide</Link>
-        <Link to="/contact" className="rounded-soft px-2 py-2 text-ink hover:bg-powder">Contact us</Link>
+        <Link to="/guide" className="rounded-soft px-2 py-2 text-ink hover:bg-powder">Review Well Guide</Link>
+        <Link to="/contact" className="rounded-soft px-2 py-2 text-ink hover:bg-powder">Contact Us</Link>
         <Link to="/privacy" className="inline-flex items-center gap-2 rounded-soft px-2 py-2 text-ink hover:bg-powder">
           <ShieldCheck className="h-4 w-4 text-accent" aria-hidden="true" /> Privacy Policy
         </Link>

@@ -185,7 +185,7 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
           required
           className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-2.5 text-ink focus:border-accent focus:outline-none"
         >
-          <option value="">Select year level</option>
+          <option value="">Select Year Level</option>
           {yearLevels.map((level) => (
             <option key={level.value} value={level.value}>
               {level.label}

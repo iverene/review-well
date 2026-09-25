@@ -66,7 +66,7 @@ test.describe('Guest study hub', () => {
     await page.getByRole('tab', { name: 'Flashcards' }).click()
     await expect(page.getByText('Front 1')).toBeVisible()
 
-    await page.getByRole('button', { name: 'Flip card' }).click()
+      await page.getByRole('button', { name: 'Flip Card' }).click()
     await expect(page.getByText('Back 1')).toBeVisible()
 
     // Taste-only: flipping never writes.

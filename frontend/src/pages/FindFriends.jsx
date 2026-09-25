@@ -77,7 +77,7 @@ const FindFriends = () => {
         {!loading && searched && users.length === 0 && (
           <div className="rounded-soft border-2 border-dashed border-stone bg-paper px-5 py-10 text-center">
             <UserPlus className="mx-auto h-8 w-8 text-accent" aria-hidden="true" />
-            <p className="mt-2 font-display text-lg font-bold text-ink">No study buddies found</p>
+            <p className="mt-2 font-display text-lg font-bold text-ink">No Study Buddies Found</p>
             <p className="mt-1 text-sm text-muted">Try a different name, email, or school.</p>
           </div>
         )}

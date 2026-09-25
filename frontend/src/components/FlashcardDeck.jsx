@@ -99,20 +99,20 @@ const FlashcardDeck = ({
               onClick={onGenerate}
               style={{ background: 'var(--deck-butter)' }}
             >
-              Generate starter deck
+              Generate Starter Deck
             </button>
           ) : (
-            <p>No cards yet — add cards manually below.</p>
+            <p>No Cards Yet — Add Cards Manually Below.</p>
           )}
         </div>
       ) : (
         <div>
           <p data-testid="deck-progress">
-            {knownCount} / {total} known
+            {knownCount} / {total} Known
           </p>
           <div
             role="progressbar"
-            aria-label="Deck progress"
+            aria-label="Deck Progress"
             aria-valuenow={total === 0 ? 0 : Math.round((knownCount / total) * 100)}
             aria-valuemin={0}
             aria-valuemax={100}
@@ -129,7 +129,7 @@ const FlashcardDeck = ({
           <div
             role="button"
             tabIndex={0}
-            aria-label="Flip card"
+            aria-label="Flip Card"
             onClick={() => setFlipped((value) => !value)}
             onKeyDown={handleCardKeyDown}
             className="deck-flip"
@@ -142,15 +142,15 @@ const FlashcardDeck = ({
           </div>
 
           <div>
-            <button type="button" aria-label="Previous card" onClick={() => goTo(index - 1)}>
+            <button type="button" aria-label="Previous Card" onClick={() => goTo(index - 1)}>
               Previous
             </button>
-            <button type="button" aria-label="Next card" onClick={() => goTo(index + 1)}>
+            <button type="button" aria-label="Next Card" onClick={() => goTo(index + 1)}>
               Next
             </button>
             <button
               type="button"
-              aria-label="Shuffle deck"
+              aria-label="Shuffle Deck"
               onClick={() => {
                 setOrder(shuffleIndices(baseOrder))
                 setIndex(0)
@@ -161,16 +161,16 @@ const FlashcardDeck = ({
             </button>
             <button
               type="button"
-              aria-label={current.known ? 'Mark as still learning' : 'Mark as known'}
+              aria-label={current.known ? 'Mark as Still Learning' : 'Mark as Known'}
               onClick={() => onToggleKnown(current.id, !current.known)}
               style={{ background: current.known ? 'var(--deck-mint)' : 'var(--deck-butter)' }}
             >
-              {current.known ? 'Still learning' : 'Known'}
+              {current.known ? 'Still Learning' : 'Known'}
             </button>
-            <button type="button" aria-label="Edit card" onClick={() => openForm('edit')}>
+            <button type="button" aria-label="Edit Card" onClick={() => openForm('edit')}>
               Edit
             </button>
-            <button type="button" aria-label="Delete card" onClick={() => onDelete(current.id)}>
+            <button type="button" aria-label="Delete Card" onClick={() => onDelete(current.id)}>
               Delete
             </button>
           </div>
@@ -178,8 +178,8 @@ const FlashcardDeck = ({
       )}
 
       {formMode === null && (
-        <button type="button" aria-label="Add card" onClick={() => openForm('add')}>
-          Add card
+        <button type="button" aria-label="Add Card" onClick={() => openForm('add')}>
+          Add Card
         </button>
       )}
       {formMode && (
@@ -196,8 +196,8 @@ const FlashcardDeck = ({
             value={back}
             onChange={(event) => setBack(event.target.value)}
           />
-          <button type="button" aria-label="Save card" onClick={saveForm}>
-            Save card
+          <button type="button" aria-label="Save Card" onClick={saveForm}>
+            Save Card
           </button>
           <button type="button" aria-label="Cancel" onClick={() => setFormMode(null)}>
             Cancel

@@ -7,9 +7,9 @@ import ErrorAlert from '../components/common/ErrorAlert'
 import { getApiErrorMessage } from '../utils/apiError'
 
 const steps = [
-  { title: 'Make it yours', fields: ['displayName'] },
-  { title: 'Your school life', fields: ['school', 'program'] },
-  { title: 'Your study path', fields: ['major', 'yearLevel'] },
+  { title: 'Make It Yours', fields: ['displayName'] },
+  { title: 'Your School Life', fields: ['school', 'program'] },
+  { title: 'Your Study Path', fields: ['major', 'yearLevel'] },
 ]
 
 const yearLevels = [
@@ -102,7 +102,7 @@ const Onboarding = () => {
         {stepIndex === 0 && (
           <div>
             <label htmlFor="displayName" className="mb-2 block text-sm font-extrabold text-ink">
-              What should we call you?
+              What Should We Call You?
             </label>
             <input
               id="displayName"
@@ -112,7 +112,7 @@ const Onboarding = () => {
               onChange={updateField}
               autoFocus
               className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-3 text-ink focus:border-accent focus:outline-none"
-              placeholder="Your display name"
+              placeholder="Your Display Name"
             />
             <p className="mt-2 text-sm text-muted">This is how your study club friends will see you.</p>
           </div>
@@ -134,7 +134,7 @@ const Onboarding = () => {
               />
             </div>
             <div>
-              <label htmlFor="program" className="mb-2 block text-sm font-extrabold text-ink">Program or course</label>
+              <label htmlFor="program" className="mb-2 block text-sm font-extrabold text-ink">Program or Course</label>
               <input
                 id="program"
                 name="program"
@@ -151,7 +151,7 @@ const Onboarding = () => {
         {stepIndex === 2 && (
           <div className="space-y-5">
             <div>
-              <label htmlFor="major" className="mb-2 block text-sm font-extrabold text-ink">Major or specialization</label>
+              <label htmlFor="major" className="mb-2 block text-sm font-extrabold text-ink">Major or Specialization</label>
               <input
                 id="major"
                 name="major"
@@ -164,7 +164,7 @@ const Onboarding = () => {
               />
             </div>
             <div>
-              <label htmlFor="yearLevel" className="mb-2 block text-sm font-extrabold text-ink">Year level</label>
+              <label htmlFor="yearLevel" className="mb-2 block text-sm font-extrabold text-ink">Year Level</label>
               <select
                 id="yearLevel"
                 name="yearLevel"
@@ -172,7 +172,7 @@ const Onboarding = () => {
                 onChange={updateField}
                 className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-3 text-ink focus:border-accent focus:outline-none"
               >
-                <option value="">Select your year level</option>
+                <option value="">Select Your Year Level</option>
                 {yearLevels.map((level) => <option key={level.value} value={level.value}>{level.label}</option>)}
               </select>
             </div>
@@ -194,7 +194,7 @@ const Onboarding = () => {
             disabled={saving}
             className="rounded-soft border-2 border-mint bg-mint px-6 py-3 text-sm font-extrabold text-ink hover:bg-butter disabled:opacity-60"
           >
-            {saving ? 'Saving...' : isLastStep ? 'Finish profile' : 'Continue'}
+            {saving ? 'Saving...' : isLastStep ? 'Finish Profile' : 'Continue'}
           </button>
         </div>
       </section>

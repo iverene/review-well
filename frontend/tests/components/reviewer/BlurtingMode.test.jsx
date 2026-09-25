@@ -18,7 +18,7 @@ describe('BlurtingMode', () => {
   it('shows the active prompt with a dump box and the AI reviews counter', () => {
     render(<BlurtingMode {...baseProps} />)
     expect(screen.getByText(baseProps.prompt)).toBeInTheDocument()
-    expect(screen.getByLabelText('Your recall')).toBeInTheDocument()
+    expect(screen.getByLabelText('Your Recall')).toBeInTheDocument()
     expect(screen.getByText('4/5 AI reviews left')).toBeInTheDocument()
   })
 
@@ -32,10 +32,10 @@ describe('BlurtingMode', () => {
     })
     render(<BlurtingMode {...baseProps} onSubmit={onSubmit} />)
 
-    fireEvent.change(screen.getByLabelText('Your recall'), {
+    fireEvent.change(screen.getByLabelText('Your Recall'), {
       target: { value: 'Everything I remember...' },
     })
-    fireEvent.click(screen.getByRole('button', { name: 'Submit recall' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Submit Recall' }))
 
     expect(onSubmit).toHaveBeenCalledWith('Everything I remember...')
     await waitFor(() => {
@@ -59,10 +59,10 @@ describe('BlurtingMode', () => {
 
     expect(screen.getByText('AI feedback limit reached — self-review mode')).toBeInTheDocument()
 
-    fireEvent.change(screen.getByLabelText('Your recall'), {
+    fireEvent.change(screen.getByLabelText('Your Recall'), {
       target: { value: 'Everything I remember...' },
     })
-    fireEvent.click(screen.getByRole('button', { name: 'Submit recall' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Submit Recall' }))
 
     await waitFor(() => {
       expect(screen.getByText('Big-O — Growth rate')).toBeInTheDocument()
@@ -84,10 +84,10 @@ describe('BlurtingMode', () => {
     const onRate = vi.fn()
     render(<BlurtingMode {...baseProps} onSubmit={onSubmit} onRate={onRate} />)
 
-    fireEvent.change(screen.getByLabelText('Your recall'), {
+    fireEvent.change(screen.getByLabelText('Your Recall'), {
       target: { value: 'Everything I remember...' },
     })
-    fireEvent.click(screen.getByRole('button', { name: 'Submit recall' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Submit Recall' }))
 
     await waitFor(() => {
       expect(screen.getByRole('button', { name: 'Nailed' })).toBeInTheDocument()
@@ -102,10 +102,10 @@ describe('BlurtingMode', () => {
 
     expect(screen.getByText('Sign in with Google to save progress')).toBeInTheDocument()
 
-    fireEvent.change(screen.getByLabelText('Your recall'), {
+    fireEvent.change(screen.getByLabelText('Your Recall'), {
       target: { value: 'Everything I remember...' },
     })
-    fireEvent.click(screen.getByRole('button', { name: 'Submit recall' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Submit Recall' }))
 
     expect(onSubmit).not.toHaveBeenCalled()
     expect(screen.getByText('Everything I remember...')).toBeInTheDocument()

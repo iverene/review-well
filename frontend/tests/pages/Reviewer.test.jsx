@@ -85,7 +85,7 @@ describe('Reviewer', () => {
     renderReviewer()
     fireEvent.click(await screen.findByRole('tab', { name: 'Flashcards' }))
     expect(await screen.findByText('Front 1')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Mark as known' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Mark as Known' }))
     await waitFor(() => expect(axios.patch).toHaveBeenCalledWith('/api/cards/card-1', { known: true }, { withCredentials: true }))
   })
 
@@ -147,7 +147,7 @@ describe('Reviewer', () => {
     renderReviewer()
     await screen.findByLabelText('Study hub')
     fireEvent.click(screen.getByRole('button', { name: 'Share' }))
-    expect(screen.getByRole('dialog', { name: 'Share this reviewer' })).toBeInTheDocument()
+    expect(screen.getByRole('dialog', { name: 'Share This Reviewer' })).toBeInTheDocument()
     expect(screen.getAllByText((content, el) => el?.textContent === 'Unlisted — only people with the shared link can view it.')).toHaveLength(2)
     const expectedUrl = screen.getByLabelText('Share link').value
     expect(expectedUrl).toMatch(/\/reviewer\/r1$/)
@@ -191,8 +191,8 @@ describe('Reviewer', () => {
       </MemoryRouter>
     )
     fireEvent.click(await screen.findByRole('button', { name: 'Delete' }))
-    expect(await screen.findByRole('alertdialog', { name: 'Delete this reviewer?' })).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Yes, delete' }))
+    expect(await screen.findByRole('alertdialog', { name: 'Delete This Reviewer?' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Yes, Delete' }))
     await waitFor(() => expect(axios.delete).toHaveBeenCalledWith('/api/reviewers/r1', { withCredentials: true }))
     expect(await screen.findByText('My reviewers')).toBeInTheDocument()
   })
@@ -200,8 +200,8 @@ describe('Reviewer', () => {
   it('does not delete when the confirmation is dismissed', async () => {
     renderReviewer()
     fireEvent.click(await screen.findByRole('button', { name: 'Delete' }))
-    expect(await screen.findByRole('alertdialog', { name: 'Delete this reviewer?' })).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Keep it' }))
+    expect(await screen.findByRole('alertdialog', { name: 'Delete This Reviewer?' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Keep It' }))
     expect(mockDelete).not.toHaveBeenCalled()
     expect(await screen.findByLabelText('Study hub')).toBeInTheDocument()
   })

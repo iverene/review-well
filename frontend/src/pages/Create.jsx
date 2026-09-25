@@ -182,7 +182,7 @@ const Create = () => {
         </div>
         <div>
           <p className="font-mono text-xs font-bold uppercase tracking-widest text-accent">New study guide</p>
-          <h1 className="mt-1 font-display text-3xl font-bold text-ink md:text-4xl">{editReviewerId ? 'Edit your reviewer' : 'Create a reviewer'}</h1>
+          <h1 className="mt-1 font-display text-3xl font-bold text-ink md:text-4xl">{editReviewerId ? 'Edit Your Reviewer' : 'Create a Reviewer'}</h1>
           <p className="mt-2 text-muted">{editReviewerId ? 'Tweak the details or swap in a fresh file.' : 'Upload your PDF or PPTX now — AI decks and study modes build on it next.'}</p>
         </div>
       </div>
@@ -201,25 +201,25 @@ const Create = () => {
             </div>
 
             <div>
-              <label htmlFor="courseDescription" className="mb-2 block text-sm font-extrabold text-ink">Course description</label>
+              <label htmlFor="courseDescription" className="mb-2 block text-sm font-extrabold text-ink">Course Description</label>
               <input id="courseDescription" name="courseDescription" value={formData.courseDescription} onChange={updateField} required placeholder="e.g. Data Structures and Algorithms" className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-3 text-ink focus:border-accent focus:outline-none" />
             </div>
 
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
-                <label htmlFor="courseCode" className="mb-2 block text-sm font-extrabold text-ink">Course code</label>
+                <label htmlFor="courseCode" className="mb-2 block text-sm font-extrabold text-ink">Course Code</label>
                 <input id="courseCode" name="courseCode" value={formData.courseCode} onChange={updateField} required placeholder="e.g. CS 201" className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-3 text-ink focus:border-accent focus:outline-none" />
               </div>
               <div>
                 <label htmlFor="semester" className="mb-2 block text-sm font-extrabold text-ink">Semester</label>
                 <select id="semester" name="semester" value={formData.semester} onChange={updateField} required className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-3 text-ink focus:border-accent focus:outline-none">
-                  <option value="" disabled>Select semester</option><option value="First Semester">First Semester</option><option value="Second Semester">Second Semester</option><option value="Summer">Summer</option>
+                  <option value="" disabled>Select Semester</option><option value="First Semester">First Semester</option><option value="Second Semester">Second Semester</option><option value="Summer">Summer</option>
                 </select>
               </div>
             </div>
 
             <div>
-              <label htmlFor="examType" className="mb-2 block text-sm font-extrabold text-ink">Examination period</label>
+              <label htmlFor="examType" className="mb-2 block text-sm font-extrabold text-ink">Examination Period</label>
               <select id="examType" name="examType" value={formData.examType} onChange={updateField} className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-3 text-ink focus:border-accent focus:outline-none">
                 <option value="prelim">Prelim</option><option value="midterm">Midterm</option><option value="final">Finals</option>
               </select>
@@ -253,7 +253,7 @@ const Create = () => {
 
           <div className="mt-8 flex justify-end border-t-2 border-stone pt-6">
             <button type="submit" disabled={saving || loadingEdit} className="inline-flex items-center gap-2 rounded-soft border-2 border-accent bg-accent px-6 py-3 text-sm font-extrabold text-paper hover:-translate-y-0.5 disabled:opacity-60">
-              {saving ? (editReviewerId ? 'Saving...' : 'Creating...') : (editReviewerId ? 'Save changes' : 'Create reviewer')}
+              {saving ? (editReviewerId ? 'Saving...' : 'Creating...') : (editReviewerId ? 'Save Changes' : 'Create Reviewer')}
             </button>
           </div>
         </div>

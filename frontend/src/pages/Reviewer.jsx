@@ -269,8 +269,8 @@ const Reviewer = () => {
             {shareOpen && (
               <>
                 <div className="fixed inset-0 z-40" onClick={() => setShareOpen(false)} />
-                <div className="absolute right-0 z-50 mt-2 w-80 rounded-2xl border-2 border-stone bg-paper p-4 shadow-xl" role="dialog" aria-label="Share this reviewer">
-                  <p className="text-sm font-extrabold text-ink">Share this reviewer</p>
+                <div className="absolute right-0 z-50 mt-2 w-80 rounded-2xl border-2 border-stone bg-paper p-4 shadow-xl" role="dialog" aria-label="Share This Reviewer">
+                  <p className="text-sm font-extrabold text-ink">Share This Reviewer</p>
                   <div className="mt-2 flex items-center gap-2">
                     <input
                       readOnly
@@ -305,7 +305,7 @@ const Reviewer = () => {
           <div className="fixed inset-0 z-40 bg-ink/30" onClick={() => setConfirmingDelete(false)} />
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="alertdialog" aria-modal="true" aria-labelledby="delete-reviewer-title" aria-describedby="delete-reviewer-copy">
             <div className="w-full max-w-sm rounded-soft border-2 border-stone bg-paper p-5 club-shadow">
-              <h2 id="delete-reviewer-title" className="font-display text-xl font-bold text-ink">Delete this reviewer?</h2>
+              <h2 id="delete-reviewer-title" className="font-display text-xl font-bold text-ink">Delete This Reviewer?</h2>
               <p id="delete-reviewer-copy" className="mt-2 text-sm leading-relaxed text-muted">Its file, flashcards, blurting history, and focus sessions will be removed and can’t be recovered.</p>
               <div className="mt-5 flex justify-end gap-2">
                 <button
@@ -313,14 +313,14 @@ const Reviewer = () => {
                   onClick={() => setConfirmingDelete(false)}
                   className="rounded-soft border-2 border-stone bg-paper px-4 py-2 text-sm font-extrabold text-ink hover:bg-powder"
                 >
-                  Keep it
+                  Keep It
                 </button>
                 <button
                   type="button"
                   onClick={handleDeleteReviewer}
                   className="rounded-soft border-2 border-accent bg-accent px-4 py-2 text-sm font-extrabold text-paper hover:opacity-90"
                 >
-                  Yes, delete
+                  Yes, Delete
                 </button>
               </div>
             </div>
@@ -379,7 +379,7 @@ const Reviewer = () => {
             onBlurtingRate={handleBlurtingRate}
           />
         </main>
-        <aside className="h-fit rounded-soft border-2 border-stone bg-mint/40 p-5"><h2 className="font-display text-xl font-bold text-ink">Study details</h2><dl className="mt-4 space-y-4 text-sm"><div><dt className="font-extrabold text-muted">Assessment</dt><dd className="mt-1 text-ink">{reviewer.examType}</dd></div><div><dt className="font-extrabold text-muted">Semester</dt><dd className="mt-1 text-ink">{reviewer.semester}</dd></div><div><dt className="font-extrabold text-muted">Last updated</dt><dd className="mt-1 flex items-center gap-1 text-ink"><Clock3 className="h-4 w-4" /> {new Date(reviewer.updatedAt).toLocaleDateString()}</dd></div></dl></aside>
+        <aside className="h-fit rounded-soft border-2 border-stone bg-mint/40 p-5"><h2 className="font-display text-xl font-bold text-ink">Study Details</h2><dl className="mt-4 space-y-4 text-sm"><div><dt className="font-extrabold text-muted">Assessment</dt><dd className="mt-1 text-ink">{reviewer.examType}</dd></div><div><dt className="font-extrabold text-muted">Semester</dt><dd className="mt-1 text-ink">{reviewer.semester}</dd></div><div><dt className="font-extrabold text-muted">Last Updated</dt><dd className="mt-1 flex items-center gap-1 text-ink"><Clock3 className="h-4 w-4" /> {new Date(reviewer.updatedAt).toLocaleDateString()}</dd></div></dl></aside>
       </div>
     </PageContainer>
   )

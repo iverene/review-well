@@ -88,7 +88,7 @@ const BlurtingMode = ({
       {result === null ? (
         <div>
           <p data-testid="blurting-prompt">{prompt}</p>
-          <label htmlFor="blurting-dump">Your recall</label>
+          <label htmlFor="blurting-dump">Your Recall</label>
           <textarea
             id="blurting-dump"
             value={dump}
@@ -97,11 +97,11 @@ const BlurtingMode = ({
           {error && <p role="alert">{error}</p>}
           <button
             type="button"
-            aria-label="Submit recall"
+            aria-label="Submit Recall"
             onClick={handleSubmit}
             disabled={!dump.trim() || submitting}
           >
-            Submit recall
+            Submit Recall
           </button>
         </div>
       ) : (
@@ -121,7 +121,7 @@ const BlurtingMode = ({
           ) : (
             <div data-testid="blurting-self-result">
               <div>
-                <h3>Your recall</h3>
+                <h3>Your Recall</h3>
                 <p data-testid="blurting-dump-echo">{result.dumpText || dump.trim()}</p>
               </div>
               {(result.sourceExcerpt || (result.local && prompt)) && (
@@ -157,8 +157,8 @@ const BlurtingMode = ({
               )}
             </div>
           )}
-          <button type="button" aria-label="Try again" onClick={reset}>
-            Try again
+          <button type="button" aria-label="Try Again" onClick={reset}>
+            Try Again
           </button>
         </div>
       )}

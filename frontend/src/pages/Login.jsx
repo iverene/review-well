@@ -40,12 +40,12 @@ const Login = () => {
         <div className="mb-8 text-center">
           <img src="/logo.png" alt="" className="mx-auto mb-4 h-16 w-16 object-contain md:h-24 md:w-24" />
           <p className="mb-2 font-mono text-xs font-bold uppercase tracking-widest text-accent">Welcome to the study club</p>
-          <h1 className="text-3xl font-bold text-ink md:text-4xl">Pick your study mode</h1>
+          <h1 className="text-3xl font-bold text-ink md:text-4xl">Pick Your Study Mode</h1>
           <p className="mx-auto mt-3 max-w-sm leading-relaxed text-muted">Make an account for the full toolkit, or browse public guides as a guest.</p>
         </div>
         <div className="grid gap-3">
           <div className="rounded-soft border-2 border-stone bg-paper p-4 text-center">
-            <p className="font-extrabold text-ink">Full access</p>
+            <p className="font-extrabold text-ink">Full Access</p>
             <p className="mt-1 text-sm text-muted">Create, edit, save, and use AI study tools.</p>
             <div className="mt-3 flex justify-center"><LoginButton /></div>
           </div>

@@ -86,7 +86,7 @@ const FocusStats = () => {
       </div>
       <div className="mt-3 flex items-center gap-2">
         <label htmlFor="focus-goal" className="text-xs font-extrabold uppercase tracking-widest text-muted">
-          Daily goal (min)
+          Daily Goal (Min)
         </label>
         <input
           id="focus-goal"
@@ -337,7 +337,7 @@ const Profile = () => {
         ) : visibleReviewers.length === 0 ? (
           <div className="rounded-soft border-2 border-dashed border-stone bg-paper px-5 py-10 text-center">
             <p className="font-display text-lg font-bold text-ink">
-              {activeTab === 'saved' ? 'No saved reviewers yet' : isOwnProfile ? 'No reviewers yet' : 'No public reviewers yet'}
+              {activeTab === 'saved' ? 'No Saved Reviewers Yet' : isOwnProfile ? 'No Reviewers Yet' : 'No Public Reviewers Yet'}
             </p>
             <p className="mt-1 text-sm text-muted">
               {activeTab === 'saved'

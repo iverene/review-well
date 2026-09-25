@@ -62,7 +62,7 @@ describe('PomodoroDock', () => {
   it('posts the completed session with the attached reviewer for signed users', () => {
     render(<PomodoroDock {...signedProps} />)
     fireEvent.click(screen.getByRole('button', { name: 'Custom' }))
-    fireEvent.change(screen.getByLabelText('Focus minutes'), { target: { value: '1' } })
+    fireEvent.change(screen.getByLabelText('Focus Minutes'), { target: { value: '1' } })
     fireEvent.click(screen.getByRole('button', { name: 'Start' }))
 
     act(() => {
@@ -81,7 +81,7 @@ describe('PomodoroDock', () => {
   it('never POSTs for guests — the timer stays fully client-side', () => {
     render(<PomodoroDock reviewerId="reviewer-1" guest />)
     fireEvent.click(screen.getByRole('button', { name: 'Custom' }))
-    fireEvent.change(screen.getByLabelText('Focus minutes'), { target: { value: '1' } })
+    fireEvent.change(screen.getByLabelText('Focus Minutes'), { target: { value: '1' } })
     fireEvent.click(screen.getByRole('button', { name: 'Start' }))
 
     act(() => {

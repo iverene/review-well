@@ -49,7 +49,7 @@ describe('Followers', () => {
     expect(await screen.findByText('Followers')).toBeInTheDocument()
     expect(await screen.findByText('Ben Cruz')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Follow' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: /Back to profile/ })).toHaveAttribute('href', '/profile/user-9')
+    expect(screen.getByRole('link', { name: /Back to Profile/ })).toHaveAttribute('href', '/profile/user-9')
   })
 
   it('shows an empty state when there is nothing to list', async () => {
