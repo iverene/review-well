@@ -49,6 +49,7 @@ const Create = () => {
     colorPalette: defaultPalette,
   })
   const [sourceFile, setSourceFile] = useState(null)
+  const [dragging, setDragging] = useState(false)
 
   // Edit mode for your own reviewer (?edit=<id>): metadata form + replace-file.
   useEffect(() => {
@@ -85,10 +86,20 @@ const Create = () => {
     setError(null)
   }
 
-  const handleFileChange = (event) => {
-    const file = event.target.files?.[0] || null
+  const pickFile = (file) => {
     setSourceFile(file)
     setFileError(file ? validateSourceFile(file) : null)
+  }
+
+  const handleFileChange = (event) => {
+    pickFile(event.target.files?.[0] || null)
+    event.target.value = ''
+  }
+
+  const handleDrop = (event) => {
+    event.preventDefault()
+    setDragging(false)
+    pickFile(event.dataTransfer.files?.[0] || null)
   }
 
   const uploadSourceFile = async (reviewerId, file) => {
@@ -225,10 +236,15 @@ const Create = () => {
               </select>
             </div>
 
-            <div className="rounded-soft border-2 border-stone bg-[#FFF7E8] p-4">
+            <div
+              className={`rounded-soft border-2 border-stone bg-[#FFF7E8] p-4 transition-colors ${dragging ? 'border-accent bg-butter/40' : ''}`}
+              onDragOver={(event) => { event.preventDefault(); setDragging(true) }}
+              onDragLeave={() => setDragging(false)}
+              onDrop={handleDrop}
+            >
               <label htmlFor="sourceFile" className="mb-2 flex items-center gap-2 text-sm font-extrabold text-[#604A3A]">
                 {editReviewerId ? <RefreshCcw className="h-4 w-4" aria-hidden="true" /> : <FileUp className="h-4 w-4" aria-hidden="true" />}
-                {editReviewerId ? 'Replace file (optional)' : 'Source file'}
+                {editReviewerId ? 'Replace File (Optional)' : 'Source File'}
               </label>
               <input
                 id="sourceFile"
@@ -238,7 +254,7 @@ const Create = () => {
                 required={!editReviewerId}
                 className="w-full rounded-soft border-2 border-dashed border-[#F6C6D2] bg-paper px-4 py-3 text-sm text-ink file:mr-3 file:rounded-soft file:border-2 file:border-[#604A3A] file:bg-[#F9E4A8] file:px-3 file:py-1 file:text-xs file:font-extrabold file:text-[#604A3A]"
               />
-              <p className="mt-2 text-xs text-muted">PDF or PPTX only, max 25 MB. {editReviewerId ? 'Swapping files may stale the AI deck.' : 'Your deck, flashcards, and study modes grow from this file! 🌸'}</p>
+              <p className="mt-2 text-xs text-muted">PDF or PPTX only, max 25 MB. {editReviewerId ? 'Swapping files may stale the AI deck.' : 'Drag and drop your file here, or browse to choose one.'}</p>
               {sourceFile && !fileError && (
                 <p className="mt-2 rounded-soft bg-[#CDE8D2] px-3 py-2 text-xs font-bold text-[#604A3A]">
                   {sourceFile.name} ({(sourceFile.size / 1024 / 1024).toFixed(2)} MB) looks perfect! ✨
