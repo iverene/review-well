@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import axios from 'axios'
-import { ArrowRight, BookOpen, Clock3, LibraryBig, Plus } from 'lucide-react'
+import { ArrowRight, BookOpen, Bookmark, Clock3, LibraryBig, Plus } from 'lucide-react'
 
 import { useAuth } from '../contexts/AuthContext'
 import ErrorAlert from '../components/common/ErrorAlert'
@@ -12,7 +12,7 @@ import characterWaving from '../assets/character-waving.png'
 
 const recentReviewersKey = (userId) => `review-well-recent-reviewers:${userId}`
 
-const ReviewerCard = ({ reviewer, compact = false }) => (
+const ReviewerCard = ({ reviewer, compact = false, saves = 'full' }) => (
   <Link to={`/reviewer/${reviewer.id}`} className={`group relative overflow-hidden rounded-soft border-2 border-stone bg-paper p-4 club-shadow transition-transform hover:-translate-y-1 ${compact ? 'min-w-[250px] md:min-w-0' : ''}`}>
     <div>
       <div className="flex items-start justify-between gap-3">
@@ -22,10 +22,18 @@ const ReviewerCard = ({ reviewer, compact = false }) => (
         </div>
         <BookOpen className="h-5 w-5 shrink-0 text-accent" strokeWidth={2.2} aria-hidden="true" />
       </div>
-      <div className="mt-5 flex items-center justify-between gap-2 text-xs text-muted">
-        <span>{reviewer._count?.saves || 0} saves</span>
-        {reviewer.user?.displayName && <span className="truncate">by {reviewer.user.displayName}</span>}
-      </div>
+      {saves !== 'none' && (
+        <div className="mt-5 flex items-center justify-between gap-2 text-xs text-muted">
+          {saves === 'icon' ? (
+            <span className="inline-flex items-center gap-1" aria-label={`${reviewer._count?.saves || 0} saves`}>
+              <Bookmark className="h-3.5 w-3.5" aria-hidden="true" />{reviewer._count?.saves || 0}
+            </span>
+          ) : (
+            <span>{reviewer._count?.saves || 0} saves</span>
+          )}
+          {reviewer.user?.displayName && <span className="truncate">by {reviewer.user.displayName}</span>}
+        </div>
+      )}
     </div>
   </Link>
 )
@@ -99,7 +107,7 @@ const Home = () => {
 
   const sameCourse = publicReviewers.filter((reviewer) => isSameCourse(reviewer, user))
 
-  return <div className="space-y-10 pb-8"><div className="flex flex-wrap items-end justify-between gap-4"><div><img src={characterWaving} alt="Waving student illustration" className="mb-3 h-20 w-24 object-contain object-left md:h-28 md:w-36" /><p className="font-mono text-xs font-bold uppercase tracking-widest text-accent">Good to see you, {user?.displayName?.split(' ')[0]}</p><h1 className="mt-2 text-3xl font-bold text-ink md:text-4xl">Your Study Desk</h1><p className="mt-2 text-muted">Pick up where you left off or find your next review.</p></div><Link to="/create" className="flex items-center gap-2 rounded-soft border-2 border-accent bg-accent px-4 py-3 text-sm font-extrabold text-paper hover:-translate-y-0.5"><Plus className="h-4 w-4" aria-hidden="true" /> New Reviewer</Link></div><ErrorAlert>{error}</ErrorAlert>{loading ? <div className="space-y-10"><div className="space-y-4"><Skeleton className="h-8 w-64" /><ReviewerGridSkeleton count={3} /></div><div className="space-y-4"><Skeleton className="h-8 w-72" /><ReviewerGridSkeleton count={3} /></div><div className="space-y-4"><Skeleton className="h-8 w-48" /><ReviewerGridSkeleton count={3} /></div></div> : <><Section icon={Clock3} title="Recently Viewed Reviewers" empty="Reviewers you open will show up here.">{recentReviewers.length > 0 && <div className="flex gap-4 overflow-x-auto pb-2">{recentReviewers.slice(0, 5).map((reviewer) => <ReviewerCard key={reviewer.id} reviewer={reviewer} compact />)}</div>}</Section><Section icon={LibraryBig} title="Reviewers From the Same Course" to="/reviewer/public?course=mine" empty="No reviewers match your program yet.">{sameCourse.length > 0 && <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{sameCourse.slice(0, 3).map((reviewer) => <ReviewerCard key={reviewer.id} reviewer={reviewer} />)}</div>}</Section><Section icon={BookOpen} title="My Reviewers" to="/reviewer/my" empty="Create your first reviewer to see it here.">{myReviewers.length > 0 && <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{myReviewers.slice(0, 3).map((reviewer) => <ReviewerCard key={reviewer.id} reviewer={reviewer} />)}</div>}</Section></>}</div>
+  return <div className="space-y-10 pb-8"><div className="flex flex-wrap items-end justify-between gap-4"><div><img src={characterWaving} alt="Waving student illustration" className="mb-3 h-20 w-24 object-contain object-left md:h-28 md:w-36" /><p className="font-mono text-xs font-bold uppercase tracking-widest text-accent">Good to see you, {user?.displayName?.split(' ')[0]}</p><h1 className="mt-2 text-3xl font-bold text-ink md:text-4xl">Your Study Desk</h1><p className="mt-2 text-muted">Pick up where you left off or find your next review.</p></div><Link to="/create" className="flex items-center gap-2 rounded-soft border-2 border-accent bg-accent px-4 py-3 text-sm font-extrabold text-paper hover:-translate-y-0.5"><Plus className="h-4 w-4" aria-hidden="true" /> New Reviewer</Link></div><ErrorAlert>{error}</ErrorAlert>{loading ? <div className="space-y-10"><div className="space-y-4"><Skeleton className="h-8 w-64" /><ReviewerGridSkeleton count={3} /></div><div className="space-y-4"><Skeleton className="h-8 w-72" /><ReviewerGridSkeleton count={3} /></div><div className="space-y-4"><Skeleton className="h-8 w-48" /><ReviewerGridSkeleton count={3} /></div></div> : <><Section icon={Clock3} title="Recently Viewed Reviewers" empty="Reviewers you open will show up here.">{recentReviewers.length > 0 && <div className="flex gap-4 overflow-x-auto pb-2">{recentReviewers.slice(0, 5).map((reviewer) => <ReviewerCard key={reviewer.id} reviewer={reviewer} compact saves="icon" />)}</div>}</Section><Section icon={LibraryBig} title="Reviewers From the Same Course" to="/reviewer/public?course=mine" empty="No reviewers match your program yet.">{sameCourse.length > 0 && <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{sameCourse.slice(0, 3).map((reviewer) => <ReviewerCard key={reviewer.id} reviewer={reviewer} saves="icon" />)}</div>}</Section><Section icon={BookOpen} title="My Reviewers" to="/reviewer/my" empty="Create your first reviewer to see it here.">{myReviewers.length > 0 && <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{myReviewers.slice(0, 3).map((reviewer) => <ReviewerCard key={reviewer.id} reviewer={reviewer} saves="none" />)}</div>}</Section></>}</div>
 }
 
 export default Home
