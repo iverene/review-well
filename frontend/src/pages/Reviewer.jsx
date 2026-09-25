@@ -44,6 +44,7 @@ const Reviewer = () => {
   const [shareOpen, setShareOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
 
   const guest = !isAuthenticated
   const loginReturnTo = `/reviewer/${id}`
@@ -104,10 +105,7 @@ const Reviewer = () => {
 
   const handleDeleteReviewer = async () => {
     if (deleting) return
-    const confirmed = window.confirm(
-      'Delete this reviewer permanently? Its file, flashcards, blurting history, and focus sessions will be removed and can\u2019t be recovered.'
-    )
-    if (!confirmed) return
+    setConfirmingDelete(false)
     setDeleting(true)
     setError(null)
     try {
@@ -252,9 +250,9 @@ const Reviewer = () => {
           {isOwner && (
             <button
               type="button"
-              onClick={handleDeleteReviewer}
+              onClick={() => setConfirmingDelete(true)}
               disabled={deleting}
-              className="inline-flex items-center gap-2 rounded-soft border-2 border-blush bg-blush/40 px-4 py-2 text-sm font-extrabold text-berry hover:bg-blush disabled:opacity-60"
+              className="inline-flex items-center gap-2 rounded-soft border-2 border-blush bg-blush/40 px-4 py-2 text-sm font-extrabold text-accent hover:bg-blush disabled:opacity-60"
             >
               <Trash2 className="h-4 w-4" aria-hidden="true" /> {deleting ? 'Deleting…' : 'Delete'}
             </button>
@@ -302,6 +300,34 @@ const Reviewer = () => {
           </div>
         </div>
       </div>
+
+      {confirmingDelete && (
+        <>
+          <div className="fixed inset-0 z-40 bg-ink/30" onClick={() => setConfirmingDelete(false)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="alertdialog" aria-modal="true" aria-labelledby="delete-reviewer-title" aria-describedby="delete-reviewer-copy">
+            <div className="w-full max-w-sm rounded-soft border-2 border-stone bg-paper p-5 club-shadow">
+              <h2 id="delete-reviewer-title" className="font-display text-xl font-bold text-ink">Delete this reviewer?</h2>
+              <p id="delete-reviewer-copy" className="mt-2 text-sm leading-relaxed text-muted">Its file, flashcards, blurting history, and focus sessions will be removed and can’t be recovered.</p>
+              <div className="mt-5 flex justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setConfirmingDelete(false)}
+                  className="rounded-soft border-2 border-stone bg-paper px-4 py-2 text-sm font-extrabold text-ink hover:bg-powder"
+                >
+                  Keep it
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteReviewer}
+                  className="rounded-soft border-2 border-accent bg-accent px-4 py-2 text-sm font-extrabold text-paper hover:opacity-90"
+                >
+                  Yes, delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </>
+      )}
 
       <header className="rounded-soft border-2 border-stone bg-paper p-4 club-shadow sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-5">

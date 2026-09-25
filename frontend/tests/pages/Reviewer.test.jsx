@@ -181,7 +181,6 @@ describe('Reviewer', () => {
   })
 
   it('asks for confirmation and deletes, then leaves for My Reviewers', async () => {
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
     mockDelete.mockResolvedValue({ data: {} })
     render(
       <MemoryRouter initialEntries={['/reviewer/r1']}>
@@ -192,19 +191,18 @@ describe('Reviewer', () => {
       </MemoryRouter>
     )
     fireEvent.click(await screen.findByRole('button', { name: 'Delete' }))
-    expect(confirmSpy).toHaveBeenCalled()
+    expect(await screen.findByRole('alertdialog', { name: 'Delete this reviewer?' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Yes, delete' }))
     await waitFor(() => expect(axios.delete).toHaveBeenCalledWith('/api/reviewers/r1', { withCredentials: true }))
     expect(await screen.findByText('My reviewers')).toBeInTheDocument()
-    confirmSpy.mockRestore()
   })
 
   it('does not delete when the confirmation is dismissed', async () => {
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
     renderReviewer()
     fireEvent.click(await screen.findByRole('button', { name: 'Delete' }))
-    expect(confirmSpy).toHaveBeenCalled()
+    expect(await screen.findByRole('alertdialog', { name: 'Delete this reviewer?' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Keep it' }))
     expect(mockDelete).not.toHaveBeenCalled()
     expect(await screen.findByLabelText('Study hub')).toBeInTheDocument()
-    confirmSpy.mockRestore()
   })
 })
