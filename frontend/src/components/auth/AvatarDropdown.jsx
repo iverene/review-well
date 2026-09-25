@@ -87,7 +87,7 @@ const AvatarDropdown = () => {
               onClick={() => setIsOpen(false)}
             >
               <Settings className="h-4 w-4 text-muted" aria-hidden="true" />
-              Setting
+              Settings
             </Link>
             <Link
               to="/about"
