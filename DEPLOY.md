@@ -38,6 +38,15 @@ Split setup: the **frontend on Vercel** (static site) and the **backend on Rende
 - **Database schema changes** are never applied automatically. After changing
   `backend/prisma/schema.prisma`, run `npx prisma migrate deploy` (pointed at
   production) or apply the SQL in Supabase before deploying dependent code.
+- **Storage bucket switches** strand existing objects: after changing
+  `SUPABASE_STORAGE_BUCKET`, copy each `reviewer_files.storagePath` object
+  from the old bucket to the new one (same path), then verify with a signed
+  URL before considering the switch done. Unmigrated rows serve "No source
+  file yet" while their bytes sit in the old bucket.
+- **Publishing rule:** reviewers created as public/unlisted must clear
+  `is_draft` at creation (the API does this); rows stuck at
+  `visibility='public' AND is_draft=true` are invisible — fix with
+  `UPDATE reviewers SET is_draft=false, updated_at=NOW() WHERE visibility='public' AND is_draft=true`.
 - Pushes to `master` trigger production deploys on both hosts; Vercel creates
   preview deployments for pull requests automatically.
 - Because Render runs one persistent process, express-session works with no
