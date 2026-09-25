@@ -15,13 +15,30 @@ export const mockSupabase = () => ({
     update: vi.fn(),
     delete: vi.fn(),
   },
-  block: {
+  reviewerFile: {
+    findFirst: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    deleteMany: vi.fn(),
+  },
+  flashcard: {
     findMany: vi.fn(),
     create: vi.fn(),
     createMany: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
     deleteMany: vi.fn(),
+  },
+  blurtingAttempt: {
+    findMany: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+  },
+  pomodoroSession: {
+    findMany: vi.fn(),
+    create: vi.fn(),
+    update: vi.fn(),
+    aggregate: vi.fn(),
   },
   save: {
     findUnique: vi.fn(),
@@ -85,6 +102,7 @@ export const mockOpenRouter = () => ({
 export const mockStorage = () => ({
   upload: vi.fn().mockResolvedValue({ data: { path: 'uploads/test.pdf' }, error: null }),
   getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: 'https://storage.example.com/test.pdf' } }),
+  removePrefix: vi.fn().mockResolvedValue({ error: null, removed: 1 }),
 })
 
 export const createMockRequest = (overrides = {}) => ({

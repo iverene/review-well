@@ -54,7 +54,7 @@ describe('Reviewer Model', () => {
     expect(result.reviewers).toHaveLength(2)
   })
 
-  it('should return a reviewer with blocks', async () => {
+  it('should return a reviewer with author and save counts', async () => {
     const result = await reviewerModel.findById('1')
     expect(result).toEqual(expect.objectContaining({ id: '1' }))
   })

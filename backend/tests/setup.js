@@ -25,13 +25,30 @@ vi.mock('@prisma/client', () => {
         delete: vi.fn(),
         count: vi.fn(),
       },
-      block: {
+      reviewerFile: {
+        findFirst: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        deleteMany: vi.fn(),
+      },
+      flashcard: {
         findMany: vi.fn(),
         create: vi.fn(),
         createMany: vi.fn(),
         update: vi.fn(),
         delete: vi.fn(),
         deleteMany: vi.fn(),
+      },
+      blurtingAttempt: {
+        findMany: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+      },
+      pomodoroSession: {
+        findMany: vi.fn(),
+        create: vi.fn(),
+        update: vi.fn(),
+        aggregate: vi.fn(),
       },
       save: {
         findUnique: vi.fn(),

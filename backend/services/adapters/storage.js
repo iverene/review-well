@@ -9,7 +9,10 @@ const createStorageAdapter = () => {
     return {
       upload: async () => ({ data: null, error: 'Storage not configured' }),
       getPublicUrl: () => ({ data: { publicUrl: '' } }),
+      getSignedUrl: async () => ({ data: null, error: 'Storage not configured' }),
+      download: async () => ({ data: null, error: 'Storage not configured' }),
       delete: async () => ({ error: 'Storage not configured' }),
+      removePrefix: async () => ({ error: 'Storage not configured' }),
     }
   }
 
@@ -54,7 +57,68 @@ const createStorageAdapter = () => {
     }
   }
 
-  return { upload, getPublicUrl, delete: deleteFiles }
+  // Short-lived signed URL for unlisted/private source files (60s default).
+  const getSignedUrl = async (path, expiresIn = 60) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .createSignedUrl(path, expiresIn)
+      if (error) throw error
+      return { data, error: null }
+    } catch (error) {
+      console.error('Signed URL error:', error)
+      return { data: null, error: error.message }
+    }
+  }
+
+  // Remove every object under a prefix (e.g. all versioned source files
+  // `{userId}/{reviewerId}/v*` when a reviewer is deleted). Lists in pages
+  // of 1000 and removes the collected paths in one call.
+  const removePrefix = async (prefix) => {
+    try {
+      const paths = []
+      const limit = 1000
+      let offset = 0
+      for (;;) {
+        const { data, error } = await supabase.storage
+          .from(bucket)
+          .list(prefix, { limit, offset })
+        if (error) throw error
+        if (!data || data.length === 0) break
+        for (const entry of data) {
+          paths.push(`${prefix}/${entry.name}`)
+        }
+        if (data.length < limit) break
+        offset += data.length
+      }
+      if (paths.length === 0) return { error: null, removed: 0 }
+      const { error } = await supabase.storage
+        .from(bucket)
+        .remove(paths)
+      if (error) throw error
+      return { error: null, removed: paths.length }
+    } catch (error) {
+      console.error('Delete prefix error:', error)
+      return { error: error.message }
+    }
+  }
+
+  // Download a stored object's bytes (Blob) for server-side streaming
+  // (e.g. attachment downloads that must honor reviewer visibility).
+  const download = async (path) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .download(path)
+      if (error) throw error
+      return { data, error: null }
+    } catch (error) {
+      console.error('Download error:', error)
+      return { data: null, error: error.message }
+    }
+  }
+
+  return { upload, getPublicUrl, getSignedUrl, download, delete: deleteFiles, removePrefix }
 }
 
 export { createStorageAdapter }

@@ -42,17 +42,6 @@ vi.mock('../../../models/notificationModel.js', () => ({
   createSaveNotification: vi.fn(),
   createFollowNotification: vi.fn(),
 }))
-vi.mock('../../../models/blockModel.js', () => ({
-  findByReviewer: vi.fn(),
-  findById: vi.fn(),
-  create: vi.fn(),
-  createMany: vi.fn(),
-  update: vi.fn(),
-  remove: vi.fn(),
-  removeAllByReviewer: vi.fn(),
-  reorder: vi.fn(),
-  getMaxSortOrder: vi.fn(),
-}))
 vi.mock('../../../models/aiQuotaModel.js', () => ({
   getQuota: vi.fn(),
   checkQuota: vi.fn(),

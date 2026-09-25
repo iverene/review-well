@@ -7,6 +7,10 @@ import Notifications from '../../src/pages/Notifications'
 
 vi.mock('axios')
 
+vi.mock('../../src/contexts/AuthContext', () => ({
+  useAuth: () => ({ user: { id: 'me' }, isAuthenticated: true }),
+}))
+
 const notification = (id, actionType = 'follow') => ({
   id,
   actor: { displayName: 'Ann Lee', avatarUrl: null },
@@ -26,14 +30,24 @@ describe('Notifications', () => {
   })
 
   it('merges newly arrived notifications to the top on window focus', async () => {
-    axios.get
-      .mockResolvedValueOnce({ data: { notifications: [notification('n1')] } })
-      .mockResolvedValue({ data: { notifications: [notification('n2', 'new_reviewer'), notification('n1')] } })
+    axios.get.mockImplementation((url) => {
+      if (String(url).includes('/save')) {
+        return Promise.resolve({ data: { saved: false, saveCount: 0 } })
+      }
+      return Promise.resolve({ data: { notifications: [notification('n1')] } })
+    })
+    const secondWave = () => axios.get.mockImplementation((url) => {
+      if (String(url).includes('/save')) {
+        return Promise.resolve({ data: { saved: false, saveCount: 0 } })
+      }
+      return Promise.resolve({ data: { notifications: [notification('n2', 'new_reviewer'), notification('n1')] } })
+    })
 
     render(<MemoryRouter><Notifications /></MemoryRouter>)
     expect(await screen.findByText('started following you')).toBeInTheDocument()
     expect(screen.queryByText('published a new reviewer')).toBeNull()
 
+    secondWave()
     await act(async () => {
       window.dispatchEvent(new Event('focus'))
     })
@@ -43,7 +57,12 @@ describe('Notifications', () => {
   })
 
   it('polls for new notifications on a 20 second interval', async () => {
-    axios.get.mockResolvedValue({ data: { notifications: [notification('n1')] } })
+    axios.get.mockImplementation((url) => {
+      if (String(url).includes('/save')) {
+        return Promise.resolve({ data: { saved: false, saveCount: 0 } })
+      }
+      return Promise.resolve({ data: { notifications: [notification('n1')] } })
+    })
     const setIntervalSpy = vi.spyOn(window, 'setInterval')
 
     render(<MemoryRouter><Notifications /></MemoryRouter>)

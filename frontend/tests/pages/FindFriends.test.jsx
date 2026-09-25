@@ -57,6 +57,19 @@ describe('FindFriends', () => {
     expect(screen.getAllByRole('button', { name: 'Follow' })).toHaveLength(2)
   })
 
+  it('clears the query and resets the list with the X button', async () => {
+    render(<MemoryRouter><FindFriends /></MemoryRouter>)
+    await screen.findByText('Ann Lee')
+    fireEvent.change(screen.getByLabelText('Search friends'), { target: { value: 'ann' } })
+    expect(screen.getByRole('button', { name: 'Clear search' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Clear search' }))
+    await waitFor(() => expect(mockGet).toHaveBeenCalledWith(
+      '/api/profile/search',
+      expect.objectContaining({ params: expect.objectContaining({ q: '' }) })
+    ))
+    expect(screen.getByLabelText('Search friends')).toHaveValue('')
+  })
+
   it('shows a name-only header without the old subtext', async () => {
     render(<MemoryRouter><FindFriends /></MemoryRouter>)
     expect(await screen.findByRole('heading', { name: 'Find Friends', level: 1 })).toBeInTheDocument()

@@ -39,7 +39,7 @@ const Contact = () => {
         <h1 className="mt-1 font-display text-3xl font-bold text-ink md:text-4xl">Contact</h1>
         <section className="mt-5 rounded-soft border-2 border-stone bg-paper p-4 text-center club-shadow sm:p-8" aria-label="Sign in required">
           <LogIn className="mx-auto h-10 w-10 text-accent" aria-hidden="true" />
-          <p className="mt-3 font-display text-xl font-bold text-ink">Sign in to send a message</p>
+          <p className="mt-3 font-display text-xl font-bold text-ink">Sign In to Send a Message</p>
           <p className="mt-1 text-sm text-muted">
             Messages are sent from your account email so we know they are really from you.
           </p>
@@ -66,7 +66,7 @@ const Contact = () => {
         {sent ? (
           <div className="py-6 text-center" role="status">
             <PartyPopper className="mx-auto h-10 w-10 text-accent" aria-hidden="true" />
-            <p className="mt-3 font-display text-xl font-bold text-ink">Message sent</p>
+            <p className="mt-3 font-display text-xl font-bold text-ink">Message Sent</p>
             <p className="mt-1 text-sm text-muted">Thanks for reaching out — we will get back to you soon.</p>
             <button
               type="button"

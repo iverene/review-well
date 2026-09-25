@@ -3,11 +3,13 @@ import axios from 'axios'
 import { Bookmark } from 'lucide-react'
 
 import { useAuth } from '../../contexts/AuthContext'
+import { useToast } from '../../contexts/ToastContext'
 import ErrorAlert from '../common/ErrorAlert'
 import { getApiErrorMessage } from '../../utils/apiError'
 
 const SaveButton = ({ reviewerId, initialSaved = false, initialSaveCount = 0 }) => {
   const { isAuthenticated } = useAuth()
+  const toast = useToast()
   const [saved, setSaved] = useState(initialSaved)
   const [saveCount, setSaveCount] = useState(initialSaveCount)
   const [loading, setLoading] = useState(false)
@@ -44,16 +46,20 @@ const SaveButton = ({ reviewerId, initialSaved = false, initialSaveCount = 0 }) 
         })
         setSaved(response.data.saved)
         setSaveCount(response.data.saveCount)
+        toast.info('Removed From Saved')
       } else {
         const response = await axios.post(`/api/social/reviewers/${reviewerId}/save`, {}, {
           withCredentials: true,
         })
         setSaved(response.data.saved)
         setSaveCount(response.data.saveCount)
+        toast.success('Saved to Your Library')
       }
     } catch (error) {
       console.error('Failed to toggle save:', error)
-      setError(getApiErrorMessage(error, 'Unable to update saved status.'))
+      const message = getApiErrorMessage(error, 'Unable to update saved status.')
+      setError(message)
+      toast.error(message)
     } finally {
       setLoading(false)
     }
@@ -73,7 +79,7 @@ const SaveButton = ({ reviewerId, initialSaved = false, initialSaveCount = 0 }) 
         } disabled:cursor-not-allowed disabled:opacity-40`}
       >
         <Bookmark
-          className={`h-3.5 w-3.5 transition-transform duration-200 group-hover:scale-110 ${saved ? 'text-accent' : 'text-stone'}`}
+          className={`h-5 w-5 transition-transform duration-200 group-hover:scale-110 ${saved ? 'text-accent' : 'text-stone'}`}
           aria-hidden="true"
           fill={saved ? 'currentColor' : 'none'}
           strokeWidth={2}

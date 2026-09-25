@@ -31,7 +31,6 @@ const searchUsers = async (query, { take = 20, excludeId = null } = {}) => {
     ...(query && {
       OR: [
         { displayName: { contains: query, mode: 'insensitive' } },
-        { email: { contains: query, mode: 'insensitive' } },
         { school: { contains: query, mode: 'insensitive' } },
       ],
     }),

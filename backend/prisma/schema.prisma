@@ -27,6 +27,9 @@ model User {
   followers   Follow[]    @relation("follower")
   notifications Notification[] @relation("recipient")
   actorNotifications Notification[] @relation("actor")
+  dailyFocusMinutes Int @default(25) @map("daily_focus_minutes")
+  blurtingAttempts BlurtingAttempt[]
+  pomodoroSessions PomodoroSession[]
 
   @@map("users")
 }
@@ -47,26 +50,76 @@ model Reviewer {
   updatedAt         DateTime @default(now()) @map("updated_at")
 
   user          User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  blocks        Block[]
   saves         Save[]
   notifications Notification[]
+  files ReviewerFile[]
+  flashcards Flashcard[]
+  blurtingAttempts BlurtingAttempt[]
+  pomodoroSessions PomodoroSession[]
+  aiPrompts Json? @map("ai_prompts")
+  deckGeneratedAt DateTime? @map("deck_generated_at")
+  deckStale Boolean @default(false) @map("deck_stale")
 
   @@map("reviewers")
 }
 
-model Block {
-  id          String @id @default(uuid())
-  reviewerId  String @map("reviewer_id")
-  blockType   String @map("block_type")
-  columnIndex Int    @default(1) @map("column_index")
-  sortOrder   Int    @map("sort_order")
-  contentData Json   @map("content_data")
+model ReviewerFile {
+  id          String   @id @default(uuid())
+  reviewerId  String   @map("reviewer_id")
+  storagePath String   @map("storage_path")
+  fileType    String   @map("file_type")
+  byteSize    Int      @map("byte_size")
+  version     Int      @default(1)
   createdAt   DateTime @default(now()) @map("created_at")
+  reviewer    Reviewer @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+  @@map("reviewer_files")
+}
 
-  reviewer Reviewer @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+model Flashcard {
+  id         String   @id @default(uuid())
+  reviewerId String   @map("reviewer_id")
+  front      String
+  back       String
+  source     String   @default("manual")
+  sortOrder  Int      @map("sort_order")
+  known      Boolean  @default(false)
+  updatedAt  DateTime @updatedAt @map("updated_at")
+  reviewer   Reviewer @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+  @@index([reviewerId, sortOrder])
+  @@map("flashcards")
+}
 
-  @@index([reviewerId, columnIndex, sortOrder])
-  @@map("reviewer_blocks")
+model BlurtingAttempt {
+  id         String   @id @default(uuid())
+  reviewerId String   @map("reviewer_id")
+  userId     String   @map("user_id")
+  promptText String   @map("prompt_text")
+  dumpText   String   @map("dump_text")
+  aiScore    Int?     @map("ai_score")
+  aiFeedback String?  @map("ai_feedback")
+  selfRating String?  @map("self_rating")
+  gradedVia  String   @map("graded_via")
+  createdAt  DateTime @default(now()) @map("created_at")
+  reviewer   Reviewer @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([reviewerId, userId, createdAt(sort: Desc)])
+  @@map("blurting_attempts")
+}
+
+model PomodoroSession {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  reviewerId   String?  @map("reviewer_id")
+  focusSeconds Int      @map("focus_seconds")
+  breakSeconds Int      @default(0) @map("break_seconds")
+  mode         String   @default("focus")
+  completed    Boolean  @default(true)
+  startedAt    DateTime @map("started_at")
+  endedAt      DateTime @map("ended_at")
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewer     Reviewer? @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+  @@index([userId, endedAt(sort: Desc)])
+  @@map("pomodoro_sessions")
 }
 
 model AiQuota {
@@ -74,6 +127,8 @@ model AiQuota {
   userId           String   @map("user_id")
   generationsUsed  Int      @default(0) @map("generations_used")
   windowResetAt    DateTime @map("window_reset_at")
+  gradesUsed Int @default(0) @map("grades_used")
+  gradesResetAt DateTime @map("grades_reset_at")
   updatedAt        DateTime @default(now()) @map("updated_at")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)

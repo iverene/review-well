@@ -27,7 +27,7 @@ describe('Contact', () => {
   it('asks guests to sign in instead of showing the form', () => {
     useAuth.mockReturnValue({ user: null, isAuthenticated: false })
     render(<MemoryRouter><Contact /></MemoryRouter>)
-    expect(screen.getByText('Sign in to send a message')).toBeInTheDocument()
+    expect(screen.getByText('Sign In to Send a Message')).toBeInTheDocument()
     expect(screen.queryByLabelText('Message')).toBeNull()
   })
 
@@ -40,7 +40,7 @@ describe('Contact', () => {
       email: 'student@example.com',
       message: 'Hello developer',
     }, { withCredentials: true }))
-    expect(await screen.findByText('Message sent')).toBeInTheDocument()
+    expect(await screen.findByText('Message Sent')).toBeInTheDocument()
   })
 
   it('shows an error when sending fails', async () => {

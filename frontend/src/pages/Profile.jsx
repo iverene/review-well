@@ -11,6 +11,105 @@ import { getApiErrorMessage } from '../utils/apiError'
 import { formatYearLevel } from '../utils/profile'
 import { ProfileSkeleton } from '../components/common/Skeleton'
 
+const WEEKDAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+
+// Pomodoro-linked focus section is parked with the study modes — flip back
+// on to re-enable (API and tests are intact).
+const SHOW_FOCUS_STATS = false
+
+const FocusStats = () => {
+  const [stats, setStats] = useState(null)
+  const [goalInput, setGoalInput] = useState('')
+  const [goalError, setGoalError] = useState(null)
+  const [savingGoal, setSavingGoal] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    axios.get('/api/pomodoro/stats', { withCredentials: true })
+      .then((response) => {
+        if (cancelled) return
+        setStats(response.data)
+        setGoalInput(String(response.data.goal ?? 25))
+      })
+      .catch(() => {
+        // Guests and failures simply get no focus section.
+        if (!cancelled) setStats(null)
+      })
+    return () => { cancelled = true }
+  }, [])
+
+  const handleGoalSave = async () => {
+    const minutes = Number(goalInput)
+    if (!Number.isInteger(minutes) || minutes <= 0) {
+      setGoalError('Goal must be a positive whole number of minutes.')
+      return
+    }
+    setGoalError(null)
+    setSavingGoal(true)
+    try {
+      const response = await axios.patch('/api/users/me/goal', { dailyFocusMinutes: minutes }, { withCredentials: true })
+      setStats((prev) => (prev ? { ...prev, goal: response.data.dailyFocusMinutes } : prev))
+    } catch (err) {
+      setGoalError(getApiErrorMessage(err, 'Unable to save your goal.'))
+    } finally {
+      setSavingGoal(false)
+    }
+  }
+
+  if (!stats || !Array.isArray(stats.week)) return null
+
+  const todayMinutes = Math.round((stats.todaySeconds || 0) / 60)
+  const goalMinutes = stats.goal ?? 25
+  const maxWeek = Math.max(1, ...stats.week)
+  // Monday-first labels ending today: rotate so the last bar is today.
+  const todayIdx = (new Date().getDay() + 6) % 7
+  const labels = WEEKDAY_LABELS.map((_, i) => WEEKDAY_LABELS[(todayIdx - 6 + i + 14) % 7])
+
+  return (
+    <section aria-label="Focus stats" className="mt-6 rounded-soft border-2 border-stone bg-paper p-4">
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="font-display text-lg font-bold text-ink">Focus</h2>
+      </div>
+      <p className="mt-1 text-sm text-muted">
+        {todayMinutes} of {goalMinutes} min today
+      </p>
+      <div className="mt-3 flex h-16 items-end gap-1.5" role="img" aria-label={`Focus minutes this week: ${stats.week.map((s) => Math.round(s / 60)).join(', ')}`}>
+        {stats.week.map((seconds, i) => (
+          <div
+            key={i}
+            title={`${labels[i]}: ${Math.round(seconds / 60)} min`}
+            className={`flex-1 rounded-t ${i === 6 ? 'bg-accent' : 'bg-stone'}`}
+            style={{ height: `${Math.max(6, Math.round((seconds / maxWeek) * 100))}%` }}
+          />
+        ))}
+      </div>
+      <div className="mt-3 flex items-center gap-2">
+        <label htmlFor="focus-goal" className="text-xs font-extrabold uppercase tracking-widest text-muted">
+          Daily Goal (Min)
+        </label>
+        <input
+          id="focus-goal"
+          type="number"
+          min="1"
+          step="1"
+          value={goalInput}
+          onChange={(e) => setGoalInput(e.target.value)}
+          className="w-20 rounded-soft border-2 border-stone bg-paper px-2 py-1 text-sm font-bold text-ink"
+        />
+        <button
+          type="button"
+          onClick={handleGoalSave}
+          disabled={savingGoal}
+          className="rounded-soft border-2 border-accent bg-accent px-3 py-1 text-xs font-extrabold text-paper disabled:opacity-50"
+        >
+          {savingGoal ? 'Saving…' : 'Save'}
+        </button>
+      </div>
+      {goalError && <p className="mt-2 text-xs font-bold text-red-600">{goalError}</p>}
+    </section>
+  )
+}
+
 const ReviewerTile = ({ reviewer, showVisibility }) => (
   <Link
     to={`/reviewer/${reviewer.id}`}
@@ -207,6 +306,7 @@ const Profile = () => {
             <span className="text-[11px] font-extrabold uppercase tracking-widest text-muted">Following</span>
           </Link>
         </div>
+        {isOwnProfile && SHOW_FOCUS_STATS && <FocusStats />}
       </div>
 
       {/* Tabs */}
@@ -236,7 +336,7 @@ const Profile = () => {
         ) : visibleReviewers.length === 0 ? (
           <div className="rounded-soft border-2 border-dashed border-stone bg-paper px-5 py-10 text-center">
             <p className="font-display text-lg font-bold text-ink">
-              {activeTab === 'saved' ? 'No saved reviewers yet' : isOwnProfile ? 'No reviewers yet' : 'No public reviewers yet'}
+              {activeTab === 'saved' ? 'No Saved Reviewers Yet' : isOwnProfile ? 'No Reviewers Yet' : 'No Public Reviewers Yet'}
             </p>
             <p className="mt-1 text-sm text-muted">
               {activeTab === 'saved'

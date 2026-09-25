@@ -84,7 +84,7 @@ const Account = () => {
 
   return (
     <PageContainer>
-      <PageHeader title={isOnboarding ? 'Complete your profile' : 'Account'} />
+      <PageHeader title={isOnboarding ? 'Complete Your Profile' : 'Account'} />
       {user?.email && (
         <div className="mt-3 flex items-center gap-3" aria-label="Signed in">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-powder" aria-hidden="true">

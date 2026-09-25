@@ -1,6 +1,10 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+
+import FollowButton from '../social/FollowButton'
+import SaveButton from '../social/SaveButton'
 
 const NotificationItem = ({ notification, onMarkRead }) => {
+  const navigate = useNavigate()
   const { actor, actionType, reviewer, isRead, createdAt } = notification
 
   const getActionText = () => {
@@ -33,15 +37,14 @@ const NotificationItem = ({ notification, onMarkRead }) => {
   }
 
   // Every item opens its subject: the reviewer, otherwise the actor's profile.
+  // Row navigation lives on the inner actor/reviewer links; clicking the
+  // row body opens the subject too. Action buttons stop propagation so
+  // toggling never navigates.
   const target = reviewer?.id
     ? `/reviewer/${reviewer.id}`
     : actor?.id
       ? `/profile/${actor.id}`
       : null
-
-  const handleOpen = () => {
-    if (!isRead) onMarkRead(notification.id)
-  }
 
   const body = (
     <>
@@ -51,10 +54,10 @@ const NotificationItem = ({ notification, onMarkRead }) => {
           <img
             src={actor.avatarUrl}
             alt={actor.displayName}
-            className="h-10 w-10 rounded-full"
+            className="h-12 w-12 border-2 rounded-full border-stone object-cover"
           />
         ) : (
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-ink text-paper">
+          <div className="flex h-10 w-10 items-center justify-center border-2 border-stone bg-powder font-display text-lg font-bold text-ink">
             {actor.displayName?.charAt(0).toUpperCase() || 'U'}
           </div>
         )}
@@ -63,47 +66,75 @@ const NotificationItem = ({ notification, onMarkRead }) => {
       {/* Content */}
       <div className="flex-1 min-w-0">
         <p className="text-sm text-ink">
-          <span className="font-medium">{actor.displayName}</span>{' '}
+          {actor?.id ? (
+            <Link to={`/profile/${actor.id}`} className="font-extrabold hover:underline" onClick={(e) => e.stopPropagation()}>
+              {actor.displayName}
+            </Link>
+          ) : (
+            <span className="font-extrabold">{actor.displayName}</span>
+          )}{' '}
           {getActionText()}
         </p>
         {reviewer && (
-          <span className="mt-1 block text-sm text-muted truncate">
-            {reviewer.title}
-          </span>
+          reviewer.id ? (
+            <Link
+              to={`/reviewer/${reviewer.id}`}
+              onClick={(e) => e.stopPropagation()}
+              className="mt-1.5 inline-block max-w-full truncate bg-butter/60 px-2.5 py-0.5 text-xs font-bold text-ink hover:underline"
+            >
+              {reviewer.title}
+            </Link>
+          ) : (
+            <span className="mt-1.5 inline-block max-w-full truncate bg-butter/60 px-2.5 py-0.5 text-xs font-bold text-ink">
+              {reviewer.title}
+            </span>
+          )
         )}
-        <p className="mt-1 text-xs text-muted">{getTimeAgo()}</p>
+        <p className="mt-1.5 text-xs font-semibold text-muted">{getTimeAgo()}</p>
       </div>
 
-      {/* Unread indicator */}
-      {!isRead && (
-        <div className="flex-shrink-0">
-          <div className="h-2 w-2 rounded-full bg-ink" />
-        </div>
-      )}
+      {/* Applicable action */}
+      <div className="flex shrink-0 flex-col items-end gap-2" onClick={(e) => { e.preventDefault(); e.stopPropagation() }}>
+        {actionType === 'follow' && actor?.id ? (
+          <FollowButton userId={actor.id} />
+        ) : reviewer?.id ? (
+          <SaveButton reviewerId={reviewer.id} />
+        ) : null}
+        {!isRead && (
+          <span className="inline-flex items-center gap-1.5">
+            <span className="bg-accent px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-widest text-paper">New</span>
+            <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
+          </span>
+        )}
+      </div>
     </>
   )
 
-  const className = `flex items-start gap-4 border-b border-stone p-4 transition-colors hover:bg-stone/30 ${
-    !isRead ? 'bg-stone/10' : ''
+  const className = `flex items-start gap-3 border-b border-stone/70 px-1 py-3.5 transition-colors  ${
+    !isRead ? 'bg-blush/20' : ''
   }`
 
-  if (!target) {
-    return (
-      <div className={className} onClick={handleOpen}>
-        {body}
-      </div>
-    )
+  // Row navigation lives on the inner actor/reviewer links; clicking the
+  // row body opens the subject too. Action buttons stop propagation so
+  // toggling never navigates.
+  const handleRowClick = () => {
+    if (!isRead) onMarkRead(notification.id)
+    if (target) navigate(target)
   }
 
   return (
-    <Link
-      to={target}
-      className={className}
-      onClick={handleOpen}
+    <div
+      className={`${className} cursor-pointer`}
+      onClick={handleRowClick}
+      role="button"
+      tabIndex={0}
       aria-label={`${actor.displayName} ${getActionText()}`}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') handleRowClick()
+      }}
     >
       {body}
-    </Link>
+    </div>
   )
 }
 

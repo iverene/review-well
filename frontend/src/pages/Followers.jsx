@@ -37,7 +37,7 @@ const Followers = ({ type }) => {
   return (
     <PageContainer>
       <Link to={`/profile/${userId}`} className="mb-3 inline-flex items-center gap-2 text-sm font-extrabold text-muted hover:text-ink">
-        <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back to profile
+        <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back to Profile
       </Link>
       <PageHeader title={title} />
 

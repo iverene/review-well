@@ -1,14 +1,15 @@
-import { extractStudyBlocks, isConfigured } from '../services/openaiService.js'
+import { extractDeckAndPrompts, isConfigured } from '../services/openaiService.js'
 import { checkQuota, incrementUsage, getRemainingQuota } from '../models/aiQuotaModel.js'
-import * as blockModel from '../models/blockModel.js'
+import { DECK_QUOTA_LIMIT } from '../constants/quotas.js'
+import * as flashcardModel from '../models/flashcardModel.js'
 import * as reviewerModel from '../models/reviewerModel.js'
 import { delPrefix } from '../utils/cache.js'
 
-const AI_QUOTA_LIMIT = 50
+const wantsOverwrite = (value) => value === true || value === 'true'
 
 const extractFromUpload = async (req, res) => {
   try {
-    const { reviewerId } = req.body
+    const { reviewerId, confirm } = req.body
     const file = req.file
 
     if (!file) {
@@ -16,73 +17,142 @@ const extractFromUpload = async (req, res) => {
     }
 
     // Check if reviewer exists and user owns it
+    let reviewer = null
     if (reviewerId) {
-      const reviewer = await reviewerModel.findById(reviewerId)
+      reviewer = await reviewerModel.findById(reviewerId)
       if (!reviewer) {
         return res.status(404).json({ error: 'Reviewer not found' })
       }
       if (reviewer.authorId !== req.user.id) {
         return res.status(403).json({ error: 'Not authorized' })
       }
+
+      // Result is stored once: never regenerate blindly, regen needs confirm.
+      const existing = await flashcardModel.findByReviewer(reviewerId)
+      if (existing.length > 0 && !wantsOverwrite(confirm)) {
+        return res.status(409).json({
+          error: 'Deck already generated. Confirm overwrite to regenerate.',
+          regenerateRequiresConfirm: true,
+          cardCount: existing.length,
+        })
+      }
     }
 
-    // Check AI quota
-    const hasQuota = await checkQuota(req.user.id, AI_QUOTA_LIMIT)
+    // Check deck quota
+    const hasQuota = await checkQuota(req.user.id, DECK_QUOTA_LIMIT)
     if (!hasQuota) {
       return res.status(429).json({
-        error: 'AI extraction limit reached',
+        error: 'AI deck generation limit reached',
         remaining: 0,
-        limit: AI_QUOTA_LIMIT,
+        limit: DECK_QUOTA_LIMIT,
       })
     }
 
     // Extract text from file (simplified - in production use pdf-parse or similar)
     const text = extractTextFromFile(file)
 
-    // Extract study blocks
-    const blocks = await extractStudyBlocks(text, {
-      courseCode: req.body.courseCode,
-      courseDescription: req.body.courseDescription,
-      examType: req.body.examType,
-    })
-
-    // Increment quota usage
-    await incrementUsage(req.user.id)
-
-    // If reviewerId provided, save blocks to database
-    if (reviewerId && blocks.length > 0) {
-      const blocksToCreate = blocks.map((block, index) => ({
-        reviewerId,
-        blockType: block.block_type,
-        columnIndex: 1,
-        sortOrder: index,
-        contentData: block.content_data,
-      }))
-
-      await blockModel.createMany(blocksToCreate)
-      delPrefix('reviewers:')
+    // Generate flashcard deck + blurting prompts (quota consumed only on success)
+    let deck
+    try {
+      deck = await extractDeckAndPrompts(text, {
+        courseCode: req.body.courseCode,
+        courseDescription: req.body.courseDescription,
+        examType: req.body.examType,
+      })
+    } catch (error) {
+      if (error.code === 'DECK_PARSE_FAILED') {
+        // File is kept; user can add cards manually.
+        const remaining = await getRemainingQuota(req.user.id, DECK_QUOTA_LIMIT)
+        return res.json({
+          cards: [],
+          prompts: [],
+          saved: false,
+          remaining,
+          limit: DECK_QUOTA_LIMIT,
+          trimmed: false,
+          partial: false,
+          notice: 'Could not read the AI output. Your file was kept — add cards manually.',
+        })
+      }
+      // LLM timeout/failure consumes NO quota, retry allowed.
+      return res.status(502).json({
+        error: 'AI deck generation failed. No quota used — please retry.',
+      })
     }
 
-    const remaining = await getRemainingQuota(req.user.id, AI_QUOTA_LIMIT)
+    const { cards, prompts, trimmed, partial } = deck
+
+    // Empty LLM result: keep the existing deck, metadata, and quota untouched.
+    if (!Array.isArray(cards) || cards.length === 0) {
+      const remaining = await getRemainingQuota(req.user.id, DECK_QUOTA_LIMIT)
+      return res.json({
+        cards: [],
+        prompts: prompts ?? [],
+        saved: false,
+        remaining,
+        limit: DECK_QUOTA_LIMIT,
+        trimmed: false,
+        partial: false,
+        notice: 'The AI returned no usable cards — your existing deck was kept. Please try again.',
+      })
+    }
+
+    // Increment quota usage (success only)
+    await incrementUsage(req.user.id)
+
+    // If reviewerId provided, store rows once (overwrite on confirmed regen)
+    let saved = false
+    if (reviewerId) {
+      await flashcardModel.removeAllByReviewer(reviewerId)
+      if (cards.length > 0) {
+        const cardsToCreate = cards.map((card, index) => ({
+          reviewerId,
+          front: card.front,
+          back: card.back,
+          source: 'ai',
+          sortOrder: index,
+        }))
+        await flashcardModel.createMany(cardsToCreate)
+      }
+      await reviewerModel.update(reviewerId, {
+        aiPrompts: prompts,
+        deckGeneratedAt: new Date(),
+        deckStale: false,
+      })
+      delPrefix('reviewers:')
+      saved = true
+    }
+
+    const remaining = await getRemainingQuota(req.user.id, DECK_QUOTA_LIMIT)
+
+    const trimmedNotice = trimmed ? 'Deck trimmed to 40 cards and 5 prompts.' : null
+    const partialNotice = partial
+      ? 'Some AI output was skipped. Review the deck and add missing cards manually.'
+      : null
+    const notice = [partialNotice, trimmedNotice].filter(Boolean).join(' ')
 
     res.json({
-      blocks,
-      saved: !!reviewerId,
+      cards,
+      prompts,
+      saved,
       remaining,
-      limit: AI_QUOTA_LIMIT,
+      limit: DECK_QUOTA_LIMIT,
+      trimmed,
+      partial: Boolean(partial),
+      ...(notice ? { notice } : {}),
     })
   } catch (error) {
-    console.error('AI extraction error:', error)
-    res.status(500).json({ error: 'Failed to extract study blocks' })
+    console.error('AI deck extraction error:', error)
+    res.status(500).json({ error: 'Failed to generate flashcard deck' })
   }
 }
 
 const getQuotaStatus = async (req, res) => {
   try {
-    const remaining = await getRemainingQuota(req.user.id, AI_QUOTA_LIMIT)
+    const remaining = await getRemainingQuota(req.user.id, DECK_QUOTA_LIMIT)
     res.json({
       remaining,
-      limit: AI_QUOTA_LIMIT,
+      limit: DECK_QUOTA_LIMIT,
       configured: isConfigured(),
     })
   } catch (error) {

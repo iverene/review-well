@@ -49,7 +49,7 @@ const Sidebar = () => {
           aria-current={location.pathname === '/create' ? 'page' : undefined}
         >
           <Plus className="h-5 w-5" strokeWidth={2.8} aria-hidden="true" />
-          <span>Create</span>
+          <span>New</span>
         </Link>
       </div>
     </aside>
