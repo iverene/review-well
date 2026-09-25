@@ -83,6 +83,9 @@ const Reviewer = () => {
       }
     } catch (loadError) {
       console.error('Failed to load reviewer:', loadError)
+      // A ghost entry (deleted since it was listed or saved) heals itself:
+      // evict it from Recently Viewed on every surface.
+      if (loadError.response?.status === 404) purgeRecentReviewer(id)
       setError(getApiErrorMessage(loadError, 'Unable to load this reviewer.'))
     } finally {
       setLoading(false)

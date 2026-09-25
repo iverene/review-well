@@ -176,6 +176,13 @@ describe('Reviewer', () => {
     fireEvent.click(document.querySelector('.fixed.inset-0.z-40'))
     expect(screen.queryByRole('dialog', { name: 'Study details' })).toBeNull()
   })
+  it('purges ghost entries from Recently Viewed on 404', async () => {
+    window.localStorage.setItem('review-well-recent-reviewers:user-1', JSON.stringify([{ id: 'r1' }]))
+    mockGet.mockRejectedValue({ response: { status: 404, data: { error: 'Reviewer not found' } } })
+    renderReviewer()
+    expect(await screen.findByText('Reviewer not found')).toBeInTheDocument()
+    expect(window.localStorage.getItem('review-well-recent-reviewers:user-1')).toBeNull()
+  })
 
   it('shows the creator in Study Details instead of a header meta row', async () => {
     renderReviewer()
