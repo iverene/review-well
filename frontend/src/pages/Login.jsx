@@ -5,8 +5,28 @@ import { useAuth } from '../contexts/AuthContext'
 import { Skeleton } from '../components/common/Skeleton'
 import LoginButton from '../components/auth/LoginButton'
 
+// Protected routes (mirrors App.jsx guards) that a guest must never be sent
+// to — bouncing there re-triggers ProtectedRoute and loops the browser into
+// throttled navigation. Bare /profile is protected; /profile/:userId is public.
+const GUEST_BLOCKED_PREFIXES = [
+  '/reviewer/my',
+  '/create',
+  '/notifications',
+  '/friends',
+  '/settings',
+  '/onboarding',
+]
+
+export const isGuestSafePath = (path) => {
+  if (typeof path !== 'string' || !path.startsWith('/') || path.startsWith('//')) return false
+  if (path === '/profile' || path.startsWith('/profile?')) return false
+  return !GUEST_BLOCKED_PREFIXES.some(
+    (blocked) => path === blocked || path.startsWith(`${blocked}/`) || path.startsWith(`${blocked}?`)
+  )
+}
+
 const Login = () => {
-  const { isAuthenticated, isGuest, loading, continueAsGuest } = useAuth()
+  const { isAuthenticated, loading, continueAsGuest } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   // Guest nudges link here as `/login?returnTo=<hub URL>`; ProtectedRoute
@@ -19,10 +39,13 @@ const Login = () => {
     : location.state?.from?.pathname || '/'
 
   useEffect(() => {
-    if ((isAuthenticated || isGuest) && !loading) {
+    // Authenticated users bounce straight through. Guests always see this
+    // screen — auto-sending them onward re-triggers ProtectedRoute and loops
+    // the browser into throttled navigation.
+    if (isAuthenticated && !loading) {
       navigate(from, { replace: true })
     }
-  }, [isAuthenticated, isGuest, loading, navigate, from])
+  }, [isAuthenticated, loading, navigate, from])
 
   if (loading) {
     return (
@@ -30,7 +53,7 @@ const Login = () => {
     )
   }
 
-  if (isAuthenticated || isGuest) {
+  if (isAuthenticated) {
     return null
   }
 
@@ -52,7 +75,9 @@ const Login = () => {
           <button
             onClick={() => {
               continueAsGuest()
-              navigate(from, { replace: true })
+              // Guests can never land on protected routes — sending them
+              // there re-triggers ProtectedRoute and loops navigation.
+              navigate(isGuestSafePath(from) ? from : '/', { replace: true })
             }}
             className="rounded-soft border-2 border-stone bg-powder px-4 py-3 text-sm font-extrabold text-ink transition-transform hover:-translate-y-0.5 hover:bg-powder"
           >
