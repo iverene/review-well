@@ -22,7 +22,9 @@ const AnnouncementModal = () => {
     try {
       return window.localStorage.getItem(STORAGE_KEY) === 'dismissed'
     } catch {
-      return true
+      // Storage blocked (sandboxed preview, disabled cookies): fail visible
+      // so first-time visitors still get the announcement.
+      return false
     }
   })
 

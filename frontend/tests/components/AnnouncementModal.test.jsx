@@ -32,4 +32,15 @@ describe('AnnouncementModal', () => {
     render(<AnnouncementModal />)
     expect(screen.queryByRole('dialog')).toBeNull()
   })
+
+  it('fails visible when storage is blocked', () => {
+    const getItem = window.localStorage.getItem
+    window.localStorage.getItem = () => { throw new Error('blocked') }
+    try {
+      render(<AnnouncementModal />)
+      expect(screen.getByRole('dialog', { name: 'Welcome to Review Well' })).toBeInTheDocument()
+    } finally {
+      window.localStorage.getItem = getItem
+    }
+  })
 })
