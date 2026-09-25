@@ -10,6 +10,7 @@ import {
   Link2,
   LockKeyhole,
   Share2,
+  Trash2,
   UsersRound,
 } from 'lucide-react'
 
@@ -42,6 +43,7 @@ const Reviewer = () => {
   const [visError, setVisError] = useState(null)
   const [shareOpen, setShareOpen] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const guest = !isAuthenticated
   const loginReturnTo = `/reviewer/${id}`
@@ -97,6 +99,25 @@ const Reviewer = () => {
       setVisError(getApiErrorMessage(saveError, 'Unable to update visibility.'))
     } finally {
       setVisSaving(false)
+    }
+  }
+
+  const handleDeleteReviewer = async () => {
+    if (deleting) return
+    const confirmed = window.confirm(
+      'Delete this reviewer permanently? Its file, flashcards, blurting history, and focus sessions will be removed and can\u2019t be recovered.'
+    )
+    if (!confirmed) return
+    setDeleting(true)
+    setError(null)
+    try {
+      await axios.delete(`/api/reviewers/${id}`, { withCredentials: true })
+      navigate('/reviewer/my')
+    } catch (deleteError) {
+      console.error('Failed to delete reviewer:', deleteError)
+      setError(getApiErrorMessage(deleteError, 'Unable to delete this reviewer.'))
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -228,6 +249,16 @@ const Reviewer = () => {
         <Link to="/" className="inline-flex items-center gap-2 text-sm font-extrabold text-muted hover:text-ink"><ArrowLeft className="h-4 w-4" /> Back to desk</Link>
         <div className="flex flex-wrap items-center gap-2">
           <SaveButton reviewerId={reviewer.id} initialSaveCount={reviewer._count?.saves || 0} />
+          {isOwner && (
+            <button
+              type="button"
+              onClick={handleDeleteReviewer}
+              disabled={deleting}
+              className="inline-flex items-center gap-2 rounded-soft border-2 border-blush bg-blush/40 px-4 py-2 text-sm font-extrabold text-berry hover:bg-blush disabled:opacity-60"
+            >
+              <Trash2 className="h-4 w-4" aria-hidden="true" /> {deleting ? 'Deleting…' : 'Delete'}
+            </button>
+          )}
           <div className="relative">
             <button
               type="button"

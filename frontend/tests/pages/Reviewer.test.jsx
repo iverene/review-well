@@ -161,4 +161,50 @@ describe('Reviewer', () => {
     expect(await screen.findByRole('heading', { name: 'Reviewer', level: 1 })).toBeInTheDocument()
     expect(screen.queryByText('Study guide')).not.toBeInTheDocument()
   })
+
+  it('shows the delete button to the owner only', async () => {
+    renderReviewer()
+    expect(await screen.findByRole('button', { name: 'Delete' })).toBeInTheDocument()
+  })
+
+  it('hides the delete button from non-owners and guests', async () => {
+    authState.user = { id: 'someone-else' }
+    renderReviewer()
+    await screen.findByLabelText('Study hub')
+    expect(screen.queryByRole('button', { name: 'Delete' })).toBeNull()
+
+    authState.user = null
+    authState.isAuthenticated = false
+    renderReviewer()
+    await screen.findByTestId('study-guest-nudge')
+    expect(screen.queryByRole('button', { name: 'Delete' })).toBeNull()
+  })
+
+  it('asks for confirmation and deletes, then leaves for My Reviewers', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(true)
+    mockDelete.mockResolvedValue({ data: {} })
+    render(
+      <MemoryRouter initialEntries={['/reviewer/r1']}>
+        <Routes>
+          <Route path="/reviewer/:id" element={<Reviewer />} />
+          <Route path="/reviewer/my" element={<div>My reviewers</div>} />
+        </Routes>
+      </MemoryRouter>
+    )
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete' }))
+    expect(confirmSpy).toHaveBeenCalled()
+    await waitFor(() => expect(axios.delete).toHaveBeenCalledWith('/api/reviewers/r1', { withCredentials: true }))
+    expect(await screen.findByText('My reviewers')).toBeInTheDocument()
+    confirmSpy.mockRestore()
+  })
+
+  it('does not delete when the confirmation is dismissed', async () => {
+    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false)
+    renderReviewer()
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete' }))
+    expect(confirmSpy).toHaveBeenCalled()
+    expect(mockDelete).not.toHaveBeenCalled()
+    expect(await screen.findByLabelText('Study hub')).toBeInTheDocument()
+    confirmSpy.mockRestore()
+  })
 })
