@@ -84,8 +84,8 @@ const NotificationItem = ({ notification, onMarkRead }) => {
     </>
   )
 
-  const className = `flex items-start gap-3 rounded-soft border-2 p-3 transition-colors ${
-    !isRead ? 'border-accent/50 bg-blush/30 club-shadow' : 'border-stone bg-paper hover:bg-stone/20'
+  const className = `flex items-start gap-3 border-b border-stone/70 px-1 py-3.5 transition-colors last:border-b-0 hover:bg-stone/20 ${
+    !isRead ? 'bg-blush/20' : ''
   }`
 
   if (!target) {
