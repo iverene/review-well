@@ -1,12 +1,15 @@
 import * as userModel from '../models/userModel.js'
 import * as reviewerModel from '../models/reviewerModel.js'
 import * as followModel from '../models/followModel.js'
+import { avatarUrlSchema } from '../validators/profile.js'
 import { del, delPrefix } from '../utils/cache.js'
 import { createStorageAdapter } from '../services/adapters/storage.js'
 
 const searchUsers = async (req, res) => {
   try {
-    const { q = '', limit = 20 } = req.query
+    const rawQ = Array.isArray(req.query.q) ? req.query.q[0] : req.query.q
+    const q = String(rawQ ?? '')
+    const { limit = 20 } = req.query
     const take = Math.min(parseInt(limit) || 20, 50)
 
     const users = await userModel.searchUsers(q.trim(), { take, excludeId: req.user.id })
@@ -65,7 +68,9 @@ const getProfile = async (req, res) => {
 
 const updateProfile = async (req, res) => {
   try {
-    const { displayName, school, program, major, yearLevel } = req.body
+    // Validated + trimmed by validateBody(updateProfileSchema); fall back to
+    // raw body only for callers that bypass the route middleware (tests).
+    const { displayName, school, program, major, yearLevel } = req.validatedBody || req.body
     const userId = req.user.id
 
     const updates = {}
@@ -100,7 +105,11 @@ const updateAvatar = async (req, res) => {
 
     // URL-based avatar (e.g. keep an existing one)
     if (!req.file && req.body.avatarUrl) {
-      await userModel.update(userId, { avatarUrl: req.body.avatarUrl })
+      const parsed = avatarUrlSchema.safeParse({ avatarUrl: req.body.avatarUrl })
+      if (!parsed.success) {
+        return res.status(400).json({ error: 'avatarUrl must be a valid URL' })
+      }
+      await userModel.update(userId, { avatarUrl: parsed.data.avatarUrl })
       delPrefix('profile:')
       del(`users:row:${userId}`)
       const profile = await userModel.getProfile(userId)

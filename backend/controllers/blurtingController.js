@@ -64,8 +64,11 @@ const submitDump = async (req, res) => {
 
     const { id } = req.params
     const { dumpText } = req.body || {}
-    if (!dumpText?.trim()) {
+    if (typeof dumpText !== 'string' || !dumpText.trim()) {
       return res.status(400).json({ error: 'dumpText is required' })
+    }
+    if (dumpText.trim().length > 5000) {
+      return res.status(400).json({ error: 'dumpText must be at most 5000 characters' })
     }
 
     const reviewer = await reviewerModel.findById(id)

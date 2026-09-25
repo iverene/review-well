@@ -9,6 +9,7 @@ import passport from 'passport'
 import { sessionConfig, ensureSessionCompat } from './config/session.js'
 import { configurePassport } from './config/googleOAuth.js'
 import { getFrontendUrl } from './config/urls.js'
+import { globalLimiter, authLimiter } from './middleware/rateLimiter.js'
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -35,6 +36,11 @@ app.use(ensureSessionCompat)
 app.use(passport.initialize())
 app.use(passport.session())
 configurePassport()
+
+// Rate limiting (after session so auth state exists; trust-proxy is set in
+// production so limits apply per client IP, not per proxy).
+app.use('/api/auth', authLimiter)
+app.use('/api', globalLimiter)
 
 // Routes
 app.use('/api/auth', (await import('./routes/authRoutes.js')).default)

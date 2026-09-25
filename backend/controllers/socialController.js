@@ -2,6 +2,8 @@ import * as saveModel from '../models/saveModel.js'
 import * as followModel from '../models/followModel.js'
 import * as notificationModel from '../models/notificationModel.js'
 import * as reviewerModel from '../models/reviewerModel.js'
+import * as userModel from '../models/userModel.js'
+import { parsePagination } from '../utils/pagination.js'
 import { delPrefix } from '../utils/cache.js'
 
 // Save endpoints
@@ -105,12 +107,25 @@ const followUser = async (req, res) => {
       return res.status(400).json({ error: 'Cannot follow yourself' })
     }
 
+    const targetUser = await userModel.findById(targetUserId)
+    if (!targetUser) {
+      return res.status(404).json({ error: 'User not found' })
+    }
+
     const existingFollow = await followModel.findByUsers(followerId, targetUserId)
     if (existingFollow) {
       return res.status(400).json({ error: 'Already following' })
     }
 
-    await followModel.create(followerId, targetUserId)
+    try {
+      await followModel.create(followerId, targetUserId)
+    } catch (createError) {
+      // Lost a race with another follow request for the same pair.
+      if (createError?.code === 'P2002') {
+        return res.status(400).json({ error: 'Already following' })
+      }
+      throw createError
+    }
     await notificationModel.createFollowNotification(targetUserId, followerId)
     delPrefix('social:')
     delPrefix('profile:')
@@ -166,9 +181,7 @@ const getFollowStatus = async (req, res) => {
 // Notification endpoints
 const getNotifications = async (req, res) => {
   try {
-    const { page = 1, limit = 20 } = req.query
-    const skip = (parseInt(page) - 1) * parseInt(limit)
-    const take = parseInt(limit)
+    const { skip, take } = parsePagination(req.query)
 
     const result = await notificationModel.findByRecipient(req.user.id, { skip, take })
 

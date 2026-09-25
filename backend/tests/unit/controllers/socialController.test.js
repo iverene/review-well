@@ -68,6 +68,7 @@ import * as saveModel from '../../../models/saveModel.js'
 import * as followModel from '../../../models/followModel.js'
 import * as notificationModel from '../../../models/notificationModel.js'
 import * as reviewerModel from '../../../models/reviewerModel.js'
+import * as userModel from '../../../models/userModel.js'
 import { createMockRequest, createMockResponse } from '../../helpers/mocks.js'
 
 describe('Social Controller', () => {
@@ -237,6 +238,7 @@ describe('Social Controller', () => {
       })
       const res = createMockResponse()
 
+      userModel.findById.mockResolvedValue({ id: 'user-456' })
       followModel.findByUsers.mockResolvedValue(null)
       followModel.create.mockResolvedValue({})
       notificationModel.createFollowNotification.mockResolvedValue({})
@@ -245,6 +247,38 @@ describe('Social Controller', () => {
       await followUser(req, res)
 
       expect(res.json).toHaveBeenCalledWith({ following: true, followerCount: 10 })
+    })
+
+    it('should return 404 for an unknown target user', async () => {
+      const req = createMockRequest({
+        user: { id: 'user-123' },
+        params: { userId: 'ghost' },
+      })
+      const res = createMockResponse()
+
+      userModel.findById.mockResolvedValue(null)
+
+      await followUser(req, res)
+
+      expect(res.status).toHaveBeenCalledWith(404)
+      expect(followModel.create).not.toHaveBeenCalled()
+    })
+
+    it('should return 400 on a follow race (P2002)', async () => {
+      const req = createMockRequest({
+        user: { id: 'user-123' },
+        params: { userId: 'user-456' },
+      })
+      const res = createMockResponse()
+
+      userModel.findById.mockResolvedValue({ id: 'user-456' })
+      followModel.findByUsers.mockResolvedValue(null)
+      followModel.create.mockRejectedValue({ code: 'P2002' })
+
+      await followUser(req, res)
+
+      expect(res.status).toHaveBeenCalledWith(400)
+      expect(res.json).toHaveBeenCalledWith({ error: 'Already following' })
     })
 
     it('should return 400 if following self', async () => {

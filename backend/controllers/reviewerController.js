@@ -6,6 +6,7 @@ import * as flashcardModel from '../models/flashcardModel.js'
 import { getRemainingQuota, getRemainingGrades, GRADE_LIMIT } from '../models/aiQuotaModel.js'
 import { DECK_QUOTA_LIMIT } from '../constants/quotas.js'
 import { createStorageAdapter } from '../services/adapters/storage.js'
+import { parsePagination } from '../utils/pagination.js'
 import { del, delPrefix } from '../utils/cache.js'
 
 // Signed-URL lifetime for public reviewer files (private bucket, so even
@@ -38,16 +39,14 @@ const notifyFollowersOfNewReviewer = async (authorId, reviewerId) => {
 
 const getPublicReviewers = async (req, res) => {
   try {
-    const { page = 1, limit = 20, search = '' } = req.query
-    const skip = (parseInt(page) - 1) * parseInt(limit)
-    const take = parseInt(limit)
+    const { page, limit, skip, take } = parsePagination(req.query)
 
-    const result = await reviewerModel.findPublic({ skip, take, search })
+    const result = await reviewerModel.findPublic({ skip, take, search: req.query.search || '' })
 
     res.json({
       reviewers: result.reviewers,
       pagination: {
-        page: parseInt(page),
+        page,
         limit: take,
         total: result.total,
         hasMore: result.hasMore,
@@ -62,16 +61,14 @@ const getPublicReviewers = async (req, res) => {
 const getAuthorReviewers = async (req, res) => {
   try {
     const { userId } = req.params
-    const { page = 1, limit = 50 } = req.query
-    const skip = (parseInt(page) - 1) * parseInt(limit)
-    const take = parseInt(limit)
+    const { page, limit, skip, take } = parsePagination(req.query, { defaultLimit: 50 })
 
     const result = await reviewerModel.findPublicByAuthor(userId, { skip, take })
 
     res.json({
       reviewers: result.reviewers,
       pagination: {
-        page: parseInt(page),
+        page,
         limit: take,
         total: result.total,
         hasMore: result.hasMore,
@@ -115,16 +112,14 @@ const getReadableIds = async (req, res) => {
 
 const getMyReviewers = async (req, res) => {
   try {
-    const { page = 1, limit = 50 } = req.query
-    const skip = (parseInt(page) - 1) * parseInt(limit)
-    const take = parseInt(limit)
+    const { page, limit, skip, take } = parsePagination(req.query, { defaultLimit: 50 })
 
     const result = await reviewerModel.findByAuthor(req.user.id, { skip, take })
 
     res.json({
       reviewers: result.reviewers,
       pagination: {
-        page: parseInt(page),
+        page,
         limit: take,
         total: result.total,
         hasMore: result.hasMore,

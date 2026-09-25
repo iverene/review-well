@@ -78,6 +78,22 @@ describe('Blurting Routes', () => {
       expect(response.body.error).toBe('guest-write-blocked')
     })
 
+    it('should return 400 for non-string or oversized dumpText', async () => {
+      const app = createApp(OWNER)
+
+      const nonString = await request(app)
+        .post(`/api/reviewers/${reviewerWithPrompt.id}/blurting`)
+        .send({ dumpText: 12345 })
+
+      expect(nonString.status).toBe(400)
+
+      const oversized = await request(app)
+        .post(`/api/reviewers/${reviewerWithPrompt.id}/blurting`)
+        .send({ dumpText: 'x'.repeat(5001) })
+
+      expect(oversized.status).toBe(400)
+    })
+
     it('should grade via AI with score + feedback + gradesLeft and consume 1 grade', async () => {
       reviewerModel.findById.mockResolvedValue(reviewerWithPrompt)
       aiQuotaModel.checkGradeQuota.mockResolvedValue(true)

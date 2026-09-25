@@ -157,6 +157,17 @@ describe('Profile Controller', () => {
       expect(userModel.searchUsers).toHaveBeenCalledWith('', expect.objectContaining({ excludeId: 'user-123' }))
       expect(res.json).toHaveBeenCalledWith({ users: [] })
     })
+
+    it('should coerce an array q instead of crashing', async () => {
+      const req = createMockRequest({ user: { id: 'user-123' }, query: { q: ['ann', 'x'] } })
+      const res = createMockResponse()
+
+      userModel.searchUsers = vi.fn().mockResolvedValue([])
+
+      await searchUsers(req, res)
+
+      expect(userModel.searchUsers).toHaveBeenCalledWith('ann', expect.objectContaining({ excludeId: 'user-123' }))
+    })
   })
 
   describe('updateAvatar', () => {
@@ -212,6 +223,19 @@ describe('Profile Controller', () => {
       await updateAvatar(req, res)
 
       expect(res.status).toHaveBeenCalledWith(400)
+    })
+
+    it('should return 400 for a non-URL avatarUrl', async () => {
+      const req = createMockRequest({
+        user: { id: 'user-123' },
+        body: { avatarUrl: 'not-a-url' },
+      })
+      const res = createMockResponse()
+
+      await updateAvatar(req, res)
+
+      expect(res.status).toHaveBeenCalledWith(400)
+      expect(userModel.update).not.toHaveBeenCalled()
     })
 
     it('should return 503 when storage is not configured', async () => {
