@@ -84,8 +84,9 @@ const getAuthorReviewers = async (req, res) => {
 }
 
 // Batch existence check for client-side caches (Recently Viewed rail).
-// Returns only ids the requester may actually open: non-private rows, plus
-// own private rows. Never leaks private rows of other users.
+// Returns only ids the requester may actually open: non-private,
+// non-draft rows, plus own private/draft rows. Never leaks private rows
+// of other users.
 const getReadableIds = async (req, res) => {
   try {
     const ids = String(req.query.ids || '')
@@ -99,7 +100,10 @@ const getReadableIds = async (req, res) => {
 
     const rows = await reviewerModel.findByIds(ids)
     const readable = rows
-      .filter((row) => row.visibility !== 'private' || row.authorId === req.user?.id)
+      .filter(
+        (row) =>
+          (row.visibility !== 'private' && !row.isDraft) || row.authorId === req.user?.id
+      )
       .map((row) => row.id)
 
     res.json({ ids: readable })
@@ -144,6 +148,12 @@ const getReviewerById = async (req, res) => {
     // Check access permissions
     if (reviewer.visibility === 'private' && reviewer.authorId !== req.user?.id) {
       return res.status(403).json({ error: 'Access denied' })
+    }
+
+    // Drafts never appear in public listings, so direct links stay
+    // owner-only too (404, not 403, to avoid confirming existence).
+    if (reviewer.isDraft && reviewer.authorId !== req.user?.id) {
+      return res.status(404).json({ error: 'Reviewer not found' })
     }
 
     if (reviewer.visibility === 'unlisted' && reviewer.authorId !== req.user?.id) {

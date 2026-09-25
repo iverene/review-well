@@ -10,10 +10,12 @@ const requireSignedIn = (req, res) => {
 }
 
 // Reads honor reviewer visibility (mirrors reviewerController.getReviewerById):
-// public and unlisted-via-link are readable by anyone; private requires owner.
+// public and unlisted-via-link are readable by anyone; private requires
+// owner; drafts are owner-only (they never appear in public listings).
 const canRead = (reviewer, user) => {
   if (!reviewer) return false
   if (reviewer.visibility === 'private' && reviewer.authorId !== user?.id) return false
+  if (reviewer.isDraft && reviewer.authorId !== user?.id) return false
   return true
 }
 

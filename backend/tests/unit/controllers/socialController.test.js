@@ -35,6 +35,7 @@ vi.mock('../../../models/saveModel.js', () => ({
 }))
 vi.mock('../../../models/notificationModel.js', () => ({
   create: vi.fn(),
+  findById: vi.fn(),
   findByRecipient: vi.fn(),
   markAsRead: vi.fn(),
   markAllAsRead: vi.fn(),
@@ -120,6 +121,36 @@ describe('Social Controller', () => {
       await saveReviewer(req, res)
 
       expect(res.status).toHaveBeenCalledWith(400)
+    })
+
+    it('should return 403 for another user private reviewer', async () => {
+      const req = createMockRequest({
+        user: { id: 'user-123' },
+        params: { reviewerId: 'reviewer-1' },
+      })
+      const res = createMockResponse()
+
+      reviewerModel.findById.mockResolvedValue({ id: 'reviewer-1', authorId: 'author-9', visibility: 'private' })
+
+      await saveReviewer(req, res)
+
+      expect(res.status).toHaveBeenCalledWith(403)
+      expect(saveModel.create).not.toHaveBeenCalled()
+    })
+
+    it('should return 404 for another user draft reviewer', async () => {
+      const req = createMockRequest({
+        user: { id: 'user-123' },
+        params: { reviewerId: 'reviewer-1' },
+      })
+      const res = createMockResponse()
+
+      reviewerModel.findById.mockResolvedValue({ id: 'reviewer-1', authorId: 'author-9', visibility: 'public', isDraft: true })
+
+      await saveReviewer(req, res)
+
+      expect(res.status).toHaveBeenCalledWith(404)
+      expect(saveModel.create).not.toHaveBeenCalled()
     })
   })
 
@@ -281,6 +312,54 @@ describe('Social Controller', () => {
       await getUnreadCount(req, res)
 
       expect(res.json).toHaveBeenCalledWith({ count: 5 })
+    })
+  })
+
+  describe('markNotificationRead', () => {
+    it('should mark an owned notification as read', async () => {
+      const req = createMockRequest({
+        user: { id: 'user-123' },
+        params: { notificationId: 'n1' },
+      })
+      const res = createMockResponse()
+
+      notificationModel.findById.mockResolvedValue({ id: 'n1', recipientId: 'user-123' })
+      notificationModel.markAsRead.mockResolvedValue({})
+
+      await markNotificationRead(req, res)
+
+      expect(notificationModel.markAsRead).toHaveBeenCalledWith('n1')
+      expect(res.json).toHaveBeenCalledWith({ success: true })
+    })
+
+    it('should return 404 for a missing notification', async () => {
+      const req = createMockRequest({
+        user: { id: 'user-123' },
+        params: { notificationId: 'missing' },
+      })
+      const res = createMockResponse()
+
+      notificationModel.findById.mockResolvedValue(null)
+
+      await markNotificationRead(req, res)
+
+      expect(res.status).toHaveBeenCalledWith(404)
+      expect(notificationModel.markAsRead).not.toHaveBeenCalled()
+    })
+
+    it('should return 403 for another user notification', async () => {
+      const req = createMockRequest({
+        user: { id: 'user-123' },
+        params: { notificationId: 'n9' },
+      })
+      const res = createMockResponse()
+
+      notificationModel.findById.mockResolvedValue({ id: 'n9', recipientId: 'user-9' })
+
+      await markNotificationRead(req, res)
+
+      expect(res.status).toHaveBeenCalledWith(403)
+      expect(notificationModel.markAsRead).not.toHaveBeenCalled()
     })
   })
 })

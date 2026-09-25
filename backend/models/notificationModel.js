@@ -33,6 +33,10 @@ const markAsRead = async (id) => {
   })
 }
 
+const findById = async (id) => {
+  return prisma.notification.findUnique({ where: { id } })
+}
+
 const markAllAsRead = async (recipientId) => {
   return prisma.notification.updateMany({
     where: { recipientId, isRead: false },
@@ -87,4 +91,4 @@ const createMany = async (rows) => {
   return prisma.notification.createMany({ data: rows })
 }
 
-export { create, createMany, findByRecipient, markAsRead, markAllAsRead, countUnread, createSaveNotification, createNewReviewerNotification, createFollowNotification }
+export { create, createMany, findById, findByRecipient, markAsRead, markAllAsRead, countUnread, createSaveNotification, createNewReviewerNotification, createFollowNotification }

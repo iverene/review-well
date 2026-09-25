@@ -131,6 +131,7 @@ describe('Reviewer Routes', () => {
       { id: 'r-public', visibility: 'public', authorId: 'owner-1' },
       { id: 'r-mine-private', visibility: 'private', authorId: 'user-123' },
       { id: 'r-theirs-private', visibility: 'private', authorId: 'owner-9' },
+      { id: 'r-theirs-draft', visibility: 'public', isDraft: true, authorId: 'owner-9' },
     ]
 
     const authedApp = () => {
@@ -148,12 +149,12 @@ describe('Reviewer Routes', () => {
       reviewerModel.findByIds.mockResolvedValue(rows)
 
       const app = authedApp()
-      const response = await request(app).get('/api/reviewers/exists?ids=r-public,r-mine-private,r-theirs-private,r-gone')
+      const response = await request(app).get('/api/reviewers/exists?ids=r-public,r-mine-private,r-theirs-private,r-theirs-draft,r-gone')
 
       expect(response.status).toBe(200)
       expect(response.body.ids.sort()).toEqual(['r-mine-private', 'r-public'])
       expect(reviewerModel.findByIds).toHaveBeenCalledWith(
-        ['r-public', 'r-mine-private', 'r-theirs-private', 'r-gone']
+        ['r-public', 'r-mine-private', 'r-theirs-private', 'r-theirs-draft', 'r-gone']
       )
     })
 

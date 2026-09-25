@@ -15,6 +15,16 @@ const saveReviewer = async (req, res) => {
       return res.status(404).json({ error: 'Reviewer not found' })
     }
 
+    // Private reviewers of other users cannot be saved (their content would
+    // otherwise leak through the saved-reviewers list); drafts are invisible
+    // everywhere, so non-owners get a 404 that confirms nothing.
+    if (reviewer.visibility === 'private' && reviewer.authorId !== userId) {
+      return res.status(403).json({ error: 'Not authorized to save this reviewer' })
+    }
+    if (reviewer.isDraft && reviewer.authorId !== userId) {
+      return res.status(404).json({ error: 'Reviewer not found' })
+    }
+
     const existingSave = await saveModel.findByUserAndReviewer(userId, reviewerId)
     if (existingSave) {
       return res.status(400).json({ error: 'Already saved' })
@@ -175,6 +185,14 @@ const getNotifications = async (req, res) => {
 const markNotificationRead = async (req, res) => {
   try {
     const { notificationId } = req.params
+
+    const notification = await notificationModel.findById(notificationId)
+    if (!notification) {
+      return res.status(404).json({ error: 'Notification not found' })
+    }
+    if (notification.recipientId !== req.user.id) {
+      return res.status(403).json({ error: 'Not authorized to update this notification' })
+    }
 
     await notificationModel.markAsRead(notificationId)
 

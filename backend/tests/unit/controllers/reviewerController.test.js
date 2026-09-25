@@ -192,6 +192,24 @@ describe('Reviewer Controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(403)
     })
+
+    it('should return 404 for draft reviewer when not owner', async () => {
+      const req = createMockRequest({ params: { id: '1' }, user: { id: 'other-user' } })
+      const res = createMockResponse()
+      const mockReviewer = {
+        id: '1',
+        visibility: 'public',
+        isDraft: true,
+        authorId: 'owner-user',
+      }
+
+      reviewerModel.findById.mockResolvedValue(mockReviewer)
+
+      await getReviewerById(req, res)
+
+      expect(res.status).toHaveBeenCalledWith(404)
+      expect(res.json).toHaveBeenCalledWith({ error: 'Reviewer not found' })
+    })
   })
 
   describe('createReviewer', () => {

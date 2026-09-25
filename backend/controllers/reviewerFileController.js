@@ -153,6 +153,9 @@ const downloadReviewerFile = async (req, res) => {
     if (reviewer.visibility === 'private' && reviewer.authorId !== req.user?.id) {
       return res.status(403).json({ error: 'Access denied' })
     }
+    if (reviewer.isDraft && reviewer.authorId !== req.user?.id) {
+      return res.status(404).json({ error: 'Reviewer not found' })
+    }
 
     const file = await reviewerFileModel.findByReviewerId(reviewerId)
     if (!file) {
