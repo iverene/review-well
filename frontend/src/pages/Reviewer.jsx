@@ -470,7 +470,6 @@ const Reviewer = () => {
             gradesLeft={reviewer.quota?.gradesLeft}
             decksLeft={reviewer.quota?.decksLeft}
             isOwner={isOwner}
-            loginReturnTo={loginReturnTo}
             onToggleKnown={handleToggleKnown}
             onAdd={handleAddCard}
             onEdit={handleEditCard}

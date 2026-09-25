@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 
 import FlashcardDeck from './FlashcardDeck'
 import BlurtingMode from './BlurtingMode'
@@ -37,7 +36,6 @@ const StudyTabs = ({
   gradesLeft,
   decksLeft,
   isOwner = false,
-  loginReturnTo = '/',
   onToggleKnown = () => {},
   onAdd = () => {},
   onEdit = () => {},
@@ -57,15 +55,9 @@ const StudyTabs = ({
   const pptxEmbed = fileType === 'pptx' && fileUrl
     ? `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(fileUrl)}`
     : null
-  const guestLoginHref = `/login?returnTo=${encodeURIComponent(loginReturnTo)}`
 
   return (
     <div aria-label="Study hub">
-      {guest && (
-        <p data-testid="study-guest-nudge">
-          <Link to={guestLoginHref}>Sign in with Google to save this</Link>
-        </p>
-      )}
 
       {tabs.length > 1 && (
         <div role="tablist" aria-label="Study modes">

@@ -43,7 +43,7 @@ test.describe('Guest reviewer hub', () => {
     })
   })
 
-  test('guest views the source file and sees the sign-in nudge with a return URL', async ({ page }) => {
+  test('guest views the source file with no sign-in nudge', async ({ page }) => {
     const writes = []
     page.on('request', (request) => {
       if (['POST', 'PATCH', 'PUT', 'DELETE'].includes(request.method())) {
@@ -54,11 +54,7 @@ test.describe('Guest reviewer hub', () => {
     await page.goto('/reviewer/r1')
 
     await expect(page.getByTestId('study-source-pdf')).toBeVisible()
-    await expect(page.getByTestId('study-guest-nudge')).toBeVisible()
-    await expect(page.getByTestId('study-guest-nudge').locator('a')).toHaveAttribute(
-      'href',
-      '/login?returnTo=%2Freviewer%2Fr1'
-    )
+    await expect(page.getByTestId('study-guest-nudge')).toHaveCount(0)
 
     // No study-mode tabs while the modes are parked.
     await expect(page.getByRole('tab', { name: 'Flashcards' })).toHaveCount(0)
