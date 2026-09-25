@@ -28,19 +28,19 @@ describe('Home landing copy', () => {
     render(<MemoryRouter><Home /></MemoryRouter>)
     expect(screen.getByText('Upload your slides. Study them well.')).toBeTruthy()
     expect(screen.getByText('Turn lecture slides into study sessions.')).toBeTruthy()
-    expect(screen.getByText('Upload a PDF or PPTX, get AI-made flashcards and blurting prompts, and review in focused Pomodoro sprints — all in one cozy study club.')).toBeTruthy()
+    expect(screen.getByText('Upload a PDF or PPTX, browse public study guides, and keep everything in one cozy study club.')).toBeTruthy()
     expect(screen.getByRole('link', { name: 'Join the study club' })).toHaveAttribute('href', '/login')
     expect(screen.getByRole('link', { name: 'Try public reviewers' })).toHaveAttribute('href', '/reviewer/public')
   })
 
-  it('frames the trio around the three study pillars', () => {
+  it('frames the trio around current features', () => {
     render(<MemoryRouter><Home /></MemoryRouter>)
     expect(screen.getByText('Upload your slides')).toBeTruthy()
     expect(screen.getByText('Drop in a PDF or PPTX and keep every reviewer in one personal library.')).toBeTruthy()
-    expect(screen.getByText('Study with techniques')).toBeTruthy()
-    expect(screen.getByText('Flip AI-made flashcards and dump what you remember with blurting prompts.')).toBeTruthy()
-    expect(screen.getByText('Stay in the zone')).toBeTruthy()
-    expect(screen.getByText('Review in Pomodoro sprints and track daily focus.')).toBeTruthy()
+    expect(screen.getByText('Discover Study Guides')).toBeTruthy()
+    expect(screen.getByText('Browse public reviewers made by fellow students and start with the topics you need most.')).toBeTruthy()
+    expect(screen.getByText('Save What Matters')).toBeTruthy()
+    expect(screen.getByText('Bookmark the guides you love and follow creators to see their new reviewers.')).toBeTruthy()
   })
 
   it('contains no workspace-era wording', () => {

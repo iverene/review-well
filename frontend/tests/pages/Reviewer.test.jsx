@@ -70,30 +70,14 @@ beforeEach(() => {
 })
 
 describe('Reviewer', () => {
-  it('renders the study hub with Source, Flashcards, and Blurting tabs', async () => {
+  it('renders the source-only hub with no study-mode tabs', async () => {
     renderReviewer()
     expect(await screen.findByLabelText('Study hub')).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: 'Source' })).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: 'Flashcards' })).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: 'Blurting' })).toBeInTheDocument()
     expect(screen.getByTestId('study-source-pdf')).toBeInTheDocument()
-    expect(screen.getByLabelText('Pomodoro timer')).toBeInTheDocument()
-  })
-
-  it('wires flashcards with real data and persists Known toggles', async () => {
-    mockPatch.mockResolvedValue({ data: { card: { ...mockReviewer.cards[0], known: true } } })
-    renderReviewer()
-    fireEvent.click(await screen.findByRole('tab', { name: 'Flashcards' }))
-    expect(await screen.findByText('Front 1')).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Mark as Known' }))
-    await waitFor(() => expect(axios.patch).toHaveBeenCalledWith('/api/cards/card-1', { known: true }, { withCredentials: true }))
-  })
-
-  it('wires the blurting prompt with remaining grades', async () => {
-    renderReviewer()
-    fireEvent.click(await screen.findByRole('tab', { name: 'Blurting' }))
-    expect(await screen.findByTestId('blurting-prompt')).toHaveTextContent('Explain the light reactions')
-    expect(screen.getByTestId('blurting-counter')).toHaveTextContent('5/5 AI reviews left')
+    expect(screen.queryByRole('tablist', { name: 'Study modes' })).toBeNull()
+    expect(screen.queryByRole('tab', { name: 'Flashcards' })).toBeNull()
+    expect(screen.queryByRole('tab', { name: 'Blurting' })).toBeNull()
+    expect(screen.queryByLabelText('Pomodoro timer')).toBeNull()
   })
 
   it('shows the owner upload banner when the reviewer has no source file', async () => {
@@ -116,8 +100,7 @@ describe('Reviewer', () => {
     const nudge = await screen.findByTestId('study-guest-nudge')
     expect(nudge).toBeInTheDocument()
     expect(nudge.querySelector('a')).toHaveAttribute('href', '/login?returnTo=%2Freviewer%2Fr1')
-    fireEvent.click(screen.getByRole('tab', { name: 'Flashcards' }))
-    expect(await screen.findByTestId('deck-guest-banner')).toBeInTheDocument()
+    expect(await screen.findByTestId('study-source-pdf')).toBeInTheDocument()
     expect(mockPost).not.toHaveBeenCalled()
     expect(mockPatch).not.toHaveBeenCalled()
     expect(mockDelete).not.toHaveBeenCalled()

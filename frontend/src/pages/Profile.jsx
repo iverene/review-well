@@ -13,6 +13,10 @@ import { ProfileSkeleton } from '../components/common/Skeleton'
 
 const WEEKDAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
+// Pomodoro-linked focus section is parked with the study modes — flip back
+// on to re-enable (API and tests are intact).
+const SHOW_FOCUS_STATS = false
+
 const FocusStats = () => {
   const [stats, setStats] = useState(null)
   const [goalInput, setGoalInput] = useState('')
@@ -302,7 +306,7 @@ const Profile = () => {
             <span className="text-[11px] font-extrabold uppercase tracking-widest text-muted">Following</span>
           </Link>
         </div>
-        {isOwnProfile && <FocusStats />}
+        {isOwnProfile && SHOW_FOCUS_STATS && <FocusStats />}
       </div>
 
       {/* Tabs */}

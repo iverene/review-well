@@ -121,13 +121,11 @@ The public browsing path must work for both guests and Google users. Guest inter
 
 ## 9. Reviewer Study Hub
 
-The reviewer detail view is a study hub with tabbed modes plus a focus dock, all in kawaii tokens:
+The reviewer detail view is a hub with the Source viewer, all in kawaii tokens:
 
-- Use a calm Cream page with the reviewer header (title, course meta, visibility control) on a Paper card.
-- **Source tab:** the uploaded file (embedded viewer or download link) on Paper.
-- **Flashcards tab:** Butter accents for the AI deck action and quota states (`decksLeft`); Mint for known/complete states; flip, add, edit, and delete stay inline.
-- **Blurting tab:** open-ended recall prompts with AI grades (score, feedback, missed points) in Powder info surfaces; self-rating fallback when the grade quota runs out.
-- **Pomodoro dock:** focus timer linked to the reviewer with the daily goal, styled as a compact Mint/Butter companion panel.
+- Use a calm Cream page with a minimal reviewer header (title, course meta, visibility control) — no card chrome.
+- **Source viewer:** the uploaded file (embedded viewer or download link) on Paper.
+- **Parked study modes:** Flashcards, Blurting, and the Pomodoro dock are hidden behind `ENABLED_STUDY_MODES` (components, tokens, and tests intact). When re-enabled: Butter accents for the AI deck action and quota states (`decksLeft`); Mint for known/complete states; Powder info surfaces for blurting grades; Mint/Butter companion panel for the dock.
 - Guest nudges (`returnTo` links) use Powder surfaces with Cocoa text — never color alone.
 - Keep destructive actions (card delete, reviewer delete) behind confirmation.
 - Show quota and save feedback as friendly states: `Saving`, `Saved`, or `Needs attention`.

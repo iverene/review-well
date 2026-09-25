@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 
 import { AuthProvider } from './contexts/AuthContext'
 import Layout from './components/Layout'
+import AnnouncementModal from './components/AnnouncementModal'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import { Skeleton } from './components/common/Skeleton'
 
@@ -41,6 +42,7 @@ function App() {
     <Router>
       <AuthProvider>
         <Layout>
+          <AnnouncementModal />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<Home />} />

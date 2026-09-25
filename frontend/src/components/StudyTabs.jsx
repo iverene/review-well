@@ -11,6 +11,11 @@ const TABS = [
   { value: 'blurting', label: 'Blurting' },
 ]
 
+// Study modes visible in the hub. Flashcards, blurting, and Pomodoro are
+// parked for now — flip them back on here to re-enable (components, API,
+// and tests are intact).
+const ENABLED_STUDY_MODES = ['source']
+
 const fileTypeFromUrl = (url) => {
   if (!url) return null
   const clean = String(url).split('?')[0].toLowerCase()
@@ -19,10 +24,11 @@ const fileTypeFromUrl = (url) => {
   return null
 }
 
-// Study hub: tabs over Source (PDF iframe / PPTX Office-viewer embed) /
-// Flashcards / Blurting, with the Pomodoro timer always visible. Data arrives
-// as props (no fetching inside); guests run fully local-only — persistent
-// affordances point at /login?returnTo=... instead of writing.
+// Study hub: Source viewer today (PDF iframe / PPTX Office-viewer embed).
+// Flashcards, Blurting, and the Pomodoro dock render only when listed in
+// ENABLED_STUDY_MODES. Data arrives as props (no fetching inside); guests run
+// fully local-only — persistent affordances point at /login?returnTo=...
+// instead of writing.
 const StudyTabs = ({
   reviewer,
   cards = [],
@@ -40,6 +46,7 @@ const StudyTabs = ({
   onBlurtingRate = () => {},
 }) => {
   const [tab, setTab] = useState('source')
+  const tabs = TABS.filter(({ value }) => ENABLED_STUDY_MODES.includes(value))
 
   const fileUrl = reviewer?.fileUrl || null
   const fileType = fileTypeFromUrl(fileUrl)
@@ -59,19 +66,21 @@ const StudyTabs = ({
         </p>
       )}
 
-      <div role="tablist" aria-label="Study modes">
-        {TABS.map(({ value, label }) => (
-          <button
-            key={value}
-            type="button"
-            role="tab"
-            aria-selected={tab === value}
-            onClick={() => setTab(value)}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      {tabs.length > 1 && (
+        <div role="tablist" aria-label="Study modes">
+          {tabs.map(({ value, label }) => (
+            <button
+              key={value}
+              type="button"
+              role="tab"
+              aria-selected={tab === value}
+              onClick={() => setTab(value)}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {tab === 'source' && (
         <div role="tabpanel" aria-label="Source">
@@ -105,7 +114,7 @@ const StudyTabs = ({
         </div>
       )}
 
-      {tab === 'flashcards' && (
+      {tab === 'flashcards' && ENABLED_STUDY_MODES.includes('flashcards') && (
         <div role="tabpanel" aria-label="Flashcards">
           <FlashcardDeck
             cards={cards}
@@ -120,7 +129,7 @@ const StudyTabs = ({
         </div>
       )}
 
-      {tab === 'blurting' && (
+      {tab === 'blurting' && ENABLED_STUDY_MODES.includes('blurting') && (
         <div role="tabpanel" aria-label="Blurting">
           {prompt ? (
             <BlurtingMode
@@ -136,7 +145,9 @@ const StudyTabs = ({
         </div>
       )}
 
-      <PomodoroDock reviewerId={reviewer?.id} guest={guest} />
+      {ENABLED_STUDY_MODES.includes('pomodoro') && (
+        <PomodoroDock reviewerId={reviewer?.id} guest={guest} />
+      )}
     </div>
   )
 }

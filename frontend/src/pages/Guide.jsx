@@ -1,4 +1,4 @@
-import { BookOpen, FileUp, Layers, MessagesSquare, Timer } from 'lucide-react'
+import { BookOpen, FileUp, Globe2, Bookmark, Sparkles } from 'lucide-react'
 
 const Guide = () => (
   <section className="mx-auto max-w-2xl py-8">
@@ -12,20 +12,16 @@ const Guide = () => (
         <p className="mt-1 text-muted">Start from Create, name your reviewer, and attach a PDF or PPTX (max 25 MB). Your file opens in the study hub next to everything built from it.</p>
       </section>
       <section>
-        <h2 className="flex items-center gap-2 font-display text-xl font-bold"><Layers className="h-5 w-5" aria-hidden="true" /> 2. Study the Flashcard Deck</h2>
-        <p className="mt-1 text-muted">Generate an AI starter deck from your file (3 generations per rolling 7-day window), flip cards to test yourself, and mark the ones you know. Add, edit, or remove cards any time.</p>
+        <h2 className="flex items-center gap-2 font-display text-xl font-bold"><Globe2 className="h-5 w-5" aria-hidden="true" /> 2. Discover Public Guides</h2>
+        <p className="mt-1 text-muted">Browse public reviewers made by fellow students and start with the topics you need most.</p>
       </section>
       <section>
-        <h2 className="flex items-center gap-2 font-display text-xl font-bold"><MessagesSquare className="h-5 w-5" aria-hidden="true" /> 3. Blurt It Out</h2>
-        <p className="mt-1 text-muted">Pick a recall prompt, write everything you remember, and get an AI grade with feedback on what you missed — or rate yourself when the AI quota runs out.</p>
+        <h2 className="flex items-center gap-2 font-display text-xl font-bold"><Bookmark className="h-5 w-5" aria-hidden="true" /> 3. Save and Share</h2>
+        <p className="mt-1 text-muted">Bookmark the guides you love, follow creators to see their new reviewers, and flip your own reviewers public or unlisted to share them with a link.</p>
       </section>
       <section>
-        <h2 className="flex items-center gap-2 font-display text-xl font-bold"><Timer className="h-5 w-5" aria-hidden="true" /> 4. Focus With Pomodoro</h2>
-        <p className="mt-1 text-muted">Link a focus session to your reviewer, work in timed sprints toward your daily focus goal.</p>
-      </section>
-      <section>
-        <h2 className="font-display text-xl font-bold">5. Share and Save</h2>
-        <p className="mt-1 text-muted">Flip a reviewer public or unlisted to share it with a link, save guides you love, and follow friends to see their new reviewers.</p>
+        <h2 className="flex items-center gap-2 font-display text-xl font-bold"><Sparkles className="h-5 w-5" aria-hidden="true" /> 4. Coming Soon</h2>
+        <p className="mt-1 text-muted">AI flashcards, the Pomodoro technique, and blurting are on the way — your uploaded files will power them when they land.</p>
       </section>
     </div>
   </section>

@@ -1,9 +1,9 @@
 import { test, expect } from '@playwright/test'
 
-// Guest taste-only journey: an unauthenticated visitor opens a public
-// reviewer hub, flips a flashcard (React state only, zero writes), and sees
-// the sign-in nudge with a return URL.
-test.describe('Guest study hub', () => {
+// Guest view-only journey: an unauthenticated visitor opens a public
+// reviewer hub, sees the source file and the sign-in nudge with a return
+// URL — and triggers zero writes.
+test.describe('Guest reviewer hub', () => {
   test.beforeEach(async ({ page }) => {
     // Guest: no session
     await page.route('**/api/auth/me', (route) => {
@@ -34,11 +34,8 @@ test.describe('Guest study hub', () => {
             user: { displayName: 'Test Author' },
             _count: { saves: 0 },
             fileUrl: 'https://storage.example.com/v1.pdf',
-            cards: [
-              { id: 'card-1', front: 'Front 1', back: 'Back 1', known: false },
-              { id: 'card-2', front: 'Front 2', back: 'Back 2', known: false },
-            ],
-            prompts: ['Explain the light reactions'],
+            cards: [],
+            prompts: [],
             quota: { decksLeft: 0, gradesLeft: 0 },
           },
         }),
@@ -46,7 +43,7 @@ test.describe('Guest study hub', () => {
     })
   })
 
-  test('guest flips a card and sees the sign-in nudge with a return URL', async ({ page }) => {
+  test('guest views the source file and sees the sign-in nudge with a return URL', async ({ page }) => {
     const writes = []
     page.on('request', (request) => {
       if (['POST', 'PATCH', 'PUT', 'DELETE'].includes(request.method())) {
@@ -56,28 +53,18 @@ test.describe('Guest study hub', () => {
 
     await page.goto('/reviewer/r1')
 
-    await expect(page.getByRole('tab', { name: 'Flashcards' })).toBeVisible()
+    await expect(page.getByTestId('study-source-pdf')).toBeVisible()
     await expect(page.getByTestId('study-guest-nudge')).toBeVisible()
     await expect(page.getByTestId('study-guest-nudge').locator('a')).toHaveAttribute(
       'href',
       '/login?returnTo=%2Freviewer%2Fr1'
     )
 
-    await page.getByRole('tab', { name: 'Flashcards' }).click()
-    await expect(page.getByText('Front 1')).toBeVisible()
+    // No study-mode tabs while the modes are parked.
+    await expect(page.getByRole('tab', { name: 'Flashcards' })).toHaveCount(0)
+    await expect(page.getByRole('tab', { name: 'Blurting' })).toHaveCount(0)
 
-      await page.getByRole('button', { name: 'Flip Card' }).click()
-    await expect(page.getByText('Back 1')).toBeVisible()
-
-    // Taste-only: flipping never writes.
+    // View-only: reading never writes.
     expect(writes).toEqual([])
-  })
-
-  test('guest can open the Source tab and the Pomodoro timer', async ({ page }) => {
-    await page.goto('/reviewer/r1')
-
-    await expect(page.getByRole('tab', { name: 'Source' })).toBeVisible()
-    await expect(page.getByTestId('study-source-pdf')).toBeVisible()
-    await expect(page.getByLabel('Pomodoro timer')).toBeVisible()
   })
 })

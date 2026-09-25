@@ -5,7 +5,7 @@
 **Review Well** is structured as a decoupled client-server architecture with a clear separation of concerns between the frontend presentation layer and the backend service layer. 
 
 * **Monorepo Organization:** Divided into two primary root directories (`/frontend` and `/backend`).
-* **Architectural Pattern:** Backend follows a strict **Model-View-Controller (MVC)** separation pattern tailored for API-driven state management, while the frontend employs a modular, component-driven architecture around the reviewer study hub (Source, Flashcards, Blurting, Pomodoro dock).
+* **Architectural Pattern:** Backend follows a strict **Model-View-Controller (MVC)** separation pattern tailored for API-driven state management, while the frontend employs a modular, component-driven architecture around the reviewer hub (Source viewer; Flashcards, Blurting, and the Pomodoro dock parked for now).
 
 ---
 
@@ -30,7 +30,7 @@ review-well/
 └── frontend/
     ├── public/         # Static assets and brand artwork
     ├── src/
-    │   ├── components/ # Study hub (StudyTabs, FlashcardDeck, BlurtingMode, PomodoroDock), layout shells, social, common
+    │   ├── components/ # Reviewer hub (StudyTabs + Source viewer; FlashcardDeck, BlurtingMode, PomodoroDock parked), layout shells, social, common
     │   ├── contexts/   # Global application state (Auth)
     │   ├── stores/     # Client stores (auth)
     │   ├── pages/      # Views (Home, Reviewer hub, Create upload, Profile, guide, legal)
@@ -68,7 +68,7 @@ The backend is built with Node.js and Express, utilizing **Prisma ORM** connecte
 Built with React and structured for high-performance offline caching and responsive layout handling.
 
 * **Navigation Shell Routing:** Manages responsive viewports, rendering the fixed desktop sidebar or the mobile bottom dock with its elevated center `+ Add` action button.
-* **Study Hub Tabs:** The reviewer detail view composes Source (file), Flashcards, and Blurting tabs plus a Pomodoro dock, with guest taste-only restrictions (React-state-only progress, sign-in nudges carrying `returnTo`).
+* **Reviewer Hub:** The reviewer detail view composes an inline Source viewer (file), with guest view-only restrictions (sign-in nudges carrying `returnTo`). Flashcards, Blurting, and the Pomodoro dock are parked behind `ENABLED_STUDY_MODES` (StudyTabs) and `SHOW_FOCUS_STATS` (Profile) — components, API, and tests intact.
 
 ---
 
