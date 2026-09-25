@@ -21,6 +21,7 @@ import ErrorAlert from '../components/common/ErrorAlert'
 import PageHeader from '../components/common/PageHeader'
 import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
+import { formatExamType } from '../utils/examType'
 import { ReviewerSkeleton } from '../components/common/Skeleton'
 
 const recentReviewersKey = (userId) => `review-well-recent-reviewers:${userId}`
@@ -357,7 +358,7 @@ const Reviewer = () => {
             <div className="flex items-center gap-2 rounded-full bg-powder px-3 py-2 text-xs font-extrabold text-ink"><LockKeyhole className="h-4 w-4" /> {reviewer.visibility}</div>
           )}
         </div>
-        <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 border-t-2 border-stone pt-4 text-sm font-semibold text-muted"><span>{reviewer.courseCode}</span><span>{reviewer.semester}</span><span>{reviewer.examType}</span>{reviewer.user?.displayName && <span>By {reviewer.user.displayName}</span>}</div>
+        <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 border-t-2 border-stone pt-4 text-sm font-semibold text-muted"><span>{reviewer.courseCode}</span><span>{reviewer.semester}</span><span>{formatExamType(reviewer.examType)}</span>{reviewer.user?.displayName && <span>By {reviewer.user.displayName}</span>}</div>
       </header>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_220px]">
@@ -379,7 +380,7 @@ const Reviewer = () => {
             onBlurtingRate={handleBlurtingRate}
           />
         </main>
-        <aside className="h-fit rounded-soft border-2 border-stone bg-mint/40 p-5"><h2 className="font-display text-xl font-bold text-ink">Study Details</h2><dl className="mt-4 space-y-4 text-sm"><div><dt className="font-extrabold text-muted">Assessment</dt><dd className="mt-1 text-ink">{reviewer.examType}</dd></div><div><dt className="font-extrabold text-muted">Semester</dt><dd className="mt-1 text-ink">{reviewer.semester}</dd></div><div><dt className="font-extrabold text-muted">Last Updated</dt><dd className="mt-1 flex items-center gap-1 text-ink"><Clock3 className="h-4 w-4" /> {new Date(reviewer.updatedAt).toLocaleDateString()}</dd></div></dl></aside>
+        <aside className="h-fit rounded-soft border-2 border-stone bg-mint/40 p-5"><h2 className="font-display text-xl font-bold text-ink">Study Details</h2><dl className="mt-4 space-y-4 text-sm"><div><dt className="font-extrabold text-muted">Assessment</dt><dd className="mt-1 text-ink">{formatExamType(reviewer.examType)}</dd></div><div><dt className="font-extrabold text-muted">Semester</dt><dd className="mt-1 text-ink">{reviewer.semester}</dd></div><div><dt className="font-extrabold text-muted">Last Updated</dt><dd className="mt-1 flex items-center gap-1 text-ink"><Clock3 className="h-4 w-4" /> {new Date(reviewer.updatedAt).toLocaleDateString()}</dd></div></dl></aside>
       </div>
     </PageContainer>
   )
