@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import axios from 'axios'
-import { ArrowLeft, BookOpen, FileUp, Globe2, LockKeyhole, RefreshCcw, UsersRound } from 'lucide-react'
+import { BookOpen, FileUp, Globe2, LockKeyhole, RefreshCcw, UsersRound } from 'lucide-react'
 
 import ErrorAlert from '../components/common/ErrorAlert'
 import { getApiErrorMessage } from '../utils/apiError'
@@ -176,10 +176,6 @@ const Create = () => {
 
   return (
     <div className="mx-auto max-w-4xl pb-6">
-      <Link to="/" className="mb-3 inline-flex items-center gap-2 text-sm font-extrabold text-muted hover:text-ink">
-        <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back to desk
-      </Link>
-
       <div className="mb-5 flex items-start gap-4">
         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-soft border-2 border-stone bg-mint text-ink">
           <BookOpen className="h-6 w-6" aria-hidden="true" />
