@@ -3,11 +3,13 @@ import axios from 'axios'
 import { UserCheck, UserPlus } from 'lucide-react'
 
 import { useAuth } from '../../contexts/AuthContext'
+import { useToast } from '../../contexts/ToastContext'
 import ErrorAlert from '../common/ErrorAlert'
 import { getApiErrorMessage } from '../../utils/apiError'
 
 const FollowButton = ({ userId, initialFollowing = false, initialFollowerCount = 0, onToggle }) => {
   const { user, isAuthenticated } = useAuth()
+  const toast = useToast()
   const [following, setFollowing] = useState(initialFollowing)
   const [, setFollowerCount] = useState(initialFollowerCount)
   const [loading, setLoading] = useState(false)
@@ -50,9 +52,13 @@ const FollowButton = ({ userId, initialFollowing = false, initialFollowerCount =
       setFollowing(response.data.following)
       setFollowerCount(response.data.followerCount)
       onToggle?.(response.data.following, response.data.followerCount)
+      if (response.data.following) toast.success('Following')
+      else toast.info('Unfollowed')
     } catch (error) {
       console.error('Failed to toggle follow:', error)
-      setError(getApiErrorMessage(error, 'Unable to update follow status.'))
+      const message = getApiErrorMessage(error, 'Unable to update follow status.')
+      setError(message)
+      toast.error(message)
     } finally {
       setLoading(false)
     }

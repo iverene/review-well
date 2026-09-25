@@ -6,6 +6,7 @@ import { BookOpen, FileUp, Globe2, LockKeyhole, RefreshCcw, UsersRound } from 'l
 import ErrorAlert from '../components/common/ErrorAlert'
 import { getApiErrorMessage } from '../utils/apiError'
 import { useAuth } from '../contexts/AuthContext'
+import { useToast } from '../contexts/ToastContext'
 
 // Kawaii tokens (spec): Cream #FFF7E8 Cocoa #604A3A Blush #F6C6D2 Powder #C9E6F2 Mint #CDE8D2 Butter #F9E4A8 Berry #C96A83
 const MAX_FILE_BYTES = 25 * 1024 * 1024
@@ -32,6 +33,7 @@ const Create = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const { isGuest } = useAuth()
+  const toast = useToast()
   const editReviewerId = searchParams.get('edit')
 
   const [saving, setSaving] = useState(false)
@@ -148,10 +150,13 @@ const Create = () => {
           payload.append('file', sourceFile)
           await axios.put(`/api/reviewer-files/${editReviewerId}`, payload, { withCredentials: true })
         }
+        toast.success('Reviewer Updated')
         navigate(`/reviewer/${editReviewerId}`)
       } catch (saveError) {
         console.error('Failed to update reviewer:', saveError)
-        setError(getApiErrorMessage(saveError, 'Unable to save your reviewer. Please try again.'))
+        const message = getApiErrorMessage(saveError, 'Unable to save your reviewer. Please try again.')
+        setError(message)
+        toast.error(message)
       } finally {
         setSaving(false)
       }
@@ -170,6 +175,7 @@ const Create = () => {
       const response = await axios.post('/api/reviewers', { ...formData }, { withCredentials: true })
       reviewerId = response.data.reviewer.id
       await uploadSourceFile(reviewerId, sourceFile)
+      toast.success('Reviewer Created')
       navigate(`/reviewer/${reviewerId}`)
     } catch (createError) {
       console.error('Failed to create reviewer:', createError)
@@ -183,8 +189,10 @@ const Create = () => {
           console.error('Failed to roll back orphan reviewer:', rollbackError)
         }
         setError(getApiErrorMessage(createError, 'File upload failed, so your reviewer was not created. Please try again! 💌'))
+        toast.error('Reviewer Not Created')
       } else {
         setError(getApiErrorMessage(createError, 'Unable to create your reviewer. Please try again.'))
+        toast.error('Reviewer Not Created')
       }
     } finally {
       setSaving(false)

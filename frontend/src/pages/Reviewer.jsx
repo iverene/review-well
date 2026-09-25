@@ -26,6 +26,7 @@ import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
 import { formatExamType } from '../utils/examType'
 import { purgeRecentReviewer } from '../utils/recentReviewers'
+import { useToast } from '../contexts/ToastContext'
 import { ReviewerSkeleton } from '../components/common/Skeleton'
 
 const recentReviewersKey = (userId) => `review-well-recent-reviewers:${userId}`
@@ -49,6 +50,7 @@ const Reviewer = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user, isAuthenticated } = useAuth()
+  const toast = useToast()
   const [reviewer, setReviewer] = useState(null)
   const [cards, setCards] = useState([])
   const [loading, setLoading] = useState(true)
@@ -109,9 +111,12 @@ const Reviewer = () => {
       const payload = visibility === 'private' ? { visibility } : { visibility, isDraft: false }
       const response = await axios.put(`/api/reviewers/${id}`, payload, { withCredentials: true })
       setReviewer(response.data?.reviewer || { ...reviewer, ...payload })
+      toast.success('Visibility Updated')
     } catch (saveError) {
       console.error('Failed to update visibility:', saveError)
-      setError(getApiErrorMessage(saveError, 'Unable to update visibility.'))
+      const message = getApiErrorMessage(saveError, 'Unable to update visibility.')
+      setError(message)
+      toast.error(message)
     } finally {
       setVisSaving(false)
     }
@@ -125,10 +130,13 @@ const Reviewer = () => {
     try {
       await axios.delete(`/api/reviewers/${id}`, { withCredentials: true })
       purgeRecentReviewer(id)
+      toast.success('Reviewer Deleted')
       navigate('/reviewer/my')
     } catch (deleteError) {
       console.error('Failed to delete reviewer:', deleteError)
-      setError(getApiErrorMessage(deleteError, 'Unable to delete this reviewer.'))
+      const message = getApiErrorMessage(deleteError, 'Unable to delete this reviewer.')
+      setError(message)
+      toast.error(message)
     } finally {
       setDeleting(false)
     }

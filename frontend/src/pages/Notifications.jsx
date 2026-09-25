@@ -6,6 +6,7 @@ import ErrorAlert from '../components/common/ErrorAlert'
 import PageHeader from '../components/common/PageHeader'
 import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
+import { useToast } from '../contexts/ToastContext'
 import { NotificationsSkeleton } from '../components/common/Skeleton'
 
 const Notifications = () => {
@@ -14,14 +15,17 @@ const Notifications = () => {
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
   const [error, setError] = useState(null)
+  const toast = useToast()
 
   useEffect(() => {
     fetchNotifications()
   }, [page])
 
   // Live delivery without page restarts: silently merge newly arrived
-  // notifications to the top of the list, on an interval and on focus.
+  // notifications to the top of the list, on an interval and on focus —
+  // and toast once per batch so arrivals surface above the fold.
   useEffect(() => {
+    let firstRun = true
     const fetchLatest = async () => {
       try {
         const response = await axios.get('/api/social/notifications', {
@@ -29,10 +33,23 @@ const Notifications = () => {
           withCredentials: true,
         })
         const fresh = response.data.notifications || []
+        if (firstRun) {
+          firstRun = false
+          setNotifications((prev) => {
+            const known = new Set(prev.map((n) => n.id))
+            const unseen = fresh.filter((n) => !known.has(n.id))
+            return unseen.length > 0 ? [...unseen, ...prev] : prev
+          })
+          return
+        }
         setNotifications((prev) => {
           const known = new Set(prev.map((n) => n.id))
           const unseen = fresh.filter((n) => !known.has(n.id))
-          return unseen.length > 0 ? [...unseen, ...prev] : prev
+          if (unseen.length > 0) {
+            toast.info(unseen.length === 1 ? 'You Have 1 New Notification' : `You Have ${unseen.length} New Notifications`)
+            return [...unseen, ...prev]
+          }
+          return prev
         })
       } catch {
         // Keep the stale list; the badge poll still surfaces the count
@@ -44,7 +61,7 @@ const Notifications = () => {
       clearInterval(interval)
       window.removeEventListener('focus', fetchLatest)
     }
-  }, [])
+  }, [toast])
 
   const fetchNotifications = async () => {
     try {
@@ -114,7 +131,7 @@ const Notifications = () => {
               onClick={handleMarkAllRead}
               className="shrink-0 text-sm text-muted hover:text-ink"
             >
-              Mark all as read
+              Mark All as Read
             </button>
           )}
         </div>
@@ -158,7 +175,7 @@ const Notifications = () => {
               onClick={() => setPage((p) => p + 1)}
               className="rounded border border-stone px-4 py-2 text-sm text-ink hover:bg-stone"
             >
-              Load more
+              Load More
             </button>
           </div>
         )}
