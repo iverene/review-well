@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { Camera, Loader2 } from 'lucide-react'
 
 import { YEAR_LEVELS } from '../../utils/profile'
@@ -18,6 +18,18 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
   const [uploading, setUploading] = useState(false)
   const [avatarError, setAvatarError] = useState(null)
   const fileInputRef = useRef(null)
+
+  // Resync when the parent profile refreshes (e.g. after an avatar upload),
+  // so a later Save never overwrites fresh server state with stale fields.
+  useEffect(() => {
+    setFormData({
+      displayName: profile.displayName || '',
+      school: profile.school || '',
+      program: profile.program || '',
+      major: profile.major || '',
+      yearLevel: profile.yearLevel || '',
+    })
+  }, [profile])
 
   const handleChange = (e) => {
     const { name, value } = e.target

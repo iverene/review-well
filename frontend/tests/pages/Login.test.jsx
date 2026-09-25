@@ -77,6 +77,25 @@ describe('Login', () => {
     expect(screen.getByText('Study hub')).toBeTruthy()
   })
 
+  it('accepts a string state.from preserving search params', () => {
+    useAuth.mockReturnValue({
+      isAuthenticated: true,
+      isGuest: false,
+      loading: false,
+      continueAsGuest: vi.fn(),
+    })
+    render(
+      <MemoryRouter initialEntries={[{ pathname: '/login', state: { from: '/reviewer/public?course=mine' } }]}>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/reviewer/public" element={<div>Public list</div>} />
+          <Route path="/" element={<div>Home page</div>} />
+        </Routes>
+      </MemoryRouter>
+    )
+    expect(screen.getByText('Public list')).toBeTruthy()
+  })
+
   it('ignores an off-site returnTo', () => {
     useAuth.mockReturnValue({
       isAuthenticated: true,

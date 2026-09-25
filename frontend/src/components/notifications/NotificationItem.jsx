@@ -50,15 +50,15 @@ const NotificationItem = ({ notification, onMarkRead }) => {
     <>
       {/* Actor Avatar */}
       <div className="flex-shrink-0">
-        {actor.avatarUrl ? (
+        {actor?.avatarUrl ? (
           <img
             src={actor.avatarUrl}
             alt={actor.displayName}
-            className="h-12 w-12 border-2 rounded-full border-stone object-cover"
+            className="h-10 w-10 border-2 border-stone object-cover"
           />
         ) : (
           <div className="flex h-10 w-10 items-center justify-center border-2 border-stone bg-powder font-display text-lg font-bold text-ink">
-            {actor.displayName?.charAt(0).toUpperCase() || 'U'}
+            {actor?.displayName?.charAt(0).toUpperCase() || 'U'}
           </div>
         )}
       </div>
@@ -71,7 +71,7 @@ const NotificationItem = ({ notification, onMarkRead }) => {
               {actor.displayName}
             </Link>
           ) : (
-            <span className="font-extrabold">{actor.displayName}</span>
+            <span className="font-extrabold">{actor?.displayName || 'Someone'}</span>
           )}{' '}
           {getActionText()}
         </p>
@@ -128,7 +128,7 @@ const NotificationItem = ({ notification, onMarkRead }) => {
       onClick={handleRowClick}
       role="button"
       tabIndex={0}
-      aria-label={`${actor.displayName} ${getActionText()}`}
+      aria-label={`${actor?.displayName || 'Someone'} ${getActionText()}`}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') handleRowClick()
       }}

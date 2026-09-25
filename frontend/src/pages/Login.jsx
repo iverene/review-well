@@ -34,9 +34,13 @@ const Login = () => {
   // internal paths so a crafted link can't bounce users off-site.
   const searchParams = new URLSearchParams(location.search)
   const returnTo = searchParams.get('returnTo')
+  // ProtectedRoute passes `from` as a string path (pathname + search +
+  // hash); older entries may hold a location object — accept both.
+  const stateFrom = location.state?.from
+  const statePath = typeof stateFrom === 'string' ? stateFrom : stateFrom?.pathname
   const from = (returnTo?.startsWith('/') && !returnTo.startsWith('//'))
     ? returnTo
-    : location.state?.from?.pathname || '/'
+    : statePath || '/'
 
   useEffect(() => {
     // Authenticated users bounce straight through. Guests always see this

@@ -18,23 +18,27 @@ const FollowButton = ({ userId, initialFollowing = false, initialFollowerCount =
   const isOwnProfile = user?.id === userId
 
   useEffect(() => {
-    if (isAuthenticated && !isOwnProfile) {
-      fetchFollowStatus()
+    if (!isAuthenticated || isOwnProfile) return
+    let cancelled = false
+    const load = async () => {
+      try {
+        const response = await axios.get(`/api/social/users/${userId}/follow`, {
+          withCredentials: true,
+        })
+        if (cancelled) return
+        setFollowing(response.data.following)
+        setFollowerCount(response.data.followerCount)
+      } catch (error) {
+        if (cancelled) return
+        console.error('Failed to fetch follow status:', error)
+        setError(getApiErrorMessage(error, 'Unable to load follow status.'))
+      }
+    }
+    load()
+    return () => {
+      cancelled = true
     }
   }, [userId, isAuthenticated, isOwnProfile])
-
-  const fetchFollowStatus = async () => {
-    try {
-      const response = await axios.get(`/api/social/users/${userId}/follow`, {
-        withCredentials: true,
-      })
-      setFollowing(response.data.following)
-      setFollowerCount(response.data.followerCount)
-    } catch (error) {
-      console.error('Failed to fetch follow status:', error)
-      setError(getApiErrorMessage(error, 'Unable to load follow status.'))
-    }
-  }
 
   const handleFollow = async () => {
     if (!isAuthenticated || loading || isOwnProfile) return
