@@ -51,10 +51,10 @@ const NotificationItem = ({ notification, onMarkRead }) => {
           <img
             src={actor.avatarUrl}
             alt={actor.displayName}
-            className="h-10 w-10 rounded-full"
+            className="h-10 w-10 rounded-full border-2 border-stone object-cover"
           />
         ) : (
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-ink text-paper">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-stone bg-powder font-display text-lg font-bold text-ink">
             {actor.displayName?.charAt(0).toUpperCase() || 'U'}
           </div>
         )}
@@ -63,28 +63,29 @@ const NotificationItem = ({ notification, onMarkRead }) => {
       {/* Content */}
       <div className="flex-1 min-w-0">
         <p className="text-sm text-ink">
-          <span className="font-medium">{actor.displayName}</span>{' '}
+          <span className="font-extrabold">{actor.displayName}</span>{' '}
           {getActionText()}
         </p>
         {reviewer && (
-          <span className="mt-1 block text-sm text-muted truncate">
+          <span className="mt-1.5 inline-block max-w-full truncate rounded-full bg-butter/60 px-2.5 py-0.5 text-xs font-bold text-ink">
             {reviewer.title}
           </span>
         )}
-        <p className="mt-1 text-xs text-muted">{getTimeAgo()}</p>
+        <p className="mt-1.5 text-xs font-semibold text-muted">{getTimeAgo()}</p>
       </div>
 
       {/* Unread indicator */}
       {!isRead && (
-        <div className="flex-shrink-0">
-          <div className="h-2 w-2 rounded-full bg-ink" />
+        <div className="flex shrink-0 items-center gap-1.5">
+          <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-widest text-paper">New</span>
+          <span className="h-2 w-2 rounded-full bg-accent" aria-hidden="true" />
         </div>
       )}
     </>
   )
 
-  const className = `flex items-start gap-4 border-b border-stone p-4 transition-colors hover:bg-stone/30 ${
-    !isRead ? 'bg-stone/10' : ''
+  const className = `flex items-start gap-3 rounded-soft border-2 p-3 transition-colors hover:-translate-y-0.5 ${
+    !isRead ? 'border-accent/50 bg-blush/30 club-shadow' : 'border-stone bg-paper hover:bg-stone/20'
   }`
 
   if (!target) {
