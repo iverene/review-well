@@ -58,7 +58,7 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
     if (pagesEl) pagesEl.innerHTML = ''
 
     pdfjsLib
-      .getDocument(fileUrl)
+      .getDocument({ url: fileUrl })
       .promise.then(async (pdf) => {
         if (controller.signal.aborted) return
         docRef.current = pdf

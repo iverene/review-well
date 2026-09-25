@@ -31,7 +31,7 @@ describe('PdfViewer', () => {
 
   it('loads the document from the file URL and shows the page count', async () => {
     render(<PdfViewer fileUrl="https://storage.example.com/v1.pdf" title="Guide" />)
-    expect(pdfjsLib.getDocument).toHaveBeenCalledWith('https://storage.example.com/v1.pdf')
+    expect(pdfjsLib.getDocument).toHaveBeenCalledWith({ url: 'https://storage.example.com/v1.pdf' })
     expect(await screen.findByTestId('study-doc-count')).toHaveTextContent('1 / 2')
   })
 
