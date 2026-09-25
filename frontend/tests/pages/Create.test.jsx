@@ -37,7 +37,11 @@ describe('Create file dropzone', () => {
     renderCreate()
     const input = document.getElementById('sourceFile')
     fireEvent.drop(input, { dataTransfer: { files: [pdfFile()] } })
-    expect(screen.getByText(/slides\.pdf.*looks perfect/)).toBeInTheDocument()
+    // Filename and size render as adjacent text nodes — match the whole line.
+    expect(
+      screen.getByText((_, el) => el?.tagName === 'P' && el.textContent.includes('slides.pdf'))
+    ).toBeInTheDocument()
+    expect(screen.getByText(/looks perfect|MB\)/)).toBeInTheDocument()
   })
 
   it('rejects a dropped non-PDF/PPTX file with an alert', () => {

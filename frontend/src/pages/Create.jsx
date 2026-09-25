@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import axios from 'axios'
 import { BookOpen, FileUp, Globe2, LockKeyhole, RefreshCcw, UsersRound } from 'lucide-react'
@@ -50,6 +50,7 @@ const Create = () => {
   })
   const [sourceFile, setSourceFile] = useState(null)
   const [dragging, setDragging] = useState(false)
+  const fileInputRef = useRef(null)
 
   // Edit mode for your own reviewer (?edit=<id>): metadata form + replace-file.
   useEffect(() => {
@@ -93,13 +94,24 @@ const Create = () => {
 
   const handleFileChange = (event) => {
     pickFile(event.target.files?.[0] || null)
-    event.target.value = ''
   }
 
   const handleDrop = (event) => {
     event.preventDefault()
     setDragging(false)
-    pickFile(event.dataTransfer.files?.[0] || null)
+    const dropped = event.dataTransfer.files?.[0] || null
+    // Mirror the dropped file into the native input so it stops showing
+    // "No file chosen" — a drop never populates the input on its own.
+    // (Guarded: test doubles pass plain arrays, real browsers pass FileList.)
+    if (
+      fileInputRef.current &&
+      event.dataTransfer.files?.length &&
+      typeof FileList !== 'undefined' &&
+      event.dataTransfer.files instanceof FileList
+    ) {
+      fileInputRef.current.files = event.dataTransfer.files
+    }
+    pickFile(dropped)
   }
 
   const uploadSourceFile = async (reviewerId, file) => {
@@ -193,8 +205,7 @@ const Create = () => {
         </div>
         <div>
           <p className="font-mono text-xs font-bold uppercase tracking-widest text-accent">New study guide</p>
-          <h1 className="mt-1 font-display text-3xl font-bold text-ink md:text-4xl">{editReviewerId ? 'Edit Your Reviewer' : 'Create a Reviewer'}</h1>
-          <p className="mt-2 text-muted">{editReviewerId ? 'Tweak the details or swap in a fresh file.' : 'Upload your PDF or PPTX now — AI decks and study modes build on it next.'}</p>
+          <h1 className="mt-1 font-display text-3xl font-bold text-ink md:text-4xl">{editReviewerId ? 'Edit Your Reviewer' : 'Upload a Reviewer'}</h1>
         </div>
       </div>
 
@@ -248,6 +259,7 @@ const Create = () => {
               </label>
               <input
                 id="sourceFile"
+                ref={fileInputRef}
                 type="file"
                 accept=".pdf,.pptx"
                 onChange={handleFileChange}
@@ -257,7 +269,7 @@ const Create = () => {
               <p className="mt-2 text-xs text-muted">PDF or PPTX only, max 25 MB. {editReviewerId ? 'Swapping files may stale the AI deck.' : 'Drag and drop your file here, or browse to choose one.'}</p>
               {sourceFile && !fileError && (
                 <p className="mt-2 rounded-soft bg-[#CDE8D2] px-3 py-2 text-xs font-bold text-[#604A3A]">
-                  {sourceFile.name} ({(sourceFile.size / 1024 / 1024).toFixed(2)} MB) looks perfect! ✨
+                  {sourceFile.name} ({(sourceFile.size / 1024 / 1024).toFixed(2)} MB)
                 </p>
               )}
               {fileError && (
