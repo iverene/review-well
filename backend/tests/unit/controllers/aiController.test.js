@@ -225,6 +225,40 @@ describe('AI Controller', () => {
       )
     })
 
+    it('should keep the existing deck and quota when confirmed regen returns no usable cards', async () => {
+      const req = createMockRequest({
+        user: { id: 'user-123' },
+        file: { mimetype: 'application/pdf', buffer: Buffer.from('test'), originalname: 'notes.pdf' },
+        body: { reviewerId: 'reviewer-1', confirm: true },
+      })
+      const res = createMockResponse()
+
+      reviewerModel.findById.mockResolvedValue({ id: 'reviewer-1', authorId: 'user-123' })
+      flashcardModel.findByReviewer.mockResolvedValue([{ id: 'card-1', front: 'Old', back: 'Old def' }])
+      aiQuotaModel.checkQuota.mockResolvedValue(true)
+      openaiService.extractDeckAndPrompts.mockResolvedValue({
+        cards: [],
+        prompts: [],
+        trimmed: false,
+        partial: false,
+      })
+      aiQuotaModel.getRemainingQuota.mockResolvedValue(3)
+
+      await extractFromUpload(req, res)
+
+      expect(res.status).not.toHaveBeenCalled()
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          saved: false,
+          notice: expect.stringContaining('existing deck was kept'),
+        })
+      )
+      expect(flashcardModel.removeAllByReviewer).not.toHaveBeenCalled()
+      expect(flashcardModel.createMany).not.toHaveBeenCalled()
+      expect(reviewerModel.update).not.toHaveBeenCalled()
+      expect(aiQuotaModel.incrementUsage).not.toHaveBeenCalled()
+    })
+
     it('should return 502 without consuming quota on LLM timeout', async () => {
       const req = createMockRequest({
         user: { id: 'user-123' },
@@ -295,6 +329,31 @@ describe('AI Controller', () => {
       expect(aiQuotaModel.incrementUsage).toHaveBeenCalledWith('user-123')
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({ partial: true, notice: expect.any(String) })
+      )
+    })
+
+    it('should include a notice when the deck is trimmed', async () => {
+      const req = createMockRequest({
+        user: { id: 'user-123' },
+        file: { mimetype: 'application/pdf', buffer: Buffer.from('test'), originalname: 'notes.pdf' },
+        body: {},
+      })
+      const res = createMockResponse()
+
+      aiQuotaModel.checkQuota.mockResolvedValue(true)
+      openaiService.extractDeckAndPrompts.mockResolvedValue({
+        cards: [{ front: 'Term', back: 'Definition' }],
+        prompts: ['Prompt'],
+        trimmed: true,
+        partial: false,
+      })
+      aiQuotaModel.incrementUsage.mockResolvedValue({})
+      aiQuotaModel.getRemainingQuota.mockResolvedValue(2)
+
+      await extractFromUpload(req, res)
+
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ trimmed: true, notice: 'Deck trimmed to 40 cards and 5 prompts.' })
       )
     })
   })

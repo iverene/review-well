@@ -82,6 +82,21 @@ const extractFromUpload = async (req, res) => {
 
     const { cards, prompts, trimmed, partial } = deck
 
+    // Empty LLM result: keep the existing deck, metadata, and quota untouched.
+    if (!Array.isArray(cards) || cards.length === 0) {
+      const remaining = await getRemainingQuota(req.user.id, DECK_QUOTA_LIMIT)
+      return res.json({
+        cards: [],
+        prompts: prompts ?? [],
+        saved: false,
+        remaining,
+        limit: DECK_QUOTA_LIMIT,
+        trimmed: false,
+        partial: false,
+        notice: 'The AI returned no usable cards — your existing deck was kept. Please try again.',
+      })
+    }
+
     // Increment quota usage (success only)
     await incrementUsage(req.user.id)
 
@@ -110,6 +125,12 @@ const extractFromUpload = async (req, res) => {
 
     const remaining = await getRemainingQuota(req.user.id, DECK_QUOTA_LIMIT)
 
+    const trimmedNotice = trimmed ? 'Deck trimmed to 40 cards and 5 prompts.' : null
+    const partialNotice = partial
+      ? 'Some AI output was skipped. Review the deck and add missing cards manually.'
+      : null
+    const notice = [partialNotice, trimmedNotice].filter(Boolean).join(' ')
+
     res.json({
       cards,
       prompts,
@@ -117,12 +138,8 @@ const extractFromUpload = async (req, res) => {
       remaining,
       limit: DECK_QUOTA_LIMIT,
       trimmed,
-      ...(partial
-        ? {
-          partial: true,
-          notice: 'Some AI output was skipped. Review the deck and add missing cards manually.',
-        }
-        : { partial: false }),
+      partial: Boolean(partial),
+      ...(notice ? { notice } : {}),
     })
   } catch (error) {
     console.error('AI deck extraction error:', error)

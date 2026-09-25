@@ -16,7 +16,7 @@ const getQuota = async (userId) => {
   return quota || { generationsUsed: 0, windowResetAt: windowStart }
 }
 
-const checkQuota = async (userId, limit = 50) => {
+const checkQuota = async (userId, limit = 3) => {
   const quota = await getQuota(userId)
   return quota.generationsUsed < limit
 }
@@ -50,7 +50,7 @@ const incrementUsage = async (userId) => {
   }
 }
 
-const getRemainingQuota = async (userId, limit = 50) => {
+const getRemainingQuota = async (userId, limit = 3) => {
   const quota = await getQuota(userId)
   return Math.max(0, limit - quota.generationsUsed)
 }
