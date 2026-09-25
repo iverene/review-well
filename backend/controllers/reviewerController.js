@@ -8,6 +8,10 @@ import { DECK_QUOTA_LIMIT } from '../constants/quotas.js'
 import { createStorageAdapter } from '../services/adapters/storage.js'
 import { del, delPrefix } from '../utils/cache.js'
 
+// Signed-URL lifetime for public reviewer files (private bucket, so even
+// public files go through signed URLs). Unlisted/private use 60s inline.
+const PUBLIC_FILE_URL_TTL_SECONDS = 7 * 24 * 60 * 60
+
 const isVisibleToFollowers = (reviewer) => reviewer.visibility === 'public' && reviewer.isDraft === false
 
 // Fan out a "friend published" notification to every follower.
@@ -121,22 +125,22 @@ const getReviewerById = async (req, res) => {
     }
 
     // Study-hub enrichment (strictly additive — existing fields untouched):
-    // fileUrl honors visibility (public → public URL; unlisted/private →
-    // 60s signed URL; private non-owner already 403'd above, before any URL).
+    // fileUrl honors visibility. The bucket is private, so every visibility
+    // level is served via signed URLs: public reviewers get a long-lived
+    // (7-day) signed URL, unlisted/private get a 60s signed URL; private
+    // non-owner already 403'd above, before any URL.
+    // No public-URL fallback anywhere by design: a long-lived public URL
+    // would leak unlisted/private files, so without signed-URL support the
+    // file stays unserved (fileUrl: null, which the hub already handles).
     let fileUrl = null
     const file = await reviewerFileModel.findByReviewerId(id)
     if (file) {
       const storage = createStorageAdapter()
-      if (reviewer.visibility === 'public') {
-        const { data } = storage.getPublicUrl(file.storagePath)
-        fileUrl = data?.publicUrl || null
-      } else if (typeof storage.getSignedUrl === 'function') {
-        const { data } = await storage.getSignedUrl(file.storagePath, 60)
+      if (typeof storage.getSignedUrl === 'function') {
+        const ttl = reviewer.visibility === 'public' ? PUBLIC_FILE_URL_TTL_SECONDS : 60
+        const { data } = await storage.getSignedUrl(file.storagePath, ttl)
         fileUrl = data?.signedUrl || null
       }
-      // No public-URL fallback here by design: a long-lived public URL would
-      // leak unlisted/private files, so without signed-URL support the file
-      // stays unserved (fileUrl: null, which the hub already handles).
     }
 
     const cards = await flashcardModel.findByReviewer(id)

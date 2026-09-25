@@ -148,7 +148,7 @@ describe('Guest study-hub guards (Task 7)', () => {
     expect(response.body.reviewer?.fileUrl).toBeUndefined()
   })
 
-  it('serves a public reviewer file URL on the additive fileUrl field', async () => {
+  it('serves a long-lived signed URL (never a public URL) for public reviewers', async () => {
     reviewerModel.findById.mockResolvedValue(publicReviewer)
     reviewerFileModel.findByReviewerId.mockResolvedValue(storedFile)
     flashcardModel.findByReviewer.mockResolvedValue([])
@@ -158,7 +158,11 @@ describe('Guest study-hub guards (Task 7)', () => {
 
     expect(response.status).toBe(200)
     expect(response.body.reviewer.title).toBe('Photosynthesis')
-    expect(response.body.reviewer.fileUrl).toBe('https://storage.example.com/v1.pdf')
+    // Private bucket: even public files go through signed URLs (7-day TTL).
+    expect(response.body.reviewer.fileUrl).toBe('https://storage.example.com/signed/v1.pdf?token=abc')
+    const storage = createStorageAdapter()
+    expect(storage.getSignedUrl).toHaveBeenCalledWith(storedFile.storagePath, 7 * 24 * 60 * 60)
+    expect(storage.getPublicUrl).not.toHaveBeenCalled()
     expect(response.body.reviewer.cards).toEqual([])
     expect(response.body.reviewer.prompts).toEqual(['Explain the light reactions'])
     // Guests hold no quota — taste-only, zero writes.
