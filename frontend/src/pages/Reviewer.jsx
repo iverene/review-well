@@ -41,7 +41,6 @@ const Reviewer = () => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [visSaving, setVisSaving] = useState(false)
-  const [visError, setVisError] = useState(null)
   const [shareOpen, setShareOpen] = useState(false)
   const [copied, setCopied] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -90,7 +89,6 @@ const Reviewer = () => {
   const handleVisibilityChange = async (visibility) => {
     if (visibility === reviewer.visibility || visSaving) return
     setVisSaving(true)
-    setVisError(null)
     try {
       // Sharing publishes the reviewer so it can actually appear publicly
       const payload = visibility === 'private' ? { visibility } : { visibility, isDraft: false }
@@ -98,7 +96,7 @@ const Reviewer = () => {
       setReviewer(response.data?.reviewer || { ...reviewer, ...payload })
     } catch (saveError) {
       console.error('Failed to update visibility:', saveError)
-      setVisError(getApiErrorMessage(saveError, 'Unable to update visibility.'))
+      setError(getApiErrorMessage(saveError, 'Unable to update visibility.'))
     } finally {
       setVisSaving(false)
     }
@@ -329,9 +327,9 @@ const Reviewer = () => {
         </>
       )}
 
-      <header className="rounded-soft border-2 border-stone bg-paper p-4 club-shadow sm:p-8">
+      <header className="py-2">
         <div className="flex flex-wrap items-start justify-between gap-5">
-          <div><h1 className="mt-3 font-display text-3xl font-bold text-ink md:text-4xl">{reviewer.title}</h1><p className="mt-3 text-muted">{reviewer.courseDescription}</p></div>
+          <div><h1 className="font-display text-3xl font-bold text-ink md:text-4xl">{reviewer.title}</h1><p className="mt-3 text-muted">{reviewer.courseDescription}</p></div>
           {isOwner ? (
             <div>
               <div className="flex items-center gap-1 rounded-full border-2 border-stone bg-paper p-1" role="radiogroup" aria-label="Visibility">
@@ -350,15 +348,12 @@ const Reviewer = () => {
                   </button>
                 ))}
               </div>
-              <p className="mt-1 text-right text-xs font-semibold text-muted" aria-live="polite">
-                {visSaving ? 'Saving…' : visError ? visError : 'Visibility saved'}
-              </p>
             </div>
           ) : (
             <div className="flex items-center gap-2 rounded-full bg-powder px-3 py-2 text-xs font-extrabold text-ink"><LockKeyhole className="h-4 w-4" /> {reviewer.visibility}</div>
           )}
         </div>
-        <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 border-t-2 border-stone pt-4 text-sm font-semibold text-muted"><span>{reviewer.courseCode}</span><span>{reviewer.semester}</span><span>{formatExamType(reviewer.examType)}</span>{reviewer.user?.displayName && <span>By {reviewer.user.displayName}</span>}</div>
+        <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold text-muted"><span>{reviewer.courseCode}</span><span>{reviewer.semester}</span><span>{formatExamType(reviewer.examType)}</span>{reviewer.user?.displayName && <span>By {reviewer.user.displayName}</span>}</div>
       </header>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_220px]">
