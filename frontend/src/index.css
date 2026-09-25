@@ -108,6 +108,25 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   background: #8B7768;
 }
 
+/* Rendered PDF pages keep their aspect and center instead of stretching. */
+.study-doc-page {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Fullscreen viewer: fill the screen, scroll area takes the freed space. */
+.study-source-pdf:fullscreen {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0;
+}
+.study-source-pdf:fullscreen .study-doc-scroll {
+  height: auto;
+  flex: 1;
+  min-height: 0;
+}
+
 /* Gentle entrance used by the post-sign-in loading moment */
 @keyframes desk-fade {
   from { opacity: 0; transform: translateY(6px); }

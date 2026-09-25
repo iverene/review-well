@@ -1,36 +1,73 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import * as pdfjsLib from 'pdfjs-dist'
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
-import { ChevronLeft, ChevronRight, Maximize, Minimize } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Maximize, Minimize, Minus, Plus } from 'lucide-react'
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfWorkerUrl
 
-// PDF viewer: renders every page to canvas inside a responsive scroll
-// container (custom .study-doc-scroll scrollbar), with prev/next navigation,
-// a "current / total" count, and fullscreen toggle. All browser APIs are
-// guarded so server-side rendering and jsdom never crash.
+const ZOOM_STEP = 25
+const ZOOM_MIN = 50
+const ZOOM_MAX = 300
+
+// Pure helper (exported for tests): given page top offsets (px, relative to
+// the scroll container) pick the page under a probe line partway down the
+// viewport. Scroll math — unlike IntersectionObserver thresholds — stays
+// correct even when a single page is taller than the container.
+export const currentPageFromTops = (tops, scrollTop, viewportHeight, probeRatio = 0.4) => {
+  if (tops.length === 0) return 1
+  const probe = scrollTop + viewportHeight * probeRatio
+  if (probe <= 0) return 1
+  let current = 1
+  tops.forEach((top, index) => {
+    if (top <= probe) current = index + 1
+  })
+  return current
+}
+
+// PDF viewer: every page rendered to canvas at a readable width (never
+// stretched full-bleed), inside a responsive scroll container with a custom
+// cocoa scrollbar. Toolbar has prev/next, a live "current / total" count
+// driven by scroll position, fullscreen toggle, and — in fullscreen only —
+// percent zoom controls.
 const PdfViewer = ({ fileUrl, title = 'Document' }) => {
   const scrollRef = useRef(null)
   const pagesRef = useRef([])
   const docRef = useRef(null)
+  const pageRef = useRef(1)
   const [numPages, setNumPages] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
+  const [zoomPct, setZoomPct] = useState(100)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [fullscreen, setFullscreen] = useState(false)
 
-  const renderAll = useCallback(async (pdf, signal) => {
+  pageRef.current = currentPage
+
+  const zoomRef = useRef(100)
+  zoomRef.current = zoomPct
+
+  const updateCurrentFromScroll = useCallback(() => {
     const container = scrollRef.current
-    if (!container) return
-    const containerWidth = container.clientWidth || 800
+    if (!container || pagesRef.current.length === 0) return
+    const tops = pagesRef.current.map((el) => el.offsetTop)
+    const next = currentPageFromTops(tops, container.scrollTop, container.clientHeight)
+    setCurrentPage((previous) => (previous === next ? previous : next))
+  }, [])
+
+  const renderAll = useCallback(async (pdf, signal, zoomFactor) => {
+    const container = scrollRef.current
+    const pagesEl = container?.querySelector('[data-testid="study-doc-pages"]')
+    if (!container || !pagesEl) return
+    pagesEl.innerHTML = ''
     pagesRef.current = []
+    const containerWidth = container.clientWidth || 800
     for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
       if (signal.aborted) return
       // eslint-disable-next-line no-await-in-loop
       const page = await pdf.getPage(pageNumber)
       if (signal.aborted) return
       const baseViewport = page.getViewport({ scale: 1 })
-      const scale = containerWidth / baseViewport.width
+      const scale = ((containerWidth * 0.92) / baseViewport.width) * zoomFactor
       const viewport = page.getViewport({ scale })
       const canvas = document.createElement('canvas')
       canvas.width = Math.floor(viewport.width)
@@ -42,8 +79,10 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
       if (signal.aborted) return
       const wrapper = document.createElement('div')
       wrapper.dataset.page = String(pageNumber)
+      wrapper.className = 'study-doc-page'
+      wrapper.style.width = `${Math.floor(viewport.width)}px`
       wrapper.appendChild(canvas)
-      container.querySelector('[data-testid="study-doc-pages"]').appendChild(wrapper)
+      pagesEl.appendChild(wrapper)
       pagesRef.current.push(wrapper)
     }
   }, [])
@@ -54,6 +93,7 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
     setError(null)
     setNumPages(0)
     setCurrentPage(1)
+    setZoomPct(100)
     const pagesEl = scrollRef.current?.querySelector('[data-testid="study-doc-pages"]')
     if (pagesEl) pagesEl.innerHTML = ''
 
@@ -63,8 +103,11 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
         if (controller.signal.aborted) return
         docRef.current = pdf
         setNumPages(pdf.numPages)
-        await renderAll(pdf, controller.signal)
-        if (!controller.signal.aborted) setLoading(false)
+        await renderAll(pdf, controller.signal, 1)
+        if (!controller.signal.aborted) {
+          setLoading(false)
+          updateCurrentFromScroll()
+        }
       })
       .catch((loadError) => {
         if (controller.signal.aborted) return
@@ -75,9 +118,7 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
 
     const onResize = () => {
       if (docRef.current && !controller.signal.aborted) {
-        const pagesElNow = scrollRef.current?.querySelector('[data-testid="study-doc-pages"]')
-        if (pagesElNow) pagesElNow.innerHTML = ''
-        renderAll(docRef.current, controller.signal)
+        renderAll(docRef.current, controller.signal, zoomRef.current / 100)
       }
     }
     let resizeTimer = null
@@ -93,33 +134,15 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
       docRef.current?.destroy?.()
       docRef.current = null
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fileUrl, renderAll])
 
-  // Track the page most visible in the scroll container.
   useEffect(() => {
-    if (typeof IntersectionObserver === 'undefined') return
     const container = scrollRef.current
-    if (!container || numPages === 0) return
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0]
-        if (visible?.target?.dataset?.page) {
-          setCurrentPage(Number(visible.target.dataset.page))
-        }
-      },
-      { root: container, threshold: [0.25, 0.5, 0.75] }
-    )
-    // Observe after a tick so freshly rendered pages are in the DOM.
-    const timer = setTimeout(() => {
-      pagesRef.current.forEach((el) => observer.observe(el))
-    }, 0)
-    return () => {
-      clearTimeout(timer)
-      observer.disconnect()
-    }
-  }, [numPages, loading])
+    if (!container) return
+    container.addEventListener('scroll', updateCurrentFromScroll, { passive: true })
+    return () => container.removeEventListener('scroll', updateCurrentFromScroll)
+  }, [updateCurrentFromScroll])
 
   useEffect(() => {
     const onFullscreenChange = () => {
@@ -135,6 +158,17 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
     pagesRef.current[clamped - 1]?.scrollIntoView?.({ behavior: 'smooth', block: 'start' })
   }
 
+  const changeZoom = (delta) => {
+    const next = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, zoomPct + delta))
+    if (next === zoomPct || !docRef.current) return
+    setZoomPct(next)
+    const controller = new AbortController()
+    renderAll(docRef.current, controller.signal, next / 100).then(() => {
+      const el = pagesRef.current[pageRef.current - 1]
+      el?.scrollIntoView?.({ block: 'start' })
+    })
+  }
+
   const toggleFullscreen = () => {
     const container = scrollRef.current?.closest('[data-testid="study-source-pdf"]')
     if (document.fullscreenElement) {
@@ -145,7 +179,7 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
   }
 
   return (
-    <div data-testid="study-source-pdf" className="overflow-hidden rounded-soft border-2 border-stone bg-paper">
+    <div data-testid="study-source-pdf" className="study-source-pdf overflow-hidden rounded-soft border-2 border-stone bg-paper">
       <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-stone bg-cream px-3 py-2">
         <div className="flex items-center gap-1">
           <button
@@ -170,17 +204,44 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
-        <button
-          type="button"
-          onClick={toggleFullscreen}
-          aria-label={fullscreen ? 'Exit fullscreen' : 'View fullscreen'}
-          className="rounded-soft border-2 border-transparent p-1.5 text-ink hover:bg-stone/40"
-        >
-          {fullscreen ? <Minimize className="h-4 w-4" aria-hidden="true" /> : <Maximize className="h-4 w-4" aria-hidden="true" />}
-        </button>
+        <div className="flex items-center gap-1">
+          {fullscreen && (
+            <>
+              <button
+                type="button"
+                onClick={() => changeZoom(-ZOOM_STEP)}
+                disabled={zoomPct <= ZOOM_MIN}
+                aria-label="Zoom out"
+                className="rounded-soft border-2 border-transparent p-1.5 text-ink hover:bg-stone/40 disabled:opacity-40"
+              >
+                <Minus className="h-4 w-4" aria-hidden="true" />
+              </button>
+              <p data-testid="study-doc-zoom" aria-label="Zoom level" className="min-w-14 px-1 text-center font-mono text-xs font-bold text-ink">
+                {zoomPct}%
+              </p>
+              <button
+                type="button"
+                onClick={() => changeZoom(ZOOM_STEP)}
+                disabled={zoomPct >= ZOOM_MAX}
+                aria-label="Zoom in"
+                className="rounded-soft border-2 border-transparent p-1.5 text-ink hover:bg-stone/40 disabled:opacity-40"
+              >
+                <Plus className="h-4 w-4" aria-hidden="true" />
+              </button>
+            </>
+          )}
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            aria-label={fullscreen ? 'Exit fullscreen' : 'View fullscreen'}
+            className="rounded-soft border-2 border-transparent p-1.5 text-ink hover:bg-stone/40"
+          >
+            {fullscreen ? <Minimize className="h-4 w-4" aria-hidden="true" /> : <Maximize className="h-4 w-4" aria-hidden="true" />}
+          </button>
+        </div>
       </div>
 
-      <div ref={scrollRef} data-testid="study-doc-scroll" className="study-doc-scroll h-[62vh] overflow-y-auto bg-cream/50 p-3 md:h-[72vh] md:p-4">
+      <div ref={scrollRef} data-testid="study-doc-scroll" className="study-doc-scroll relative h-[62vh] overflow-auto bg-cream/50 p-3 md:h-[72vh] md:p-4">
         {loading && (
           <div data-testid="study-doc-loading" className="space-y-3" aria-label="Loading document">
             <div className="h-6 w-24 animate-pulse rounded-soft bg-stone/40" />
