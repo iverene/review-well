@@ -16,7 +16,14 @@ const mockPost = vi.hoisted(() => vi.fn())
 const mockDelete = vi.hoisted(() => vi.fn())
 
 vi.mock('axios', () => ({
-  default: { get: mockGet, put: mockPut, patch: mockPatch, post: mockPost, delete: mockDelete },
+  default: {
+    get: mockGet,
+    put: mockPut,
+    patch: mockPatch,
+    post: mockPost,
+    delete: mockDelete,
+    isAxiosError: (error) => !!error?.response || error?.code === 'ERR_NETWORK',
+  },
 }))
 
 vi.mock('../../src/contexts/AuthContext', () => ({
