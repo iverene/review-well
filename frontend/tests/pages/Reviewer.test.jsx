@@ -106,9 +106,12 @@ describe('Reviewer', () => {
     expect(mockDelete).not.toHaveBeenCalled()
   })
 
-  it('lets the owner change visibility', async () => {
+  it('lets the owner change visibility from inside Share', async () => {
     mockPut.mockResolvedValue({ data: { reviewer: { ...mockReviewer, visibility: 'public' } } })
     renderReviewer()
+    await screen.findByLabelText('Study hub')
+    expect(screen.queryByRole('radiogroup', { name: 'Visibility' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Share' }))
     const group = await screen.findByRole('radiogroup', { name: 'Visibility' })
     expect(group).toBeInTheDocument()
     fireEvent.click(screen.getByRole('radio', { name: 'Public' }))
@@ -116,12 +119,12 @@ describe('Reviewer', () => {
     expect(await screen.findByRole('radio', { name: 'Public', checked: true })).toBeInTheDocument()
   })
 
-  it('shows a static visibility badge to non-owners', async () => {
+  it('shows no visibility badge to non-owners', async () => {
     authState.user = { id: 'someone-else' }
     renderReviewer()
     await screen.findByLabelText('Study hub')
     expect(screen.queryByRole('radiogroup', { name: 'Visibility' })).toBeNull()
-    expect(screen.getByText('private')).toBeInTheDocument()
+    expect(screen.queryByText('private')).toBeNull()
   })
 
   it('copies a share link with visibility semantics', async () => {
@@ -143,6 +146,18 @@ describe('Reviewer', () => {
     renderReviewer()
     expect(await screen.findByRole('heading', { name: 'Calculus', level: 1 })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Reviewer', level: 1 })).toBeNull()
+  })
+
+  it('opens study details from the more menu and closes on backdrop click', async () => {
+    renderReviewer()
+    await screen.findByLabelText('Study hub')
+    fireEvent.click(screen.getByRole('button', { name: 'More actions' }))
+    fireEvent.click(screen.getByRole('menuitem', { name: 'View Details' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Study details' })
+    expect(dialog).toBeInTheDocument()
+    expect(dialog).toHaveTextContent('Iverene Grace Causapin')
+    fireEvent.click(document.querySelector('.fixed.inset-0.z-40'))
+    expect(screen.queryByRole('dialog', { name: 'Study details' })).toBeNull()
   })
 
   it('shows the creator in Study Details instead of a header meta row', async () => {

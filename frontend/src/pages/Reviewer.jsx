@@ -3,16 +3,19 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios'
 import {
   ArrowLeft,
+  BookOpenText,
   Check,
   Clock3,
   Copy,
   Download,
+  EllipsisVertical,
   Globe2,
   Link2,
   LockKeyhole,
   Share2,
   Trash2,
   UsersRound,
+  X,
 } from 'lucide-react'
 
 import { useAuth } from '../contexts/AuthContext'
@@ -25,6 +28,15 @@ import { formatExamType } from '../utils/examType'
 import { ReviewerSkeleton } from '../components/common/Skeleton'
 
 const recentReviewersKey = (userId) => `review-well-recent-reviewers:${userId}`
+
+const StudyDetailsList = ({ reviewer }) => (
+  <dl className="space-y-4 text-sm">
+    {reviewer.user?.displayName && <div><dt className="font-extrabold text-muted">Creator</dt><dd className="mt-1 text-ink">{reviewer.user.displayName}</dd></div>}
+    <div><dt className="font-extrabold text-muted">Assessment</dt><dd className="mt-1 text-ink">{formatExamType(reviewer.examType)}</dd></div>
+    <div><dt className="font-extrabold text-muted">Semester</dt><dd className="mt-1 text-ink">{reviewer.semester}</dd></div>
+    <div><dt className="font-extrabold text-muted">Uploaded</dt><dd className="mt-1 flex items-center gap-1 text-ink"><Clock3 className="h-4 w-4" /> {reviewer.createdAt ? new Date(reviewer.createdAt).toLocaleDateString() : '—'}</dd></div>
+  </dl>
+)
 
 const VISIBILITY_OPTIONS = [
   { value: 'private', label: 'Private', icon: LockKeyhole },
@@ -45,6 +57,8 @@ const Reviewer = () => {
   const [copied, setCopied] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [moreOpen, setMoreOpen] = useState(false)
+  const [detailsOpen, setDetailsOpen] = useState(false)
 
   const guest = !isAuthenticated
   const loginReturnTo = `/reviewer/${id}`
@@ -241,8 +255,9 @@ const Reviewer = () => {
 
   return (
     <PageContainer>
-      <div className="mb-6 flex flex-wrap items-center justify-end gap-4">
-        <div className="flex flex-wrap items-center gap-2">
+      <header className="py-2">
+        <div className="min-w-0"><h1 className="font-display text-3xl font-bold text-ink md:text-4xl">{reviewer.title}</h1><p className="mt-3 text-muted">{reviewer.courseDescription}</p></div>
+        <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
           <SaveButton reviewerId={reviewer.id} initialSaveCount={reviewer._count?.saves || 0} />
           {reviewer.fileUrl && (
             <a
@@ -251,7 +266,7 @@ const Reviewer = () => {
               title="Download this reviewer file"
               className="inline-flex items-center gap-2 rounded-soft border-2 border-stone bg-paper px-4 py-2 text-sm font-extrabold text-ink hover:bg-powder"
             >
-              <Download className="h-4 w-4" aria-hidden="true" /> Download
+              <Download className="h-4 w-4" aria-hidden="true" /> <span className="hidden sm:inline">Download</span>
             </a>
           )}
           {isOwner && (
@@ -259,12 +274,12 @@ const Reviewer = () => {
               type="button"
               onClick={() => setConfirmingDelete(true)}
               disabled={deleting}
-              className="inline-flex items-center gap-2 rounded-soft border-2 border-blush bg-blush/40 px-4 py-2 text-sm font-extrabold text-accent hover:bg-blush disabled:opacity-60"
+              className="hidden items-center gap-2 rounded-soft border-2 border-blush bg-blush/40 px-4 py-2 text-sm font-extrabold text-accent hover:bg-blush disabled:opacity-60 sm:inline-flex"
             >
               <Trash2 className="h-4 w-4" aria-hidden="true" /> {deleting ? 'Deleting…' : 'Delete'}
             </button>
           )}
-          <div className="relative">
+          <div className="relative hidden sm:block">
             <button
               type="button"
               onClick={() => { setShareOpen((v) => !v); setCopied(false) }}
@@ -274,39 +289,108 @@ const Reviewer = () => {
             >
               <Share2 className="h-4 w-4" aria-hidden="true" /> Share
             </button>
-            {shareOpen && (
+          </div>
+          <div className="relative sm:hidden">
+            <button
+              type="button"
+              onClick={() => setMoreOpen((v) => !v)}
+              aria-haspopup="menu"
+              aria-expanded={moreOpen}
+              aria-label="More actions"
+              className="inline-flex items-center rounded-soft border-2 border-stone bg-paper px-3 py-2 text-ink hover:bg-powder"
+            >
+              <EllipsisVertical className="h-4 w-4" aria-hidden="true" />
+            </button>
+            {moreOpen && (
               <>
-                <div className="fixed inset-0 z-40" onClick={() => setShareOpen(false)} />
-                <div className="absolute right-0 z-50 mt-2 w-80 rounded-2xl border-2 border-stone bg-paper p-4 shadow-xl" role="dialog" aria-label="Share This Reviewer">
-                  <p className="text-sm font-extrabold text-ink">Share This Reviewer</p>
-                  <div className="mt-2 flex items-center gap-2">
-                    <input
-                      readOnly
-                      value={shareUrl}
-                      aria-label="Share link"
-                      onFocus={(e) => e.target.select()}
-                      className="min-w-0 flex-1 rounded-soft border-2 border-stone bg-paper px-3 py-2 text-xs text-muted focus:border-accent focus:outline-none"
-                    />
+                <div className="fixed inset-0 z-40" onClick={() => setMoreOpen(false)} />
+                <div className="absolute right-0 z-50 mt-2 w-48 rounded-2xl border-2 border-stone bg-paper p-2 shadow-xl" role="menu" aria-label="More actions">
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => { setMoreOpen(false); setDetailsOpen(true) }}
+                    className="flex w-full items-center gap-2 rounded-soft px-3 py-2 text-sm font-extrabold text-ink hover:bg-powder"
+                  >
+                    <BookOpenText className="h-4 w-4" aria-hidden="true" /> View Details
+                  </button>
+                  {isOwner && (
                     <button
                       type="button"
-                      onClick={handleCopyLink}
-                      className={`inline-flex shrink-0 items-center gap-1.5 rounded-soft border-2 px-3 py-2 text-xs font-extrabold ${copied ? 'border-mint bg-mint text-ink' : 'border-ink bg-ink text-paper hover:opacity-90'}`}
+                      role="menuitem"
+                      onClick={() => { setMoreOpen(false); setConfirmingDelete(true) }}
+                      className="flex w-full items-center gap-2 rounded-soft px-3 py-2 text-sm font-extrabold text-accent hover:bg-blush/40"
                     >
-                      {copied ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
-                      {copied ? 'Copied' : 'Copy'}
+                      <Trash2 className="h-4 w-4" aria-hidden="true" /> Delete
                     </button>
-                  </div>
-                  <ul className="mt-3 space-y-1.5 text-xs text-muted">
-                    <li className="flex items-start gap-2"><Globe2 className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" /><span><b className="text-ink">Public</b> — anyone can view it, including the public library.</span></li>
-                    <li className="flex items-start gap-2"><Link2 className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" /><span><b className="text-ink">Unlisted</b> — only people with the shared link can view it.</span></li>
-                    <li className="flex items-start gap-2"><LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" /><span><b className="text-ink">Private</b> — only you can view it.</span></li>
-                  </ul>
+                  )}
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => { setMoreOpen(false); setShareOpen(true); setCopied(false) }}
+                    className="flex w-full items-center gap-2 rounded-soft px-3 py-2 text-sm font-extrabold text-ink hover:bg-powder"
+                  >
+                    <Share2 className="h-4 w-4" aria-hidden="true" /> Share
+                  </button>
                 </div>
               </>
             )}
           </div>
         </div>
-      </div>
+      </header>
+
+      {shareOpen && (
+        <>
+          <div className="fixed inset-0 z-40 bg-ink/30" onClick={() => setShareOpen(false)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Share This Reviewer">
+            <div className="w-full max-w-sm rounded-soft border-2 border-stone bg-paper p-4 shadow-xl">
+              <p className="text-sm font-extrabold text-ink">Share This Reviewer</p>
+        <div className="mt-2 flex items-center gap-2">
+          <input
+            readOnly
+            value={shareUrl}
+            aria-label="Share link"
+            onFocus={(e) => e.target.select()}
+            className="min-w-0 flex-1 rounded-soft border-2 border-stone bg-paper px-3 py-2 text-xs text-muted focus:border-accent focus:outline-none"
+          />
+          <button
+            type="button"
+            onClick={handleCopyLink}
+            className={`inline-flex shrink-0 items-center gap-1.5 rounded-soft border-2 px-3 py-2 text-xs font-extrabold ${copied ? 'border-mint bg-mint text-ink' : 'border-ink bg-ink text-paper hover:opacity-90'}`}
+          >
+            {copied ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
+            {copied ? 'Copied' : 'Copy'}
+          </button>
+        </div>
+        {isOwner && (
+          <div className="mt-3 border-t-2 border-stone pt-3">
+            <p className="text-xs font-extrabold uppercase tracking-widest text-muted">Visibility</p>
+            <div className="mt-2 flex items-center gap-1 rounded-full border-2 border-stone bg-paper p-1" role="radiogroup" aria-label="Visibility">
+              {VISIBILITY_OPTIONS.map(({ value, label, icon: Icon }) => (
+                <button
+                  key={value}
+                  type="button"
+                  role="radio"
+                  aria-checked={reviewer.visibility === value}
+                  onClick={() => handleVisibilityChange(value)}
+                  disabled={visSaving}
+                  title={label}
+                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-extrabold transition-colors disabled:opacity-60 ${reviewer.visibility === value ? 'bg-ink text-paper' : 'text-muted hover:bg-stone/60 hover:text-ink'}`}
+                >
+                  <Icon className="h-3.5 w-3.5" aria-hidden="true" /> {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+        <ul className="mt-3 space-y-1.5 text-xs text-muted">
+          <li className="flex items-start gap-2"><Globe2 className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" /><span><b className="text-ink">Public</b> — anyone can view it, including the public library.</span></li>
+          <li className="flex items-start gap-2"><Link2 className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" /><span><b className="text-ink">Unlisted</b> — only people with the shared link can view it.</span></li>
+          <li className="flex items-start gap-2"><LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" /><span><b className="text-ink">Private</b> — only you can view it.</span></li>
+        </ul>
+            </div>
+          </div>
+        </>
+      )}
 
       {confirmingDelete && (
         <>
@@ -336,34 +420,6 @@ const Reviewer = () => {
         </>
       )}
 
-      <header className="py-2">
-        <div className="flex flex-wrap items-start justify-between gap-5">
-          <div className="min-w-0"><h1 className="font-display text-3xl font-bold text-ink md:text-4xl">{reviewer.title}</h1><p className="mt-3 text-muted">{reviewer.courseDescription}</p></div>
-          {isOwner ? (
-            <div>
-              <div className="flex items-center gap-1 rounded-full border-2 border-stone bg-paper p-1" role="radiogroup" aria-label="Visibility">
-                {VISIBILITY_OPTIONS.map(({ value, label, icon: Icon }) => (
-                  <button
-                    key={value}
-                    type="button"
-                    role="radio"
-                    aria-checked={reviewer.visibility === value}
-                    onClick={() => handleVisibilityChange(value)}
-                    disabled={visSaving}
-                    title={label}
-                    className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-extrabold transition-colors disabled:opacity-60 ${reviewer.visibility === value ? 'bg-ink text-paper' : 'text-muted hover:bg-stone/60 hover:text-ink'}`}
-                  >
-                    <Icon className="h-3.5 w-3.5" aria-hidden="true" /> {label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 rounded-full bg-powder px-3 py-2 text-xs font-extrabold text-ink"><LockKeyhole className="h-4 w-4" /> {reviewer.visibility}</div>
-          )}
-        </div>
-      </header>
-
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_220px]">
         <main className="min-w-0" aria-label="Study hub section">
           <StudyTabs
@@ -383,8 +439,30 @@ const Reviewer = () => {
             onBlurtingRate={handleBlurtingRate}
           />
         </main>
-        <aside className="h-fit rounded-soft border-2 border-stone bg-mint/40 p-5"><h2 className="font-display text-xl font-bold text-ink">Study Details</h2><dl className="mt-4 space-y-4 text-sm">{reviewer.user?.displayName && <div><dt className="font-extrabold text-muted">Creator</dt><dd className="mt-1 text-ink">{reviewer.user.displayName}</dd></div>}<div><dt className="font-extrabold text-muted">Assessment</dt><dd className="mt-1 text-ink">{formatExamType(reviewer.examType)}</dd></div><div><dt className="font-extrabold text-muted">Semester</dt><dd className="mt-1 text-ink">{reviewer.semester}</dd></div><div><dt className="font-extrabold text-muted">Uploaded</dt><dd className="mt-1 flex items-center gap-1 text-ink"><Clock3 className="h-4 w-4" /> {reviewer.createdAt ? new Date(reviewer.createdAt).toLocaleDateString() : '—'}</dd></div></dl></aside>
+        <aside className="hidden h-fit rounded-soft border-2 border-stone bg-mint/40 p-5 lg:block"><h2 className="font-display text-xl font-bold text-ink">Study Details</h2><div className="mt-4"><StudyDetailsList reviewer={reviewer} /></div></aside>
       </div>
+
+      {detailsOpen && (
+        <>
+          <div className="fixed inset-0 z-40 bg-ink/30" onClick={() => setDetailsOpen(false)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Study details">
+            <div className="w-full max-w-sm rounded-soft border-2 border-stone bg-mint/40 p-5 club-shadow">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="font-display text-xl font-bold text-ink">Study Details</h2>
+                <button
+                  type="button"
+                  onClick={() => setDetailsOpen(false)}
+                  aria-label="Close study details"
+                  className="rounded-soft border-2 border-transparent p-1.5 text-ink hover:bg-stone/40"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </button>
+              </div>
+              <div className="mt-4"><StudyDetailsList reviewer={reviewer} /></div>
+            </div>
+          </div>
+        </>
+      )}
     </PageContainer>
   )
 }
