@@ -145,6 +145,14 @@ describe('Reviewer', () => {
     expect(screen.queryByText('Study guide')).not.toBeInTheDocument()
   })
 
+  it('shows the creator in Study Details instead of a header meta row', async () => {
+    renderReviewer()
+    await screen.findByLabelText('Study hub')
+    expect(screen.getByText('Creator')).toBeInTheDocument()
+    expect(screen.getByText('Iverene Grace Causapin')).toBeInTheDocument()
+    expect(screen.queryByText('By Iverene Grace Causapin')).toBeNull()
+  })
+
   it('shows the delete button to the owner only', async () => {
     renderReviewer()
     expect(await screen.findByRole('button', { name: 'Delete' })).toBeInTheDocument()
