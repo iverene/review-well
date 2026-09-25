@@ -17,9 +17,6 @@ const yearLevels = [
   { value: 'sophomore', label: 'Sophomore' },
   { value: 'junior', label: 'Junior' },
   { value: 'senior', label: 'Senior' },
-  { value: 'graduate', label: 'Graduate' },
-  { value: 'phd', label: 'PhD' },
-  { value: 'other', label: 'Other' },
 ]
 
 const Onboarding = () => {
