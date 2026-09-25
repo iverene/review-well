@@ -108,14 +108,13 @@ describe('Reviewer', () => {
     )
   })
 
-  it('shows guests a sign-in nudge with a return URL and zero writes', async () => {
+  it('shows guests the source with no sign-in nudge and zero writes', async () => {
     authState.user = null
     authState.isAuthenticated = false
     renderReviewer()
-    const nudge = await screen.findByTestId('study-guest-nudge')
-    expect(nudge).toBeInTheDocument()
-    expect(nudge.querySelector('a')).toHaveAttribute('href', '/login?returnTo=%2Freviewer%2Fr1')
     expect(await screen.findByTestId('study-source-pdf')).toBeInTheDocument()
+    expect(screen.queryByTestId('study-guest-nudge')).toBeNull()
+    expect(screen.queryByText('Sign in with Google to save this')).toBeNull()
     expect(mockPost).not.toHaveBeenCalled()
     expect(mockPatch).not.toHaveBeenCalled()
     expect(mockDelete).not.toHaveBeenCalled()
@@ -229,7 +228,7 @@ describe('Reviewer', () => {
     authState.user = null
     authState.isAuthenticated = false
     renderReviewer()
-    await screen.findByTestId('study-guest-nudge')
+    await screen.findByTestId('study-source-pdf')
     expect(screen.queryByRole('button', { name: 'Delete' })).toBeNull()
   })
 
