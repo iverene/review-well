@@ -89,7 +89,27 @@ const Home = () => {
         if (isAuthenticated) {
           const myResponse = await axios.get('/api/reviewers/my', { withCredentials: true })
           setMyReviewers(myResponse.data.reviewers || [])
-          setRecentReviewers(JSON.parse(window.localStorage.getItem(recentReviewersKey(user.id)) || '[]'))
+          // Server-side validation: evict deleted (or now-private) entries so
+          // ghosts never render — localStorage is per-browser and goes stale
+          // across devices after deletes.
+          const stored = JSON.parse(window.localStorage.getItem(recentReviewersKey(user.id)) || '[]')
+          if (stored.length > 0) {
+            try {
+              const ids = [...new Set(stored.map((entry) => entry?.id).filter(Boolean))]
+              const validResponse = await axios.get('/api/reviewers/exists', {
+                params: { ids: ids.join(',') },
+                withCredentials: true,
+              })
+              const valid = new Set(validResponse.data.ids || [])
+              const pruned = stored.filter((entry) => valid.has(entry?.id))
+              window.localStorage.setItem(recentReviewersKey(user.id), JSON.stringify(pruned))
+              setRecentReviewers(pruned)
+            } catch {
+              setRecentReviewers(stored)
+            }
+          } else {
+            setRecentReviewers(stored)
+          }
         }
       } catch (loadError) {
         console.error('Failed to load home reviewers:', loadError)

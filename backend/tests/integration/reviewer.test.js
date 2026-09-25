@@ -10,6 +10,7 @@ vi.mock('../../models/reviewerModel.js', () => ({
   findPublic: vi.fn(),
   findByAuthor: vi.fn(),
   findById: vi.fn(),
+  findByIds: vi.fn(),
   create: vi.fn(),
   update: vi.fn(),
   remove: vi.fn(),
@@ -122,6 +123,63 @@ describe('Reviewer Routes', () => {
       const response = await request(app).get('/api/reviewers/non-existent')
 
       expect(response.status).toBe(404)
+    })
+  })
+
+  describe('GET /api/reviewers/exists', () => {
+    const rows = [
+      { id: 'r-public', visibility: 'public', authorId: 'owner-1' },
+      { id: 'r-mine-private', visibility: 'private', authorId: 'user-123' },
+      { id: 'r-theirs-private', visibility: 'private', authorId: 'owner-9' },
+    ]
+
+    const authedApp = () => {
+      const app = express()
+      app.use(express.json())
+      app.use((req, res, next) => {
+        req.user = { id: 'user-123' }
+        next()
+      })
+      app.use('/api/reviewers', reviewerRoutes)
+      return app
+    }
+
+    it('should return only readable ids (public + own private)', async () => {
+      reviewerModel.findByIds.mockResolvedValue(rows)
+
+      const app = authedApp()
+      const response = await request(app).get('/api/reviewers/exists?ids=r-public,r-mine-private,r-theirs-private,r-gone')
+
+      expect(response.status).toBe(200)
+      expect(response.body.ids.sort()).toEqual(['r-mine-private', 'r-public'])
+      expect(reviewerModel.findByIds).toHaveBeenCalledWith(
+        ['r-public', 'r-mine-private', 'r-theirs-private', 'r-gone']
+      )
+    })
+
+    it('should return public ids to guests', async () => {
+      reviewerModel.findByIds.mockResolvedValue(rows)
+
+      const app = createApp()
+      const response = await request(app).get('/api/reviewers/exists?ids=r-public,r-theirs-private')
+
+      expect(response.status).toBe(200)
+      expect(response.body.ids).toEqual(['r-public'])
+    })
+
+    it('should return an empty list without ids and cap at 20', async () => {
+      reviewerModel.findByIds.mockResolvedValue([])
+
+      const app = createApp()
+      const empty = await request(app).get('/api/reviewers/exists')
+
+      expect(empty.status).toBe(200)
+      expect(empty.body.ids).toEqual([])
+
+      const many = Array.from({ length: 25 }, (_, i) => `r-${i}`)
+      await request(app).get(`/api/reviewers/exists?ids=${many.join(',')}`)
+
+      expect(reviewerModel.findByIds).toHaveBeenCalledWith(many.slice(0, 20))
     })
   })
 })

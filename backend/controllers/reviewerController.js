@@ -83,6 +83,32 @@ const getAuthorReviewers = async (req, res) => {
   }
 }
 
+// Batch existence check for client-side caches (Recently Viewed rail).
+// Returns only ids the requester may actually open: non-private rows, plus
+// own private rows. Never leaks private rows of other users.
+const getReadableIds = async (req, res) => {
+  try {
+    const ids = String(req.query.ids || '')
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean)
+      .slice(0, 20)
+    if (ids.length === 0) {
+      return res.json({ ids: [] })
+    }
+
+    const rows = await reviewerModel.findByIds(ids)
+    const readable = rows
+      .filter((row) => row.visibility !== 'private' || row.authorId === req.user?.id)
+      .map((row) => row.id)
+
+    res.json({ ids: readable })
+  } catch (error) {
+    console.error('Get readable ids error:', error)
+    res.status(500).json({ error: 'Failed to validate reviewers' })
+  }
+}
+
 const getMyReviewers = async (req, res) => {
   try {
     const { page = 1, limit = 50 } = req.query
@@ -264,6 +290,7 @@ export {
   getPublicReviewers,
   getAuthorReviewers,
   getMyReviewers,
+  getReadableIds,
   getReviewerById,
   createReviewer,
   updateReviewer,
