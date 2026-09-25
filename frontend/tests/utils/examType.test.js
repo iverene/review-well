@@ -7,6 +7,7 @@ describe('formatExamType', () => {
     expect(formatExamType('prelim')).toBe('Prelim')
     expect(formatExamType('midterm')).toBe('Midterm')
     expect(formatExamType('final')).toBe('Finals')
+    expect(formatExamType('quiz')).toBe('Quiz')
   })
 
   it('passes unknown values through unchanged', () => {

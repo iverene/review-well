@@ -4,6 +4,7 @@ const EXAM_TYPE_LABELS = {
   prelim: 'Prelim',
   midterm: 'Midterm',
   final: 'Finals',
+  quiz: 'Quiz',
 }
 
 export const formatExamType = (value) => EXAM_TYPE_LABELS[value] ?? value

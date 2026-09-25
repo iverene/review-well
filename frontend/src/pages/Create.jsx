@@ -229,8 +229,8 @@ const Create = () => {
 
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
-                <label htmlFor="courseCode" className="mb-2 block text-sm font-extrabold text-ink">Course Code</label>
-                <input id="courseCode" name="courseCode" value={formData.courseCode} onChange={updateField} required placeholder="e.g. CS 201" className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-3 text-ink focus:border-accent focus:outline-none" />
+                <label htmlFor="courseCode" className="mb-2 block text-sm font-extrabold text-ink">Course Code <span className="font-semibold text-muted">(Optional)</span></label>
+                <input id="courseCode" name="courseCode" value={formData.courseCode} onChange={updateField} placeholder="e.g. CS 201" className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-3 text-ink focus:border-accent focus:outline-none" />
               </div>
               <div>
                 <label htmlFor="semester" className="mb-2 block text-sm font-extrabold text-ink">Semester</label>
@@ -241,9 +241,9 @@ const Create = () => {
             </div>
 
             <div>
-              <label htmlFor="examType" className="mb-2 block text-sm font-extrabold text-ink">Examination Period</label>
+              <label htmlFor="examType" className="mb-2 block text-sm font-extrabold text-ink">Assessment Type</label>
               <select id="examType" name="examType" value={formData.examType} onChange={updateField} className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-3 text-ink focus:border-accent focus:outline-none">
-                <option value="prelim">Prelim</option><option value="midterm">Midterm</option><option value="final">Finals</option>
+                <option value="prelim">Prelim</option><option value="midterm">Midterm</option><option value="final">Finals</option><option value="quiz">Quiz</option>
               </select>
             </div>
 
