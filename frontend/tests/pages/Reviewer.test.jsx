@@ -23,6 +23,14 @@ vi.mock('../../src/contexts/AuthContext', () => ({
   useAuth: () => authState,
 }))
 
+// PdfViewer pulls the real pdf.js engine, which needs modern JS globals
+// (Iterator helpers) absent on older Node — and this suite only cares that
+// the hub renders the source viewer slot, which PdfViewer.test.jsx covers
+// against a mocked engine.
+vi.mock('../../src/components/PdfViewer', () => ({
+  default: ({ fileUrl }) => (fileUrl ? <div data-testid="study-source-pdf" /> : null),
+}))
+
 const mockReviewer = {
   id: 'r1',
   title: 'Calculus',
