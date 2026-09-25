@@ -73,7 +73,7 @@ const SaveButton = ({ reviewerId, initialSaved = false, initialSaveCount = 0 }) 
         } disabled:cursor-not-allowed disabled:opacity-40`}
       >
         <Bookmark
-          className={`h-3.5 w-3.5 transition-transform duration-200 group-hover:scale-110 ${saved ? 'text-accent' : 'text-stone'}`}
+          className={`h-5 w-5 transition-transform duration-200 group-hover:scale-110 ${saved ? 'text-accent' : 'text-stone'}`}
           aria-hidden="true"
           fill={saved ? 'currentColor' : 'none'}
           strokeWidth={2}
