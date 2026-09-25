@@ -177,10 +177,13 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
     const onFullscreenChange = () => {
       const isFullscreen = !!document.fullscreenElement
       setFullscreen(isFullscreen)
-      // Fullscreen starts zoomed out; leaving restores the fixed 100%
-      // windowed scale so the embedded view is never zoomed.
+      // Fullscreen starts zoomed out on desktop; on mobile it starts at
+      // 100% since the narrow viewport is already at reading size.
+      // Leaving restores the fixed 100% windowed scale so the embedded
+      // view is never zoomed.
       if (!docRef.current) return
-      const next = isFullscreen ? 50 : 100
+      const isCoarsePointer = window.matchMedia?.('(pointer: coarse)').matches ?? false
+      const next = !isFullscreen ? 100 : isCoarsePointer ? 100 : 50
       setZoomPct(next)
       rerenderAt(next / 100)
     }

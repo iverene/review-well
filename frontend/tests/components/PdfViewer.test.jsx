@@ -88,6 +88,23 @@ describe('PdfViewer', () => {
     fireEvent(document, new Event('fullscreenchange'))
     expect(screen.queryByTestId('study-doc-zoom')).toBeNull()
   })
+
+  it('starts mobile fullscreen at 100%', async () => {
+    Object.defineProperty(window, 'matchMedia', {
+      value: () => ({ matches: true }),
+      configurable: true,
+    })
+    try {
+      render(<PdfViewer fileUrl="https://storage.example.com/v1.pdf" title="Guide" />)
+      await screen.findByTestId('study-doc-count')
+      Object.defineProperty(document, 'fullscreenElement', { value: document.createElement('div'), configurable: true })
+      fireEvent(document, new Event('fullscreenchange'))
+      expect(await screen.findByTestId('study-doc-zoom')).toHaveTextContent('100%')
+    } finally {
+      delete window.matchMedia
+      Object.defineProperty(document, 'fullscreenElement', { value: null, configurable: true })
+    }
+  })
 })
 
 describe('currentPageFromTops', () => {  it('returns 1 for an empty list or a zero viewport', () => {
