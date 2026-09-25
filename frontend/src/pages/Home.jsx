@@ -45,20 +45,20 @@ const Landing = () => (
     <section className="club-surface relative overflow-hidden px-4 py-6 md:px-10 md:py-12">
       <div className="absolute right-6 top-5 text-2xl text-accent" aria-hidden="true">*</div>
       <div className="relative max-w-2xl club-rise">
-        <p className="mb-3 font-mono text-xs font-bold uppercase tracking-widest text-accent">Your cozy corner for better notes</p>
-        <h2 className="max-w-xl text-3xl font-bold leading-tight text-ink md:text-6xl">Make studying feel a little more like you.</h2>
-        <p className="mt-4 max-w-xl text-base leading-relaxed text-muted md:text-lg">Browse bright study guides, collect the good bits, and build a review space that makes sense to your brain.</p>
+        <p className="mb-3 font-mono text-xs font-bold uppercase tracking-widest text-accent">Upload your slides. Study them well.</p>
+        <h2 className="max-w-xl text-3xl font-bold leading-tight text-ink md:text-6xl">Turn lecture slides into study sessions.</h2>
+        <p className="mt-4 max-w-xl text-base leading-relaxed text-muted md:text-lg">Upload a PDF or PPTX, get AI-made flashcards and blurting prompts, and review in focused Pomodoro sprints — all in one cozy study club.</p>
         <div className="mt-7 flex flex-wrap gap-3">
           <Link to="/login" className="club-shadow rounded-soft border-2 border-accent bg-accent px-5 py-3 font-extrabold text-paper transition-transform hover:-translate-y-1">Join the study club</Link>
-          <Link to="/reviewer/public" className="rounded-soft border-2 border-stone bg-paper px-5 py-3 font-extrabold text-ink transition-colors hover:bg-butter">Browse public guides</Link>
+          <Link to="/reviewer/public" className="rounded-soft border-2 border-stone bg-paper px-5 py-3 font-extrabold text-ink transition-colors hover:bg-butter">Try public reviewers</Link>
         </div>
       </div>
       <img src="/logo.png" alt="A student studying with a laptop" className="pointer-events-none absolute -bottom-10 -right-8 hidden h-64 w-64 object-contain opacity-95 md:block lg:h-72 lg:w-72" />
     </section>
     <section className="grid gap-4 md:grid-cols-3" aria-label="Study club features">
-      <article className="club-surface bg-blush/50 p-5 md:p-6"><div className="mb-4 text-xl text-accent md:mb-5 md:text-2xl" aria-hidden="true">*</div><h3 className="text-xl font-bold text-ink md:text-2xl">Find your flow</h3><p className="mt-2 leading-relaxed text-muted">Discover public reviewers made by fellow students and start with the topics you need most.</p></article>
-      <article className="club-surface bg-mint/60 p-5 md:p-6"><div className="mb-4 text-xl text-accent md:mb-5 md:text-2xl" aria-hidden="true">+</div><h3 className="text-xl font-bold text-ink md:text-2xl">Make it yours</h3><p className="mt-2 leading-relaxed text-muted">Turn lecture notes into a colorful, structured guide that feels natural to revisit.</p></article>
-      <article className="club-surface bg-butter/70 p-5 md:p-6"><div className="mb-4 text-xl text-accent md:mb-5 md:text-2xl" aria-hidden="true">~</div><h3 className="text-xl font-bold text-ink md:text-2xl">Tiny wins count</h3><p className="mt-2 leading-relaxed text-muted">Keep the hard stuff approachable with clear blocks, gentle prompts, and a little delight.</p></article>
+      <article className="club-surface bg-blush/50 p-5 md:p-6"><div className="mb-4 text-xl text-accent md:mb-5 md:text-2xl" aria-hidden="true">*</div><h3 className="text-xl font-bold text-ink md:text-2xl">Upload your slides</h3><p className="mt-2 leading-relaxed text-muted">Drop in a PDF or PPTX and keep every reviewer in one personal library.</p></article>
+      <article className="club-surface bg-mint/60 p-5 md:p-6"><div className="mb-4 text-xl text-accent md:mb-5 md:text-2xl" aria-hidden="true">+</div><h3 className="text-xl font-bold text-ink md:text-2xl">Study with techniques</h3><p className="mt-2 leading-relaxed text-muted">Flip AI-made flashcards and dump what you remember with blurting prompts.</p></article>
+      <article className="club-surface bg-butter/70 p-5 md:p-6"><div className="mb-4 text-xl text-accent md:mb-5 md:text-2xl" aria-hidden="true">~</div><h3 className="text-xl font-bold text-ink md:text-2xl">Stay in the zone</h3><p className="mt-2 leading-relaxed text-muted">Review in Pomodoro sprints, track daily focus, and grow a study streak.</p></article>
     </section>
   </div>
 )
