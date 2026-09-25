@@ -8,7 +8,7 @@ const STORAGE_KEY = 'review-well-announcement-v1'
 const CURRENT_FEATURES = [
   'Upload Reviewers as PDF or PPTX',
   'Browse public study guides',
-  'Save guides and follow creators',
+  'Save guides and follow other students',
 ]
 
 const COMING_SOON_FEATURES = [

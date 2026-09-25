@@ -10,6 +10,7 @@ const createStorageAdapter = () => {
       upload: async () => ({ data: null, error: 'Storage not configured' }),
       getPublicUrl: () => ({ data: { publicUrl: '' } }),
       getSignedUrl: async () => ({ data: null, error: 'Storage not configured' }),
+      download: async () => ({ data: null, error: 'Storage not configured' }),
       delete: async () => ({ error: 'Storage not configured' }),
       removePrefix: async () => ({ error: 'Storage not configured' }),
     }
@@ -102,7 +103,22 @@ const createStorageAdapter = () => {
     }
   }
 
-  return { upload, getPublicUrl, getSignedUrl, delete: deleteFiles, removePrefix }
+  // Download a stored object's bytes (Blob) for server-side streaming
+  // (e.g. attachment downloads that must honor reviewer visibility).
+  const download = async (path) => {
+    try {
+      const { data, error } = await supabase.storage
+        .from(bucket)
+        .download(path)
+      if (error) throw error
+      return { data, error: null }
+    } catch (error) {
+      console.error('Download error:', error)
+      return { data: null, error: error.message }
+    }
+  }
+
+  return { upload, getPublicUrl, getSignedUrl, download, delete: deleteFiles, removePrefix }
 }
 
 export { createStorageAdapter }

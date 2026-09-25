@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import FlashcardDeck from './FlashcardDeck'
 import BlurtingMode from './BlurtingMode'
 import PomodoroDock from './PomodoroDock'
+import PdfViewer from './PdfViewer'
 
 const TABS = [
   { value: 'source', label: 'Source' },
@@ -93,11 +94,7 @@ const StudyTabs = ({
             <p data-testid="study-no-source">No source file yet.</p>
           )}
           {fileType === 'pdf' && (
-            <iframe
-              src={fileUrl}
-              title="Source document"
-              data-testid="study-source-pdf"
-            />
+            <PdfViewer fileUrl={fileUrl} title={reviewer?.title} />
           )}
           {fileType === 'pptx' && (
             <iframe

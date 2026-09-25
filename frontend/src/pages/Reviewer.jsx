@@ -6,6 +6,7 @@ import {
   Check,
   Clock3,
   Copy,
+  Download,
   Globe2,
   Link2,
   LockKeyhole,
@@ -18,7 +19,6 @@ import { useAuth } from '../contexts/AuthContext'
 import SaveButton from '../components/social/SaveButton'
 import StudyTabs from '../components/StudyTabs'
 import ErrorAlert from '../components/common/ErrorAlert'
-import PageHeader from '../components/common/PageHeader'
 import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
 import { formatExamType } from '../utils/examType'
@@ -241,10 +241,19 @@ const Reviewer = () => {
 
   return (
     <PageContainer>
-      <PageHeader title="Reviewer" />
       <div className="mb-6 flex flex-wrap items-center justify-end gap-4">
         <div className="flex flex-wrap items-center gap-2">
           <SaveButton reviewerId={reviewer.id} initialSaveCount={reviewer._count?.saves || 0} />
+          {reviewer.fileUrl && (
+            <a
+              href={`/api/reviewer-files/${reviewer.id}/download`}
+              aria-label="Download this reviewer file"
+              title="Download this reviewer file"
+              className="inline-flex items-center gap-2 rounded-soft border-2 border-stone bg-paper px-4 py-2 text-sm font-extrabold text-ink hover:bg-powder"
+            >
+              <Download className="h-4 w-4" aria-hidden="true" /> Download
+            </a>
+          )}
           {isOwner && (
             <button
               type="button"
@@ -374,7 +383,7 @@ const Reviewer = () => {
             onBlurtingRate={handleBlurtingRate}
           />
         </main>
-        <aside className="h-fit rounded-soft border-2 border-stone bg-mint/40 p-5"><h2 className="font-display text-xl font-bold text-ink">Study Details</h2><dl className="mt-4 space-y-4 text-sm">{reviewer.user?.displayName && <div><dt className="font-extrabold text-muted">Creator</dt><dd className="mt-1 text-ink">{reviewer.user.displayName}</dd></div>}<div><dt className="font-extrabold text-muted">Assessment</dt><dd className="mt-1 text-ink">{formatExamType(reviewer.examType)}</dd></div><div><dt className="font-extrabold text-muted">Semester</dt><dd className="mt-1 text-ink">{reviewer.semester}</dd></div><div><dt className="font-extrabold text-muted">Last Updated</dt><dd className="mt-1 flex items-center gap-1 text-ink"><Clock3 className="h-4 w-4" /> {new Date(reviewer.updatedAt).toLocaleDateString()}</dd></div></dl></aside>
+        <aside className="h-fit rounded-soft border-2 border-stone bg-mint/40 p-5"><h2 className="font-display text-xl font-bold text-ink">Study Details</h2><dl className="mt-4 space-y-4 text-sm">{reviewer.user?.displayName && <div><dt className="font-extrabold text-muted">Creator</dt><dd className="mt-1 text-ink">{reviewer.user.displayName}</dd></div>}<div><dt className="font-extrabold text-muted">Assessment</dt><dd className="mt-1 text-ink">{formatExamType(reviewer.examType)}</dd></div><div><dt className="font-extrabold text-muted">Semester</dt><dd className="mt-1 text-ink">{reviewer.semester}</dd></div><div><dt className="font-extrabold text-muted">Uploaded</dt><dd className="mt-1 flex items-center gap-1 text-ink"><Clock3 className="h-4 w-4" /> {reviewer.createdAt ? new Date(reviewer.createdAt).toLocaleDateString() : '—'}</dd></div></dl></aside>
       </div>
     </PageContainer>
   )

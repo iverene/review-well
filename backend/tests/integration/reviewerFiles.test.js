@@ -183,4 +183,69 @@ describe('Reviewer File Routes', () => {
       expect(response.body.error).toBe('File too large. Maximum size is 25MB')
     })
   })
+
+  describe('GET /api/reviewer-files/:reviewerId/download', () => {
+    const publicReviewer = { ...ownedReviewer, visibility: 'public', title: 'Data Structures!' }
+    const storedFile = {
+      id: 'file-1',
+      reviewerId: ownedReviewer.id,
+      storagePath: `${OWNER.id}/${ownedReviewer.id}/v1.pdf`,
+      fileType: 'pdf',
+      byteSize: 24,
+      version: 1,
+    }
+    const pdfBytes = Buffer.from('%PDF-1.4 fake pdf content')
+    const downloadMock = () => ({
+      download: vi.fn().mockResolvedValue({
+        data: new Blob([pdfBytes], { type: 'application/pdf' }),
+        error: null,
+      }),
+    })
+
+    it('should stream the exact bytes as an attachment for public reviewers (guest ok)', async () => {
+      reviewerModel.findById.mockResolvedValue(publicReviewer)
+      reviewerFileModel.findByReviewerId.mockResolvedValue(storedFile)
+      createStorageAdapter.mockReturnValue(downloadMock())
+
+      const app = createApp(null)
+      const response = await request(app).get(`/api/reviewer-files/${ownedReviewer.id}/download`)
+
+      expect(response.status).toBe(200)
+      expect(response.headers['content-type']).toContain('application/pdf')
+      expect(response.headers['content-disposition']).toBe('attachment; filename="Data Structures.pdf"')
+      expect(Number(response.headers['content-length'])).toBe(pdfBytes.length)
+    })
+
+    it('should return 403 for private reviewers to non-owners', async () => {
+      reviewerModel.findById.mockResolvedValue({ ...ownedReviewer, visibility: 'private' })
+
+      const app = createApp({ id: 'user-other' })
+      const response = await request(app).get(`/api/reviewer-files/${ownedReviewer.id}/download`)
+
+      expect(response.status).toBe(403)
+    })
+
+    it('should return 404 when no file is stored', async () => {
+      reviewerModel.findById.mockResolvedValue(publicReviewer)
+      reviewerFileModel.findByReviewerId.mockResolvedValue(null)
+
+      const app = createApp(OWNER)
+      const response = await request(app).get(`/api/reviewer-files/${ownedReviewer.id}/download`)
+
+      expect(response.status).toBe(404)
+    })
+
+    it('should return 502 when storage fails', async () => {
+      reviewerModel.findById.mockResolvedValue(publicReviewer)
+      reviewerFileModel.findByReviewerId.mockResolvedValue(storedFile)
+      createStorageAdapter.mockReturnValue({
+        download: vi.fn().mockResolvedValue({ data: null, error: 'boom' }),
+      })
+
+      const app = createApp(OWNER)
+      const response = await request(app).get(`/api/reviewer-files/${ownedReviewer.id}/download`)
+
+      expect(response.status).toBe(502)
+    })
+  })
 })

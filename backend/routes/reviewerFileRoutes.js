@@ -2,7 +2,9 @@ import express from 'express'
 import {
   uploadReviewerFile,
   replaceReviewerFile,
+  downloadReviewerFile,
 } from '../controllers/reviewerFileController.js'
+import { optionalAuth } from '../middleware/auth.js'
 import { uploadReviewerFile as reviewerUpload, handleReviewerFileUploadError } from '../middleware/upload.js'
 
 const app = express.Router()
@@ -34,5 +36,10 @@ app.put(
   handleReviewerFileUploadError,
   replaceReviewerFile
 )
+
+// Attachment download honoring reviewer visibility (public/unlisted for
+// anyone with access, private owner-only). Cookies authenticate the browser
+// navigation, so no API client is needed.
+app.get('/:reviewerId/download', optionalAuth, downloadReviewerFile)
 
 export default app

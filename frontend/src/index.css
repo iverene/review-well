@@ -86,6 +86,28 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   background: #604A3A;
 }
 
+/* Document viewer scrollbar (kawaii cocoa thumb on transparent track). */
+.study-doc-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #604A3A transparent;
+}
+
+.study-doc-scroll::-webkit-scrollbar {
+  display: block;
+  width: 10px;
+}
+.study-doc-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.study-doc-scroll::-webkit-scrollbar-thumb {
+  background: #604A3A;
+  border-radius: 8px;
+  border: 2px solid #FFF7E8;
+}
+.study-doc-scroll::-webkit-scrollbar-thumb:hover {
+  background: #8B7768;
+}
+
 /* Gentle entrance used by the post-sign-in loading moment */
 @keyframes desk-fade {
   from { opacity: 0; transform: translateY(6px); }

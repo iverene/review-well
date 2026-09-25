@@ -129,4 +129,51 @@ const replaceReviewerFile = async (req, res) => {
   }
 }
 
-export { uploadReviewerFile, replaceReviewerFile }
+const fileTypeToContentType = (fileType) => {
+  if (fileType === 'pdf') return 'application/pdf'
+  if (fileType === 'pptx') {
+    return 'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+  }
+  return 'application/octet-stream'
+}
+
+const downloadFileName = (reviewer, file) => {
+  const ext = file.fileType === 'pptx' ? 'pptx' : 'pdf'
+  const base = String(reviewer.title || 'reviewer').replace(/[^\w\- ]+/g, '').trim() || 'reviewer'
+  return `${base}.${ext}`
+}
+
+const downloadReviewerFile = async (req, res) => {
+  try {
+    const { reviewerId } = req.params
+    const reviewer = await reviewerModel.findById(reviewerId)
+    if (!reviewer) {
+      return res.status(404).json({ error: 'Reviewer not found' })
+    }
+    if (reviewer.visibility === 'private' && reviewer.authorId !== req.user?.id) {
+      return res.status(403).json({ error: 'Access denied' })
+    }
+
+    const file = await reviewerFileModel.findByReviewerId(reviewerId)
+    if (!file) {
+      return res.status(404).json({ error: 'No file for this reviewer' })
+    }
+
+    const storage = createStorageAdapter()
+    const { data, error: downloadError } = await storage.download(file.storagePath)
+    if (downloadError || !data) {
+      return res.status(502).json({ error: 'File download failed. Please try again.' })
+    }
+
+    const buffer = Buffer.from(await data.arrayBuffer())
+    res.setHeader('Content-Type', fileTypeToContentType(file.fileType))
+    res.setHeader('Content-Length', buffer.length)
+    res.setHeader('Content-Disposition', `attachment; filename="${downloadFileName(reviewer, file)}"`)
+    res.send(buffer)
+  } catch (error) {
+    console.error('Download reviewer file error:', error)
+    res.status(500).json({ error: 'Failed to download file' })
+  }
+}
+
+export { uploadReviewerFile, replaceReviewerFile, downloadReviewerFile }

@@ -139,10 +139,10 @@ describe('Reviewer', () => {
     expect(await screen.findByRole('button', { name: 'Copied' })).toBeInTheDocument()
   })
 
-  it('shows a fixed Reviewer header above the study hub', async () => {
+  it('uses the reviewer title and description as the page header', async () => {
     renderReviewer()
-    expect(await screen.findByRole('heading', { name: 'Reviewer', level: 1 })).toBeInTheDocument()
-    expect(screen.queryByText('Study guide')).not.toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Calculus', level: 1 })).toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Reviewer', level: 1 })).toBeNull()
   })
 
   it('shows the creator in Study Details instead of a header meta row', async () => {
@@ -151,6 +151,22 @@ describe('Reviewer', () => {
     expect(screen.getByText('Creator')).toBeInTheDocument()
     expect(screen.getByText('Iverene Grace Causapin')).toBeInTheDocument()
     expect(screen.queryByText('By Iverene Grace Causapin')).toBeNull()
+  })
+
+  it('offers the exact uploaded file for download beside Save', async () => {
+    renderReviewer()
+    await screen.findByLabelText('Study hub')
+    expect(screen.getByRole('link', { name: 'Download this reviewer file' })).toHaveAttribute(
+      'href',
+      '/api/reviewer-files/r1/download'
+    )
+  })
+
+  it('shows the upload date instead of last-updated', async () => {
+    renderReviewer()
+    await screen.findByLabelText('Study hub')
+    expect(screen.getByText('Uploaded')).toBeInTheDocument()
+    expect(screen.queryByText('Last Updated')).toBeNull()
   })
 
   it('shows the delete button to the owner only', async () => {
