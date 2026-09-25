@@ -212,6 +212,7 @@ describe('Reviewer', () => {
   })
 
   it('asks for confirmation and deletes, then leaves for My Reviewers', async () => {
+    window.localStorage.setItem('review-well-recent-reviewers:user-1', JSON.stringify([{ id: 'r1' }, { id: 'r2' }]))
     mockDelete.mockResolvedValue({ data: {} })
     render(
       <MemoryRouter initialEntries={['/reviewer/r1']}>
@@ -225,6 +226,7 @@ describe('Reviewer', () => {
     expect(await screen.findByRole('alertdialog', { name: 'Delete This Reviewer?' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Yes, Delete' }))
     await waitFor(() => expect(axios.delete).toHaveBeenCalledWith('/api/reviewers/r1', { withCredentials: true }))
+    expect(JSON.parse(window.localStorage.getItem('review-well-recent-reviewers:user-1'))).toEqual([{ id: 'r2' }])
     expect(await screen.findByText('My reviewers')).toBeInTheDocument()
   })
 

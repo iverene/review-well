@@ -25,6 +25,7 @@ import ErrorAlert from '../components/common/ErrorAlert'
 import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
 import { formatExamType } from '../utils/examType'
+import { purgeRecentReviewer } from '../utils/recentReviewers'
 import { ReviewerSkeleton } from '../components/common/Skeleton'
 
 const recentReviewersKey = (userId) => `review-well-recent-reviewers:${userId}`
@@ -123,6 +124,7 @@ const Reviewer = () => {
     setError(null)
     try {
       await axios.delete(`/api/reviewers/${id}`, { withCredentials: true })
+      purgeRecentReviewer(id)
       navigate('/reviewer/my')
     } catch (deleteError) {
       console.error('Failed to delete reviewer:', deleteError)
