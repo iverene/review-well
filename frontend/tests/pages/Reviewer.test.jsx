@@ -127,8 +127,17 @@ describe('Reviewer', () => {
     expect(screen.queryByText('private')).toBeNull()
   })
 
-  it('copies a share link with visibility semantics', async () => {
-    const writeText = vi.fn().mockResolvedValue()
+  it('closes the share dialog when clicking anywhere outside the card', async () => {
+    renderReviewer()
+    await screen.findByLabelText('Study hub')
+    fireEvent.click(screen.getByRole('button', { name: 'Share' }))
+    const dialog = await screen.findByRole('dialog', { name: 'Share This Reviewer' })
+    expect(dialog).toBeInTheDocument()
+    fireEvent.click(dialog.parentElement)
+    expect(screen.queryByRole('dialog', { name: 'Share This Reviewer' })).toBeNull()
+  })
+
+  it('copies a share link with visibility semantics', async () => {    const writeText = vi.fn().mockResolvedValue()
     Object.assign(navigator, { clipboard: { writeText } })
     renderReviewer()
     await screen.findByLabelText('Study hub')

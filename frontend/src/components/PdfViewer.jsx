@@ -223,6 +223,11 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
           >
             <ChevronLeft className="h-4 w-4" aria-hidden="true" />
           </button>
+        </div>
+        <p data-testid="study-doc-count" aria-label="Page count" className="min-w-16 flex-1 px-1 text-center font-mono text-xs font-bold text-ink">
+          {numPages > 0 ? `${currentPage} / ${numPages}` : '…'}
+        </p>
+        <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={() => goToPage(currentPage + 1)}
@@ -232,11 +237,6 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
           >
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </button>
-        </div>
-        <p data-testid="study-doc-count" aria-label="Page count" className="absolute left-1/2 min-w-16 -translate-x-1/2 px-1 text-center font-mono text-xs font-bold text-ink">
-          {numPages > 0 ? `${currentPage} / ${numPages}` : '…'}
-        </p>
-        <div className="flex items-center gap-1">
           {fullscreen && (
             <>
               <button

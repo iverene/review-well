@@ -341,8 +341,8 @@ const Reviewer = () => {
       {shareOpen && (
         <>
           <div className="fixed inset-0 z-40 bg-ink/30" onClick={() => setShareOpen(false)} />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Share This Reviewer">
-            <div className="w-full max-w-sm rounded-soft border-2 border-stone bg-paper p-4 shadow-xl">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setShareOpen(false)}>
+            <div className="w-full max-w-sm rounded-soft border-2 border-stone bg-paper p-4 shadow-xl" role="dialog" aria-modal="true" aria-label="Share This Reviewer" onClick={(e) => e.stopPropagation()}>
               <p className="text-sm font-extrabold text-ink">Share This Reviewer</p>
         <div className="mt-2 flex items-center gap-2">
           <input
@@ -364,7 +364,7 @@ const Reviewer = () => {
         {isOwner && (
           <div className="mt-3 border-t-2 border-stone pt-3">
             <p className="text-xs font-extrabold uppercase tracking-widest text-muted">Visibility</p>
-            <div className="mt-2 flex items-center gap-1 rounded-full border-2 border-stone bg-paper p-1" role="radiogroup" aria-label="Visibility">
+            <div className="mt-2 flex flex-col items-stretch gap-1 rounded-soft border-2 border-stone bg-paper p-1" role="radiogroup" aria-label="Visibility">
               {VISIBILITY_OPTIONS.map(({ value, label, icon: Icon }) => (
                 <button
                   key={value}
@@ -374,7 +374,7 @@ const Reviewer = () => {
                   onClick={() => handleVisibilityChange(value)}
                   disabled={visSaving}
                   title={label}
-                  className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-extrabold transition-colors disabled:opacity-60 ${reviewer.visibility === value ? 'bg-ink text-paper' : 'text-muted hover:bg-stone/60 hover:text-ink'}`}
+                  className={`flex w-full items-center gap-1.5 rounded-soft px-3 py-1.5 text-xs font-extrabold transition-colors disabled:opacity-60 ${reviewer.visibility === value ? 'bg-ink text-paper' : 'text-muted hover:bg-stone/60 hover:text-ink'}`}
                 >
                   <Icon className="h-3.5 w-3.5" aria-hidden="true" /> {label}
                 </button>
@@ -395,8 +395,8 @@ const Reviewer = () => {
       {confirmingDelete && (
         <>
           <div className="fixed inset-0 z-40 bg-ink/30" onClick={() => setConfirmingDelete(false)} />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="alertdialog" aria-modal="true" aria-labelledby="delete-reviewer-title" aria-describedby="delete-reviewer-copy">
-            <div className="w-full max-w-sm rounded-soft border-2 border-stone bg-paper p-5 club-shadow">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setConfirmingDelete(false)}>
+            <div className="w-full max-w-sm rounded-soft border-2 border-stone bg-paper p-5 club-shadow" role="alertdialog" aria-modal="true" aria-labelledby="delete-reviewer-title" aria-describedby="delete-reviewer-copy" onClick={(e) => e.stopPropagation()}>
               <h2 id="delete-reviewer-title" className="font-display text-xl font-bold text-ink">Delete This Reviewer?</h2>
               <p id="delete-reviewer-copy" className="mt-2 text-sm leading-relaxed text-muted">Its file, flashcards, blurting history, and focus sessions will be removed and can’t be recovered.</p>
               <div className="mt-5 flex justify-end gap-2">
@@ -445,8 +445,8 @@ const Reviewer = () => {
       {detailsOpen && (
         <>
           <div className="fixed inset-0 z-40 bg-ink/30" onClick={() => setDetailsOpen(false)} />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Study details">
-            <div className="w-full max-w-sm rounded-soft border-2 border-stone bg-mint/40 p-5 club-shadow">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setDetailsOpen(false)}>
+            <div className="w-full max-w-sm rounded-soft border-2 border-stone bg-mint p-5 club-shadow" role="dialog" aria-modal="true" aria-label="Study details" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between gap-2">
                 <h2 className="font-display text-xl font-bold text-ink">Study Details</h2>
                 <button
