@@ -63,10 +63,34 @@ describe('PdfViewer', () => {
     fireEvent.scroll(scroller)
     expect(await screen.findByTestId('study-doc-count')).toHaveTextContent('2 / 2')
   })
+
+  it('renders above CSS resolution on hidpi screens', async () => {
+    Object.defineProperty(window, 'devicePixelRatio', { value: 2, configurable: true })
+    try {
+      render(<PdfViewer fileUrl="https://storage.example.com/v1.pdf" title="Guide" />)
+      await screen.findByTestId('study-doc-count')
+      const canvas = screen.getByTestId('study-doc-pages').querySelector('canvas')
+      const cssWidth = parseInt(canvas.style.width, 10)
+      expect(canvas.width).toBe(cssWidth * 2)
+    } finally {
+      Object.defineProperty(window, 'devicePixelRatio', { value: 1, configurable: true })
+    }
+  })
+
+  it('starts fullscreen at 50% and restores 100% on exit', async () => {
+    render(<PdfViewer fileUrl="https://storage.example.com/v1.pdf" title="Guide" />)
+    await screen.findByTestId('study-doc-count')
+    expect(screen.queryByTestId('study-doc-zoom')).toBeNull()
+    Object.defineProperty(document, 'fullscreenElement', { value: document.createElement('div'), configurable: true })
+    fireEvent(document, new Event('fullscreenchange'))
+    expect(await screen.findByTestId('study-doc-zoom')).toHaveTextContent('50%')
+    Object.defineProperty(document, 'fullscreenElement', { value: null, configurable: true })
+    fireEvent(document, new Event('fullscreenchange'))
+    expect(screen.queryByTestId('study-doc-zoom')).toBeNull()
+  })
 })
 
-describe('currentPageFromTops', () => {
-  it('returns 1 for an empty list or a zero viewport', () => {
+describe('currentPageFromTops', () => {  it('returns 1 for an empty list or a zero viewport', () => {
     expect(currentPageFromTops([], 0, 800)).toBe(1)
     expect(currentPageFromTops([0, 1200], 0, 0)).toBe(1)
   })

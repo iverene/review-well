@@ -43,6 +43,11 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
 
   pageRef.current = currentPage
 
+  // Re-renders triggered outside the load effect (zoom, fullscreen
+  // transitions) share one abortable controller so rapid changes and
+  // unmounts never leave orphaned renders.
+  const renderControllerRef = useRef(null)
+
   const zoomRef = useRef(100)
   zoomRef.current = zoomPct
 
@@ -61,18 +66,24 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
     pagesEl.innerHTML = ''
     pagesRef.current = []
     const containerWidth = container.clientWidth || 800
+    // Render above CSS resolution (device pixels) so pages stay sharp on
+    // hidpi screens and when zoomed — the canvas backing store is denser
+    // than its displayed CSS size.
+    const dpr = Math.min(window.devicePixelRatio || 1, 3)
     for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
       if (signal.aborted) return
       // eslint-disable-next-line no-await-in-loop
       const page = await pdf.getPage(pageNumber)
       if (signal.aborted) return
       const baseViewport = page.getViewport({ scale: 1 })
-      const scale = ((containerWidth * 0.92) / baseViewport.width) * zoomFactor
+      const cssWidth = (containerWidth * 0.92) * zoomFactor
+      const scale = (cssWidth / baseViewport.width) * dpr
       const viewport = page.getViewport({ scale })
       const canvas = document.createElement('canvas')
       canvas.width = Math.floor(viewport.width)
       canvas.height = Math.floor(viewport.height)
-      canvas.className = 'w-full h-auto'
+      canvas.style.width = `${Math.floor(cssWidth)}px`
+      canvas.style.height = 'auto'
       const context = canvas.getContext('2d')
       // eslint-disable-next-line no-await-in-loop
       await page.render({ canvasContext: context, viewport }).promise
@@ -80,11 +91,29 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
       const wrapper = document.createElement('div')
       wrapper.dataset.page = String(pageNumber)
       wrapper.className = 'study-doc-page'
-      wrapper.style.width = `${Math.floor(viewport.width)}px`
+      wrapper.style.width = `${Math.floor(cssWidth)}px`
       wrapper.appendChild(canvas)
       pagesEl.appendChild(wrapper)
       pagesRef.current.push(wrapper)
     }
+  }, [])
+
+  const rerenderAt = useCallback((zoomFactor) => {
+    if (!docRef.current) return Promise.resolve()
+    renderControllerRef.current?.abort()
+    const controller = new AbortController()
+    renderControllerRef.current = controller
+    return renderAll(docRef.current, controller.signal, zoomFactor).then(() => {
+      if (!controller.signal.aborted) {
+        const el = pagesRef.current[pageRef.current - 1]
+        el?.scrollIntoView?.({ block: 'start' })
+        updateCurrentFromScroll()
+      }
+    })
+  }, [renderAll, updateCurrentFromScroll])
+
+  useEffect(() => () => {
+    renderControllerRef.current?.abort()
   }, [])
 
   useEffect(() => {
@@ -146,11 +175,18 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
 
   useEffect(() => {
     const onFullscreenChange = () => {
-      setFullscreen(!!document.fullscreenElement)
+      const isFullscreen = !!document.fullscreenElement
+      setFullscreen(isFullscreen)
+      // Fullscreen starts zoomed out; leaving restores the fixed 100%
+      // windowed scale so the embedded view is never zoomed.
+      if (!docRef.current) return
+      const next = isFullscreen ? 50 : 100
+      setZoomPct(next)
+      rerenderAt(next / 100)
     }
     document.addEventListener('fullscreenchange', onFullscreenChange)
     return () => document.removeEventListener('fullscreenchange', onFullscreenChange)
-  }, [])
+  }, [rerenderAt])
 
   const goToPage = (pageNumber) => {
     const clamped = Math.min(Math.max(1, pageNumber), Math.max(1, numPages))
@@ -162,11 +198,7 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
     const next = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, zoomPct + delta))
     if (next === zoomPct || !docRef.current) return
     setZoomPct(next)
-    const controller = new AbortController()
-    renderAll(docRef.current, controller.signal, next / 100).then(() => {
-      const el = pagesRef.current[pageRef.current - 1]
-      el?.scrollIntoView?.({ block: 'start' })
-    })
+    rerenderAt(next / 100)
   }
 
   const toggleFullscreen = () => {
