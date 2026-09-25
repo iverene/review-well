@@ -34,9 +34,11 @@ const incrementUsage = async (userId) => {
   })
 
   if (existingQuota) {
+    // Atomic increment (single UPDATE): concurrent generations cannot
+    // overwrite each other and slip past the rolling quota.
     return prisma.aiQuota.update({
       where: { id: existingQuota.id },
-      data: { generationsUsed: existingQuota.generationsUsed + 1 },
+      data: { generationsUsed: { increment: 1 } },
     })
   } else {
     return prisma.aiQuota.create({
@@ -91,9 +93,11 @@ const incrementGradeUsage = async (userId) => {
   })
 
   if (latest && latest.gradesResetAt >= windowStart) {
+    // Atomic increment (single UPDATE): concurrent grades cannot overwrite
+    // each other and slip past the rolling quota.
     return prisma.aiQuota.update({
       where: { id: latest.id },
-      data: { gradesUsed: latest.gradesUsed + 1 },
+      data: { gradesUsed: { increment: 1 } },
     })
   }
 

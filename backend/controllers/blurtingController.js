@@ -22,10 +22,12 @@ const requireSignedIn = (req, res) => {
 }
 
 // Reads honor reviewer visibility (mirrors flashcardController.getCards):
-// public and unlisted-via-link are readable by anyone; private requires owner.
+// public and unlisted-via-link are readable by anyone; private requires
+// owner; drafts are owner-only (they never appear in public listings).
 const canRead = (reviewer, user) => {
   if (!reviewer) return false
   if (reviewer.visibility === 'private' && reviewer.authorId !== user?.id) return false
+  if (reviewer.isDraft && reviewer.authorId !== user?.id) return false
   return true
 }
 
@@ -62,8 +64,11 @@ const submitDump = async (req, res) => {
 
     const { id } = req.params
     const { dumpText } = req.body || {}
-    if (!dumpText?.trim()) {
+    if (typeof dumpText !== 'string' || !dumpText.trim()) {
       return res.status(400).json({ error: 'dumpText is required' })
+    }
+    if (dumpText.trim().length > 5000) {
+      return res.status(400).json({ error: 'dumpText must be at most 5000 characters' })
     }
 
     const reviewer = await reviewerModel.findById(id)

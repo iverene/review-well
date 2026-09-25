@@ -1,6 +1,11 @@
 import * as pomodoroModel from '../models/pomodoroModel.js'
+import * as reviewerModel from '../models/reviewerModel.js'
+
 import { dayKey } from '../models/pomodoroModel.js'
 
+// Single sessions longer than a day are rejected — they can only come from
+// tampered timestamps and would distort today/week/goal stats.
+const MAX_FOCUS_SECONDS = 24 * 60 * 60
 const requireSignedIn = (req, res) => {
   if (!req.user) {
     res.status(401).json({ error: 'guest-write-blocked' })
@@ -26,9 +31,25 @@ const createSession = async (req, res) => {
       return res.status(400).json({ error: 'breakSeconds must be a non-negative integer' })
     }
 
+    if (reviewerId !== undefined && reviewerId !== null) {
+      const reviewer = await reviewerModel.findById(reviewerId)
+      if (!reviewer) {
+        return res.status(404).json({ error: 'Reviewer not found' })
+      }
+      if (
+        (reviewer.visibility === 'private' || reviewer.isDraft) &&
+        reviewer.authorId !== req.user.id
+      ) {
+        return res.status(403).json({ error: 'Not authorized to attach to this reviewer' })
+      }
+    }
+
     // focusSeconds is DERIVED from timestamps (authoritative server math);
     // any client-sent value is ignored so rows always match actual elapsed time.
     const focusSeconds = Math.round((ended.getTime() - started.getTime()) / 1000)
+    if (focusSeconds > MAX_FOCUS_SECONDS) {
+      return res.status(400).json({ error: 'focus duration must be at most 24 hours' })
+    }
 
     const session = await pomodoroModel.create({
       userId: req.user.id,

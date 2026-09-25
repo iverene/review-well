@@ -2,6 +2,8 @@ import * as saveModel from '../models/saveModel.js'
 import * as followModel from '../models/followModel.js'
 import * as notificationModel from '../models/notificationModel.js'
 import * as reviewerModel from '../models/reviewerModel.js'
+import * as userModel from '../models/userModel.js'
+import { parsePagination } from '../utils/pagination.js'
 import { delPrefix } from '../utils/cache.js'
 
 // Save endpoints
@@ -12,6 +14,16 @@ const saveReviewer = async (req, res) => {
 
     const reviewer = await reviewerModel.findById(reviewerId)
     if (!reviewer) {
+      return res.status(404).json({ error: 'Reviewer not found' })
+    }
+
+    // Private reviewers of other users cannot be saved (their content would
+    // otherwise leak through the saved-reviewers list); drafts are invisible
+    // everywhere, so non-owners get a 404 that confirms nothing.
+    if (reviewer.visibility === 'private' && reviewer.authorId !== userId) {
+      return res.status(403).json({ error: 'Not authorized to save this reviewer' })
+    }
+    if (reviewer.isDraft && reviewer.authorId !== userId) {
       return res.status(404).json({ error: 'Reviewer not found' })
     }
 
@@ -95,12 +107,25 @@ const followUser = async (req, res) => {
       return res.status(400).json({ error: 'Cannot follow yourself' })
     }
 
+    const targetUser = await userModel.findById(targetUserId)
+    if (!targetUser) {
+      return res.status(404).json({ error: 'User not found' })
+    }
+
     const existingFollow = await followModel.findByUsers(followerId, targetUserId)
     if (existingFollow) {
       return res.status(400).json({ error: 'Already following' })
     }
 
-    await followModel.create(followerId, targetUserId)
+    try {
+      await followModel.create(followerId, targetUserId)
+    } catch (createError) {
+      // Lost a race with another follow request for the same pair.
+      if (createError?.code === 'P2002') {
+        return res.status(400).json({ error: 'Already following' })
+      }
+      throw createError
+    }
     await notificationModel.createFollowNotification(targetUserId, followerId)
     delPrefix('social:')
     delPrefix('profile:')
@@ -156,9 +181,7 @@ const getFollowStatus = async (req, res) => {
 // Notification endpoints
 const getNotifications = async (req, res) => {
   try {
-    const { page = 1, limit = 20 } = req.query
-    const skip = (parseInt(page) - 1) * parseInt(limit)
-    const take = parseInt(limit)
+    const { skip, take } = parsePagination(req.query)
 
     const result = await notificationModel.findByRecipient(req.user.id, { skip, take })
 
@@ -175,6 +198,14 @@ const getNotifications = async (req, res) => {
 const markNotificationRead = async (req, res) => {
   try {
     const { notificationId } = req.params
+
+    const notification = await notificationModel.findById(notificationId)
+    if (!notification) {
+      return res.status(404).json({ error: 'Notification not found' })
+    }
+    if (notification.recipientId !== req.user.id) {
+      return res.status(403).json({ error: 'Not authorized to update this notification' })
+    }
 
     await notificationModel.markAsRead(notificationId)
 

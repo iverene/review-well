@@ -16,23 +16,27 @@ const SaveButton = ({ reviewerId, initialSaved = false, initialSaveCount = 0 }) 
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchSaveStatus()
+    if (!isAuthenticated) return
+    let cancelled = false
+    const load = async () => {
+      try {
+        const response = await axios.get(`/api/social/reviewers/${reviewerId}/save`, {
+          withCredentials: true,
+        })
+        if (cancelled) return
+        setSaved(response.data.saved)
+        setSaveCount(response.data.saveCount)
+      } catch (error) {
+        if (cancelled) return
+        console.error('Failed to fetch save status:', error)
+        setError(getApiErrorMessage(error, 'Unable to load save status.'))
+      }
+    }
+    load()
+    return () => {
+      cancelled = true
     }
   }, [reviewerId, isAuthenticated])
-
-  const fetchSaveStatus = async () => {
-    try {
-      const response = await axios.get(`/api/social/reviewers/${reviewerId}/save`, {
-        withCredentials: true,
-      })
-      setSaved(response.data.saved)
-      setSaveCount(response.data.saveCount)
-    } catch (error) {
-      console.error('Failed to fetch save status:', error)
-      setError(getApiErrorMessage(error, 'Unable to load save status.'))
-    }
-  }
 
   const handleSave = async () => {
     if (!isAuthenticated || loading) return

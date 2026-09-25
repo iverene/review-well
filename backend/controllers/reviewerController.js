@@ -6,6 +6,7 @@ import * as flashcardModel from '../models/flashcardModel.js'
 import { getRemainingQuota, getRemainingGrades, GRADE_LIMIT } from '../models/aiQuotaModel.js'
 import { DECK_QUOTA_LIMIT } from '../constants/quotas.js'
 import { createStorageAdapter } from '../services/adapters/storage.js'
+import { parsePagination } from '../utils/pagination.js'
 import { del, delPrefix } from '../utils/cache.js'
 
 // Signed-URL lifetime for public reviewer files (private bucket, so even
@@ -38,16 +39,14 @@ const notifyFollowersOfNewReviewer = async (authorId, reviewerId) => {
 
 const getPublicReviewers = async (req, res) => {
   try {
-    const { page = 1, limit = 20, search = '' } = req.query
-    const skip = (parseInt(page) - 1) * parseInt(limit)
-    const take = parseInt(limit)
+    const { page, limit, skip, take } = parsePagination(req.query)
 
-    const result = await reviewerModel.findPublic({ skip, take, search })
+    const result = await reviewerModel.findPublic({ skip, take, search: req.query.search || '' })
 
     res.json({
       reviewers: result.reviewers,
       pagination: {
-        page: parseInt(page),
+        page,
         limit: take,
         total: result.total,
         hasMore: result.hasMore,
@@ -62,16 +61,14 @@ const getPublicReviewers = async (req, res) => {
 const getAuthorReviewers = async (req, res) => {
   try {
     const { userId } = req.params
-    const { page = 1, limit = 50 } = req.query
-    const skip = (parseInt(page) - 1) * parseInt(limit)
-    const take = parseInt(limit)
+    const { page, limit, skip, take } = parsePagination(req.query, { defaultLimit: 50 })
 
     const result = await reviewerModel.findPublicByAuthor(userId, { skip, take })
 
     res.json({
       reviewers: result.reviewers,
       pagination: {
-        page: parseInt(page),
+        page,
         limit: take,
         total: result.total,
         hasMore: result.hasMore,
@@ -83,18 +80,46 @@ const getAuthorReviewers = async (req, res) => {
   }
 }
 
+// Batch existence check for client-side caches (Recently Viewed rail).
+// Returns only ids the requester may actually open: non-private,
+// non-draft rows, plus own private/draft rows. Never leaks private rows
+// of other users.
+const getReadableIds = async (req, res) => {
+  try {
+    const ids = String(req.query.ids || '')
+      .split(',')
+      .map((id) => id.trim())
+      .filter(Boolean)
+      .slice(0, 20)
+    if (ids.length === 0) {
+      return res.json({ ids: [] })
+    }
+
+    const rows = await reviewerModel.findByIds(ids)
+    const readable = rows
+      .filter(
+        (row) =>
+          (row.visibility !== 'private' && !row.isDraft) || row.authorId === req.user?.id
+      )
+      .map((row) => row.id)
+
+    res.json({ ids: readable })
+  } catch (error) {
+    console.error('Get readable ids error:', error)
+    res.status(500).json({ error: 'Failed to validate reviewers' })
+  }
+}
+
 const getMyReviewers = async (req, res) => {
   try {
-    const { page = 1, limit = 50 } = req.query
-    const skip = (parseInt(page) - 1) * parseInt(limit)
-    const take = parseInt(limit)
+    const { page, limit, skip, take } = parsePagination(req.query, { defaultLimit: 50 })
 
     const result = await reviewerModel.findByAuthor(req.user.id, { skip, take })
 
     res.json({
       reviewers: result.reviewers,
       pagination: {
-        page: parseInt(page),
+        page,
         limit: take,
         total: result.total,
         hasMore: result.hasMore,
@@ -118,6 +143,12 @@ const getReviewerById = async (req, res) => {
     // Check access permissions
     if (reviewer.visibility === 'private' && reviewer.authorId !== req.user?.id) {
       return res.status(403).json({ error: 'Access denied' })
+    }
+
+    // Drafts never appear in public listings, so direct links stay
+    // owner-only too (404, not 403, to avoid confirming existence).
+    if (reviewer.isDraft && reviewer.authorId !== req.user?.id) {
+      return res.status(404).json({ error: 'Reviewer not found' })
     }
 
     if (reviewer.visibility === 'unlisted' && reviewer.authorId !== req.user?.id) {
@@ -161,7 +192,15 @@ const getReviewerById = async (req, res) => {
 
 const createReviewer = async (req, res) => {
   try {
-    const data = req.validatedBody
+    const data = { ...req.validatedBody }
+
+    // Publishing at creation must behave like flipping to public/unlisted
+    // later: public listings (and follower notifications) require a
+    // non-draft, so non-private visibility clears the draft flag here too.
+    if (data.visibility && data.visibility !== 'private') {
+      data.isDraft = false
+    }
+
     const reviewer = await reviewerModel.create({
       ...data,
       authorId: req.user.id,
@@ -256,6 +295,7 @@ export {
   getPublicReviewers,
   getAuthorReviewers,
   getMyReviewers,
+  getReadableIds,
   getReviewerById,
   createReviewer,
   updateReviewer,

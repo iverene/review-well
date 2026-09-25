@@ -11,6 +11,10 @@ vi.mock('../../src/contexts/AuthContext', () => ({
   useAuth: () => ({ user: { id: 'me' }, isAuthenticated: true }),
 }))
 
+vi.mock('../../src/contexts/AuthContext', () => ({
+  useAuth: () => ({ user: { id: 'me' }, isAuthenticated: true }),
+}))
+
 const notification = (id, actionType = 'follow') => ({
   id,
   actor: { displayName: 'Ann Lee', avatarUrl: null },

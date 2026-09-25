@@ -70,9 +70,13 @@ describe('Home desk saves display', () => {
       isGuest: false,
       loading: false,
     })
-    axios.get.mockImplementation((url) => {
+    axios.get.mockImplementation((url, config) => {
       if (String(url).includes('/api/reviewers/my')) {
         return Promise.resolve({ data: { reviewers: [deskReviewer('mine-1', 7)] } })
+      }
+      if (String(url).includes('/api/reviewers/exists')) {
+        const ids = String(config?.params?.ids || '').split(',').filter(Boolean)
+        return Promise.resolve({ data: { ids: ids.filter((id) => !id.endsWith('-gone')) } })
       }
       return Promise.resolve({ data: { reviewers: [deskReviewer('pub-1', 3)] } })
     })
@@ -93,5 +97,16 @@ describe('Home desk saves display', () => {
     await screen.findByText('Guide mine-1')
     expect(screen.queryByLabelText('7 saves')).toBeNull()
     expect(screen.queryByText('7 saves')).toBeNull()
+  })
+
+  it('prunes deleted reviewers from Recently Viewed on load', async () => {
+    window.localStorage.setItem(
+      'review-well-recent-reviewers:user-1',
+      JSON.stringify([deskReviewer('recent-1', 5), deskReviewer('old-1-gone', 2)])
+    )
+    render(<MemoryRouter><Home /></MemoryRouter>)
+    expect(await screen.findByLabelText('5 saves')).toBeInTheDocument()
+    expect(screen.queryByText('Guide old-1-gone')).toBeNull()
+    expect(JSON.parse(window.localStorage.getItem('review-well-recent-reviewers:user-1')).map((r) => r.id)).toEqual(['recent-1'])
   })
 })

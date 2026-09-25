@@ -3,6 +3,7 @@ import {
   getPublicReviewers,
   getAuthorReviewers,
   getMyReviewers,
+  getReadableIds,
   getReviewerById,
   createReviewer,
   updateReviewer,
@@ -31,6 +32,8 @@ app.post(
 )
 
 // Routes with optional authentication (for access control)
+// NOTE: /exists must stay above /:id so Express matches it literally.
+app.get('/exists', optionalAuth, getReadableIds)
 app.get('/:id', optionalAuth, getReviewerById)
 app.put(
   '/:id',

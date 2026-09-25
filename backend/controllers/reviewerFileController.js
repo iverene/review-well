@@ -1,6 +1,7 @@
 import * as reviewerFileModel from '../models/reviewerFileModel.js'
 import * as reviewerModel from '../models/reviewerModel.js'
 import { createStorageAdapter } from '../services/adapters/storage.js'
+import { delPrefix } from '../utils/cache.js'
 
 const MAX_FILE_BYTES = 25 * 1024 * 1024 // 25 MB, mirrored in middleware/upload.js
 
@@ -52,6 +53,11 @@ const uploadReviewerFile = async (req, res) => {
       return res.status(400).json({ error: 'Invalid file type. Allowed: PDF, PPTX' })
     }
 
+    const existingFile = await reviewerFileModel.findByReviewerId(reviewerId)
+    if (existingFile) {
+      return res.status(409).json({ error: 'File already exists, use PUT to replace' })
+    }
+
     const version = 1
     const storagePath = storagePathFor(req.user.id, reviewerId, version, mapped.ext)
     const storage = createStorageAdapter()
@@ -67,6 +73,9 @@ const uploadReviewerFile = async (req, res) => {
       byteSize: req.file.size,
       version,
     })
+    // Bust detail caches: enrichment (fileUrl) changed even though the
+    // reviewer row itself did not.
+    delPrefix('reviewers:')
 
     const { data: urlData } = storage.getPublicUrl(storagePath)
     res.status(201).json({ file, publicUrl: urlData?.publicUrl || '' })
@@ -120,6 +129,7 @@ const replaceReviewerFile = async (req, res) => {
       version,
     })
     await reviewerModel.update(reviewerId, { deckStale: true })
+    delPrefix('reviewers:')
 
     const { data: urlData } = storage.getPublicUrl(storagePath)
     res.json({ file, publicUrl: urlData?.publicUrl || '' })
@@ -152,6 +162,9 @@ const downloadReviewerFile = async (req, res) => {
     }
     if (reviewer.visibility === 'private' && reviewer.authorId !== req.user?.id) {
       return res.status(403).json({ error: 'Access denied' })
+    }
+    if (reviewer.isDraft && reviewer.authorId !== req.user?.id) {
+      return res.status(404).json({ error: 'Reviewer not found' })
     }
 
     const file = await reviewerFileModel.findByReviewerId(reviewerId)

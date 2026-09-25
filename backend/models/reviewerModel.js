@@ -114,6 +114,14 @@ const update = async (id, data) => {
   })
 }
 
+const findByIds = async (ids) => {
+  if (!ids.length) return []
+  return prisma.reviewer.findMany({
+    where: { id: { in: ids } },
+    select: { id: true, visibility: true, authorId: true },
+  })
+}
+
 const remove = async (id) => {
   return prisma.reviewer.delete({ where: { id } })
 }
@@ -122,4 +130,4 @@ const count = async (where = {}) => {
   return remember(`reviewers:count:${JSON.stringify(where)}`, TTL_60_SECONDS, () => prisma.reviewer.count({ where }))
 }
 
-export { findPublic, findPublicByAuthor, findByAuthor, findById, create, update, remove, count }
+export { findPublic, findPublicByAuthor, findByAuthor, findById, findByIds, create, update, remove, count }

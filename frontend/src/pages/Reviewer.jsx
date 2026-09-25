@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios'
 import {
@@ -62,6 +62,9 @@ const Reviewer = () => {
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
   const [detailsOpen, setDetailsOpen] = useState(false)
+  const copiedTimerRef = useRef(null)
+
+  useEffect(() => () => clearTimeout(copiedTimerRef.current), [])
 
   const guest = !isAuthenticated
   const loginReturnTo = `/reviewer/${id}`
@@ -76,13 +79,23 @@ const Reviewer = () => {
       setCards(Array.isArray(loadedReviewer.cards) ? loadedReviewer.cards : [])
 
       if (isAuthenticated && user?.id) {
-        const key = recentReviewersKey(user.id)
-        const recent = JSON.parse(window.localStorage.getItem(key) || '[]')
-        const withoutCurrent = recent.filter((item) => item.id !== loadedReviewer.id)
-        window.localStorage.setItem(key, JSON.stringify([loadedReviewer, ...withoutCurrent].slice(0, 5)))
+        // Storage must never fail the page: corrupt entries fall back to a
+        // fresh rail instead of pushing the loaded reviewer into onError.
+        try {
+          const key = recentReviewersKey(user.id)
+          const parsed = JSON.parse(window.localStorage.getItem(key) || '[]')
+          const recent = Array.isArray(parsed) ? parsed : []
+          const withoutCurrent = recent.filter((item) => item?.id !== loadedReviewer.id)
+          window.localStorage.setItem(key, JSON.stringify([loadedReviewer, ...withoutCurrent].slice(0, 5)))
+        } catch {
+          // Corrupt rail — leave storage alone and keep the loaded reviewer.
+        }
       }
     } catch (loadError) {
       console.error('Failed to load reviewer:', loadError)
+      // A ghost entry (deleted since it was listed or saved) heals itself:
+      // evict it from Recently Viewed on every surface.
+      if (loadError.response?.status === 404) purgeRecentReviewer(id)
       setError(getApiErrorMessage(loadError, 'Unable to load this reviewer.'))
     } finally {
       setLoading(false)
@@ -92,7 +105,7 @@ const Reviewer = () => {
   useEffect(() => {
     loadReviewer()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, isAuthenticated, user])
+  }, [id, isAuthenticated, user?.id])
 
   if (loading) return <ReviewerSkeleton />
 
@@ -158,7 +171,8 @@ const Reviewer = () => {
       document.body.removeChild(ta)
     }
     setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    clearTimeout(copiedTimerRef.current)
+    copiedTimerRef.current = setTimeout(() => setCopied(false), 2000)
   }
 
   // Guest progress stays in React state only — zero writes.
@@ -251,6 +265,10 @@ const Reviewer = () => {
   }
 
   const handleBlurtingSubmit = async (dumpText) => {
+    if (guest) {
+      sendGuestToLogin()
+      return { gradedVia: 'self', sourceExcerpt: '', keyPoints: [] }
+    }
     const response = await axios.post(`/api/reviewers/${id}/blurting`, { dumpText }, { withCredentials: true })
     return response.data
   }
@@ -260,6 +278,9 @@ const Reviewer = () => {
       await axios.patch(`/api/blurting/${attemptId}`, { selfRating: rating }, { withCredentials: true })
     } catch (rateError) {
       console.error('Failed to save self-rating:', rateError)
+      const message = getApiErrorMessage(rateError, 'Unable to save your rating.')
+      setError(message)
+      toast.error(message)
     }
   }
 
@@ -350,10 +371,20 @@ const Reviewer = () => {
 
       {shareOpen && (
         <>
-          <div className="fixed inset-0 z-40 bg-ink/30" onClick={() => setShareOpen(false)} />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setShareOpen(false)}>
+          <div className="fixed inset-0 z-40 bg-ink/30" aria-hidden="true" onClick={() => setShareOpen(false)} />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setShareOpen(false)} onKeyDown={(event) => { if (event.key === 'Escape') setShareOpen(false) }}>
             <div className="w-full max-w-sm rounded-soft border-2 border-stone bg-paper p-4 shadow-xl" role="dialog" aria-modal="true" aria-label="Share This Reviewer" onClick={(e) => e.stopPropagation()}>
-              <p className="text-sm font-extrabold text-ink">Share This Reviewer</p>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-sm font-extrabold text-ink">Share This Reviewer</p>
+                <button
+                  type="button"
+                  onClick={() => setShareOpen(false)}
+                  aria-label="Close share dialog"
+                  className="rounded-soft border-2 border-transparent p-1.5 text-ink hover:bg-stone/40"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" />
+                </button>
+              </div>
         <div className="mt-2 flex items-center gap-2">
           <input
             readOnly

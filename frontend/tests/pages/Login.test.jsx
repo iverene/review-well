@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter, Routes, Route } from 'react-router-dom'
 
-import Login from '../../src/pages/Login'
+import Login, { isGuestSafePath } from '../../src/pages/Login'
 import { useAuth } from '../../src/contexts/AuthContext'
 
 vi.mock('../../src/contexts/AuthContext', () => ({
@@ -77,6 +77,25 @@ describe('Login', () => {
     expect(screen.getByText('Study hub')).toBeTruthy()
   })
 
+  it('accepts a string state.from preserving search params', () => {
+    useAuth.mockReturnValue({
+      isAuthenticated: true,
+      isGuest: false,
+      loading: false,
+      continueAsGuest: vi.fn(),
+    })
+    render(
+      <MemoryRouter initialEntries={[{ pathname: '/login', state: { from: '/reviewer/public?course=mine' } }]}>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/reviewer/public" element={<div>Public list</div>} />
+          <Route path="/" element={<div>Home page</div>} />
+        </Routes>
+      </MemoryRouter>
+    )
+    expect(screen.getByText('Public list')).toBeTruthy()
+  })
+
   it('ignores an off-site returnTo', () => {
     useAuth.mockReturnValue({
       isAuthenticated: true,
@@ -86,5 +105,62 @@ describe('Login', () => {
     })
     renderAt('/login?returnTo=https%3A%2F%2Fevil.example%2F')
     expect(screen.getByText('Home page')).toBeTruthy()
+  })
+
+  it('never auto-redirects guests (no ProtectedRoute loop)', () => {
+    useAuth.mockReturnValue({
+      isAuthenticated: false,
+      isGuest: true,
+      loading: false,
+      continueAsGuest: vi.fn(),
+    })
+    renderAt('/login?returnTo=%2Freviewer%2Fmy')
+    expect(screen.getByRole('heading', { name: 'Pick Your Study Mode' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Browse as Guest' })).toBeInTheDocument()
+  })
+
+  it('sends guests home when Browse as Guest targets a protected route', () => {
+    const continueAsGuest = vi.fn()
+    useAuth.mockReturnValue({
+      isAuthenticated: false,
+      isGuest: false,
+      loading: false,
+      continueAsGuest,
+    })
+    render(
+      <MemoryRouter initialEntries={['/login?returnTo=%2Freviewer%2Fmy']}>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<div>Home page</div>} />
+        </Routes>
+      </MemoryRouter>
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Browse as Guest' }))
+    expect(continueAsGuest).toHaveBeenCalled()
+    expect(screen.getByText('Home page')).toBeTruthy()
+  })
+})
+
+describe('isGuestSafePath', () => {
+  it('allows public routes', () => {
+    expect(isGuestSafePath('/')).toBe(true)
+    expect(isGuestSafePath('/login')).toBe(true)
+    expect(isGuestSafePath('/reviewer/public')).toBe(true)
+    expect(isGuestSafePath('/reviewer/r1')).toBe(true)
+    expect(isGuestSafePath('/review/r1')).toBe(true)
+    expect(isGuestSafePath('/profile/user-9')).toBe(true)
+    expect(isGuestSafePath('/about')).toBe(true)
+  })
+
+  it('blocks protected routes and off-site URLs', () => {
+    expect(isGuestSafePath('/reviewer/my')).toBe(false)
+    expect(isGuestSafePath('/create')).toBe(false)
+    expect(isGuestSafePath('/notifications')).toBe(false)
+    expect(isGuestSafePath('/profile')).toBe(false)
+    expect(isGuestSafePath('/friends')).toBe(false)
+    expect(isGuestSafePath('/settings/account')).toBe(false)
+    expect(isGuestSafePath('/onboarding')).toBe(false)
+    expect(isGuestSafePath('https://evil.example/')).toBe(false)
+    expect(isGuestSafePath('//evil.example/')).toBe(false)
   })
 })

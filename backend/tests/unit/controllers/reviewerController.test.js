@@ -192,6 +192,24 @@ describe('Reviewer Controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(403)
     })
+
+    it('should return 404 for draft reviewer when not owner', async () => {
+      const req = createMockRequest({ params: { id: '1' }, user: { id: 'other-user' } })
+      const res = createMockResponse()
+      const mockReviewer = {
+        id: '1',
+        visibility: 'public',
+        isDraft: true,
+        authorId: 'owner-user',
+      }
+
+      reviewerModel.findById.mockResolvedValue(mockReviewer)
+
+      await getReviewerById(req, res)
+
+      expect(res.status).toHaveBeenCalledWith(404)
+      expect(res.json).toHaveBeenCalledWith({ error: 'Reviewer not found' })
+    })
   })
 
   describe('createReviewer', () => {
@@ -250,6 +268,22 @@ describe('Reviewer Controller', () => {
       await createReviewer(req, res)
 
       expect(notificationModel.createMany).not.toHaveBeenCalled()
+    })
+
+    it('should clear the draft flag when created non-private', async () => {
+      const req = createMockRequest({
+        user: { id: 'author-1' },
+        validatedBody: { title: 'Live Guide', visibility: 'public', isDraft: true },
+      })
+      const res = createMockResponse()
+
+      reviewerModel.create.mockResolvedValue({ id: 'r1', authorId: 'author-1', visibility: 'public', isDraft: false })
+
+      await createReviewer(req, res)
+
+      expect(reviewerModel.create).toHaveBeenCalledWith(
+        expect.objectContaining({ visibility: 'public', isDraft: false, authorId: 'author-1' })
+      )
     })
   })
 

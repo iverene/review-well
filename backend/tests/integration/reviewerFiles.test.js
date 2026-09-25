@@ -122,6 +122,26 @@ describe('Reviewer File Routes', () => {
       expect(response.body.file.storagePath).toBe(`${OWNER.id}/${ownedReviewer.id}/v1.pdf`)
       expect(response.body.file.fileType).toBe('pdf')
     })
+
+    it('should return 409 when a file already exists (use PUT to replace)', async () => {
+      reviewerModel.findById.mockResolvedValue(ownedReviewer)
+      reviewerFileModel.findByReviewerId.mockResolvedValue({
+        id: 'file-1',
+        reviewerId: ownedReviewer.id,
+        storagePath: `${OWNER.id}/${ownedReviewer.id}/v1.pdf`,
+        fileType: 'pdf',
+        byteSize: 24,
+        version: 1,
+      })
+
+      const app = createApp(OWNER)
+      const response = await request(app)
+        .post('/api/reviewer-files')
+        .field('reviewerId', ownedReviewer.id)
+        .attach('file', pdfBuffer, 'notes.pdf')
+
+      expect(response.status).toBe(409)
+    })
   })
 
   describe('PUT /api/reviewer-files/:reviewerId', () => {
@@ -147,6 +167,31 @@ describe('Reviewer File Routes', () => {
       expect(response.body.file.version).toBe(2)
       expect(response.body.file.storagePath).toBe(`${OWNER.id}/${ownedReviewer.id}/v2.pdf`)
       expect(reviewerModel.update).toHaveBeenCalledWith(ownedReviewer.id, { deckStale: true })
+    })
+
+    it('should bust reviewer caches on replace', async () => {
+      reviewerModel.findById.mockResolvedValue(ownedReviewer)
+      reviewerFileModel.findByReviewerId.mockResolvedValue({
+        id: 'file-1',
+        reviewerId: ownedReviewer.id,
+        storagePath: `${OWNER.id}/${ownedReviewer.id}/v1.pdf`,
+        fileType: 'pdf',
+        byteSize: 24,
+        version: 1,
+      })
+      reviewerFileModel.bumpVersion.mockImplementation(async (id, data) => ({ id, reviewerId: ownedReviewer.id, ...data }))
+      reviewerModel.update.mockImplementation(async (id, data) => ({ ...ownedReviewer, ...data }))
+
+      const { set, get } = await import('../../utils/cache.js')
+      set('reviewers:detail:reviewer-1', { stale: true })
+
+      const app = createApp(OWNER)
+      const response = await request(app)
+        .put(`/api/reviewer-files/${ownedReviewer.id}`)
+        .attach('file', pdfBuffer, 'notes-v2.pdf')
+
+      expect(response.status).toBe(200)
+      expect(get('reviewers:detail:reviewer-1')).toBeUndefined()
     })
 
     it('should return 401 guest-write-blocked when not signed in', async () => {

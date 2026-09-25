@@ -87,9 +87,36 @@ const Home = () => {
         const publicResponse = await axios.get('/api/reviewers/public', { params: { limit: 50 } })
         setPublicReviewers(publicResponse.data.reviewers || [])
         if (isAuthenticated) {
+          if (!user?.id) return
           const myResponse = await axios.get('/api/reviewers/my', { withCredentials: true })
           setMyReviewers(myResponse.data.reviewers || [])
-          setRecentReviewers(JSON.parse(window.localStorage.getItem(recentReviewersKey(user.id)) || '[]'))
+          // Server-side validation: evict deleted (or now-private) entries so
+          // ghosts never render — localStorage is per-browser and goes stale
+          // across devices after deletes.
+          let stored = []
+          try {
+            const parsed = JSON.parse(window.localStorage.getItem(recentReviewersKey(user.id)) || '[]')
+            stored = Array.isArray(parsed) ? parsed : []
+          } catch {
+            stored = []
+          }
+          if (stored.length > 0) {
+            try {
+              const ids = [...new Set(stored.map((entry) => entry?.id).filter(Boolean))]
+              const validResponse = await axios.get('/api/reviewers/exists', {
+                params: { ids: ids.join(',') },
+                withCredentials: true,
+              })
+              const valid = new Set(validResponse.data.ids || [])
+              const pruned = stored.filter((entry) => valid.has(entry?.id))
+              window.localStorage.setItem(recentReviewersKey(user.id), JSON.stringify(pruned))
+              setRecentReviewers(pruned)
+            } catch {
+              setRecentReviewers(stored)
+            }
+          } else {
+            setRecentReviewers(stored)
+          }
         }
       } catch (loadError) {
         console.error('Failed to load home reviewers:', loadError)
@@ -99,7 +126,7 @@ const Home = () => {
       }
     }
     loadReviewers()
-  }, [isAuthenticated, isGuest])
+  }, [isAuthenticated, isGuest, user?.id])
 
   if (!isAuthenticated) {
     return <div className="space-y-8"><ErrorAlert>{error}</ErrorAlert>{isGuest ? <section className="space-y-6 pb-8"><div><p className="font-mono text-xs font-bold uppercase tracking-widest text-accent">Guest library</p><h1 className="mt-2 text-3xl font-bold text-ink md:text-4xl">Public Reviewers</h1><p className="mt-2 text-muted">Browse study guides shared by the Review Well community.</p></div>{loading ? <ReviewerGridSkeleton /> : publicReviewers.length ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{publicReviewers.map((reviewer) => <ReviewerCard key={reviewer.id} reviewer={reviewer} />)}</div> : <p className="text-muted">No public reviewers are available yet.</p>}</section> : <Landing />}</div>

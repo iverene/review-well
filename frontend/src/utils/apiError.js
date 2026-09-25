@@ -12,7 +12,13 @@ const statusMessages = {
 }
 
 const getApiErrorMessage = (error, fallback = 'Something went wrong. Please try again.') => {
-  if (!axios.isAxiosError(error)) {
+  // Duck-type instead of trusting axios.isAxiosError: the helper must never
+  // throw, no matter which axios build (or mock) supplies the error.
+  const looksAxiosLike =
+    (typeof axios.isAxiosError === 'function' && axios.isAxiosError(error)) ||
+    !!error?.response ||
+    error?.code === 'ERR_NETWORK'
+  if (!looksAxiosLike) {
     return fallback
   }
 

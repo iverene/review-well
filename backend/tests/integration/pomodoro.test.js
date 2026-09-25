@@ -15,9 +15,13 @@ vi.mock('../../models/pomodoroModel.js', async (importOriginal) => {
     setDailyGoal: vi.fn(),
   }
 })
+vi.mock('../../models/reviewerModel.js', () => ({
+  findById: vi.fn(),
+}))
 
 import pomodoroRoutes from '../../routes/pomodoroRoutes.js'
 import * as pomodoroModel from '../../models/pomodoroModel.js'
+import * as reviewerModel from '../../models/reviewerModel.js'
 import { createSession } from '../../controllers/pomodoroController.js'
 
 // NOTE: mirrors blurting.test.js — no global app helpers exist, so each
@@ -74,6 +78,7 @@ describe('Pomodoro Routes', () => {
     })
 
     it('should derive focusSeconds from timestamps, ignoring the client value', async () => {
+      reviewerModel.findById.mockResolvedValue({ id: 'reviewer-1', authorId: OWNER.id, visibility: 'public' })
       pomodoroModel.create.mockImplementation(async (data) => ({ id: 'session-1', ...data }))
 
       const startedAt = new Date(Date.now() - 1500 * 1000).toISOString()
@@ -106,6 +111,45 @@ describe('Pomodoro Routes', () => {
       const res = { status: vi.fn().mockReturnThis(), json: vi.fn().mockReturnThis() }
       await createSession(req, res)
       expect(res.status).toHaveBeenCalledWith(401)
+      expect(pomodoroModel.create).not.toHaveBeenCalled()
+    })
+
+    it('should return 404 for an unknown reviewerId', async () => {
+      reviewerModel.findById.mockResolvedValue(null)
+
+      const startedAt = new Date(Date.now() - 1500 * 1000).toISOString()
+      const app = createApp(OWNER)
+      const response = await request(app)
+        .post('/api/pomodoro/sessions')
+        .send({ reviewerId: 'ghost', startedAt, endedAt: new Date().toISOString() })
+
+      expect(response.status).toBe(404)
+      expect(pomodoroModel.create).not.toHaveBeenCalled()
+    })
+
+    it('should return 403 for another user private reviewer', async () => {
+      reviewerModel.findById.mockResolvedValue({ id: 'reviewer-9', authorId: 'owner-9', visibility: 'private' })
+
+      const startedAt = new Date(Date.now() - 1500 * 1000).toISOString()
+      const app = createApp(OWNER)
+      const response = await request(app)
+        .post('/api/pomodoro/sessions')
+        .send({ reviewerId: 'reviewer-9', startedAt, endedAt: new Date().toISOString() })
+
+      expect(response.status).toBe(403)
+      expect(pomodoroModel.create).not.toHaveBeenCalled()
+    })
+
+    it('should return 400 for absurd durations over 24 hours', async () => {
+      reviewerModel.findById.mockResolvedValue({ id: 'reviewer-1', authorId: OWNER.id, visibility: 'public' })
+
+      const startedAt = new Date(Date.now() - 25 * 3600 * 1000).toISOString()
+      const app = createApp(OWNER)
+      const response = await request(app)
+        .post('/api/pomodoro/sessions')
+        .send({ reviewerId: 'reviewer-1', startedAt, endedAt: new Date().toISOString() })
+
+      expect(response.status).toBe(400)
       expect(pomodoroModel.create).not.toHaveBeenCalled()
     })
   })

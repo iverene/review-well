@@ -15,7 +15,7 @@ const ProtectedRoute = ({ children }) => {
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />
+    return <Navigate to="/login" state={{ from: `${location.pathname}${location.search}${location.hash}` }} replace />
   }
 
   if (!['/settings/account', '/onboarding'].includes(location.pathname) && !isProfileComplete(user)) {

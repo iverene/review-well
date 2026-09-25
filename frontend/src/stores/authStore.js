@@ -2,24 +2,41 @@ import { create } from 'zustand'
 
 const guestStorageKey = 'review-well-guest'
 
-const hasGuestSession = () => (
-  typeof window !== 'undefined' && window.localStorage.getItem(guestStorageKey) === 'true'
-)
+// Storage can throw (private mode, disabled cookies) — never let auth boot
+// or transitions crash; fall back to memory-only guest state.
+const readGuestSession = () => {
+  try {
+    return typeof window !== 'undefined' && window.localStorage.getItem(guestStorageKey) === 'true'
+  } catch {
+    return false
+  }
+}
+
+const writeGuestSession = (value) => {
+  try {
+    if (value) window.localStorage.setItem(guestStorageKey, 'true')
+    else window.localStorage.removeItem(guestStorageKey)
+  } catch {
+    // Memory-only guest state for this visit.
+  }
+}
+
+const hasGuestSession = () => readGuestSession()
 
 const useAuthStore = create((set) => ({
   user: null,
   isAuthenticated: false,
   isGuest: hasGuestSession(),
   login: (user) => {
-    window.localStorage.removeItem(guestStorageKey)
+    writeGuestSession(false)
     set({ user, isAuthenticated: true, isGuest: false })
   },
   enterGuest: () => {
-    window.localStorage.setItem(guestStorageKey, 'true')
+    writeGuestSession(true)
     set({ user: null, isAuthenticated: false, isGuest: true })
   },
   logout: () => {
-    window.localStorage.removeItem(guestStorageKey)
+    writeGuestSession(false)
     set({ user: null, isAuthenticated: false, isGuest: false })
   },
 }))
