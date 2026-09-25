@@ -157,7 +157,7 @@ const Notifications = () => {
             <p className="mt-4">No Notifications Yet</p>
           </div>
         ) : (
-          <div className="rounded border border-stone bg-paper">
+          <div>
             {notifications.map((notification) => (
               <NotificationItem
                 key={notification.id}
