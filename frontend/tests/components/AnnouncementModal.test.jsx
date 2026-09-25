@@ -44,6 +44,13 @@ describe('AnnouncementModal', () => {
     }
   })
 
+  it('dismisses when clicking outside the card', () => {
+    const { container } = render(<AnnouncementModal />)
+    fireEvent.click(container.querySelector('.fixed.inset-0.z-40'))
+    expect(window.localStorage.getItem(STORAGE_KEY)).toBe('dismissed')
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
   it('shows the waving character illustration', () => {
     render(<AnnouncementModal />)
     expect(screen.getByAltText('Waving student illustration')).toBeInTheDocument()

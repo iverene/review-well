@@ -43,7 +43,7 @@ const AnnouncementModal = () => {
 
   return (
     <>
-      <div className="fixed inset-0 z-40 bg-ink/30" aria-hidden="true" />
+      <div className="fixed inset-0 z-40 bg-ink/30" aria-hidden="true" onClick={close} />
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="announcement-title">
         <div className="w-full max-w-md rounded-soft border-2 border-stone bg-paper p-6 club-shadow sm:p-8">
           <img src={characterWaving} alt="Waving student illustration" className="mx-auto mb-3 h-24 w-28 object-contain object-center" />
