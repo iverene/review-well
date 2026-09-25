@@ -65,11 +65,6 @@ const FocusStats = () => {
     <section aria-label="Focus stats" className="mt-6 rounded-soft border-2 border-stone bg-paper p-4">
       <div className="flex items-center justify-between gap-2">
         <h2 className="font-display text-lg font-bold text-ink">Focus</h2>
-        {stats.streak > 0 && (
-          <span aria-label={`${stats.streak}-day streak`} className="inline-flex items-center gap-1 text-sm font-extrabold text-ink">
-            <span aria-hidden="true">🔥</span> {stats.streak}
-          </span>
-        )}
       </div>
       <p className="mt-1 text-sm text-muted">
         {todayMinutes} of {goalMinutes} min today

@@ -2,10 +2,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import request from 'supertest'
 import express from 'express'
 
-// Real streakDays/dayKey survive the mock via importOriginal; every
-// DB-touching helper is a stub so route tests never hit Prisma. (The global
-// setup.js Prisma mock has no pomodoroSession delegate, so the model module
-// itself must be mocked — same convention as blurting.test.js.)
+// DB-touching helpers are stubbed so route tests never hit Prisma. (The
+// global setup.js Prisma mock has no pomodoroSession delegate, so the model
+// module itself must be mocked — same convention as blurting.test.js.)
 vi.mock('../../models/pomodoroModel.js', async (importOriginal) => {
   const actual = await importOriginal()
   return {
@@ -19,7 +18,6 @@ vi.mock('../../models/pomodoroModel.js', async (importOriginal) => {
 
 import pomodoroRoutes from '../../routes/pomodoroRoutes.js'
 import * as pomodoroModel from '../../models/pomodoroModel.js'
-import { streakDays, dayKey } from '../../models/pomodoroModel.js'
 import { createSession } from '../../controllers/pomodoroController.js'
 
 // NOTE: mirrors blurting.test.js — no global app helpers exist, so each
@@ -48,42 +46,11 @@ const noonToday = () => {
   d.setUTCHours(12, 0, 0, 0)
   return d
 }
-const daysAgoKey = (n) => {
-  const d = noonToday()
-  d.setUTCDate(d.getUTCDate() - n)
-  return dayKey(d)
-}
 const endedAtDaysAgo = (n) => {
   const d = noonToday()
   d.setUTCDate(d.getUTCDate() - n)
   return d
 }
-
-describe('streakDays', () => {
-  it('counts today + yesterday as a 2-day streak', () => {
-    expect(streakDays([daysAgoKey(0), daysAgoKey(1)])).toBe(2)
-  })
-
-  it('counts a single today session as a 1-day streak', () => {
-    expect(streakDays([daysAgoKey(0)])).toBe(1)
-  })
-
-  it('returns 0 when there are no sessions', () => {
-    expect(streakDays([])).toBe(0)
-  })
-
-  it('breaks the streak on a gap (today + 3 days ago counts 1)', () => {
-    expect(streakDays([daysAgoKey(0), daysAgoKey(3)])).toBe(1)
-  })
-
-  it('keeps the streak alive when only yesterday has sessions', () => {
-    expect(streakDays([daysAgoKey(1)])).toBe(1)
-  })
-
-  it('counts duplicate sessions on the same day once', () => {
-    expect(streakDays([daysAgoKey(0), daysAgoKey(0), daysAgoKey(1)])).toBe(2)
-  })
-})
 
 describe('Pomodoro Routes', () => {
   beforeEach(() => {
@@ -151,7 +118,7 @@ describe('Pomodoro Routes', () => {
       expect(response.status).toBe(401)
     })
 
-    it('should return todaySeconds, a 7-bucket week, streak, and goal', async () => {
+    it('should return todaySeconds, a 7-bucket week, and goal', async () => {
       pomodoroModel.listCompletedByUser.mockResolvedValue([
         { id: 's1', focusSeconds: 600, endedAt: endedAtDaysAgo(0) },
         { id: 's2', focusSeconds: 600, endedAt: endedAtDaysAgo(0) },
@@ -167,8 +134,8 @@ describe('Pomodoro Routes', () => {
       expect(response.body.week).toHaveLength(7)
       expect(response.body.week.reduce((a, b) => a + b, 0)).toBe(1500)
       expect(response.body.week[6]).toBe(1200)
-      expect(response.body.streak).toBe(2)
       expect(response.body.goal).toBe(30)
+      expect(response.body.streak).toBeUndefined()
     })
   })
 

@@ -1,5 +1,5 @@
 import * as pomodoroModel from '../models/pomodoroModel.js'
-import { dayKey, streakDays } from '../models/pomodoroModel.js'
+import { dayKey } from '../models/pomodoroModel.js'
 
 const requireSignedIn = (req, res) => {
   if (!req.user) {
@@ -70,7 +70,6 @@ const getStats = async (req, res) => {
     res.json({
       todaySeconds: week[6],
       week,
-      streak: streakDays(sessions.map((session) => dayKey(session.endedAt))),
       goal: goal ?? 25,
     })
   } catch (error) {

@@ -40,7 +40,7 @@ describe('Home landing copy', () => {
     expect(screen.getByText('Study with techniques')).toBeTruthy()
     expect(screen.getByText('Flip AI-made flashcards and dump what you remember with blurting prompts.')).toBeTruthy()
     expect(screen.getByText('Stay in the zone')).toBeTruthy()
-    expect(screen.getByText('Review in Pomodoro sprints, track daily focus, and grow a study streak.')).toBeTruthy()
+    expect(screen.getByText('Review in Pomodoro sprints and track daily focus.')).toBeTruthy()
   })
 
   it('contains no workspace-era wording', () => {

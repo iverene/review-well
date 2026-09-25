@@ -66,7 +66,7 @@ const Landing = () => (
     <section className="grid gap-4 md:grid-cols-3" aria-label="Study club features">
       <article className="club-surface bg-blush/50 p-5 md:p-6"><div className="mb-4 text-xl text-accent md:mb-5 md:text-2xl" aria-hidden="true">*</div><h3 className="text-xl font-bold text-ink md:text-2xl">Upload your slides</h3><p className="mt-2 leading-relaxed text-muted">Drop in a PDF or PPTX and keep every reviewer in one personal library.</p></article>
       <article className="club-surface bg-mint/60 p-5 md:p-6"><div className="mb-4 text-xl text-accent md:mb-5 md:text-2xl" aria-hidden="true">+</div><h3 className="text-xl font-bold text-ink md:text-2xl">Study with techniques</h3><p className="mt-2 leading-relaxed text-muted">Flip AI-made flashcards and dump what you remember with blurting prompts.</p></article>
-      <article className="club-surface bg-butter/70 p-5 md:p-6"><div className="mb-4 text-xl text-accent md:mb-5 md:text-2xl" aria-hidden="true">~</div><h3 className="text-xl font-bold text-ink md:text-2xl">Stay in the zone</h3><p className="mt-2 leading-relaxed text-muted">Review in Pomodoro sprints, track daily focus, and grow a study streak.</p></article>
+      <article className="club-surface bg-butter/70 p-5 md:p-6"><div className="mb-4 text-xl text-accent md:mb-5 md:text-2xl" aria-hidden="true">~</div><h3 className="text-xl font-bold text-ink md:text-2xl">Stay in the zone</h3><p className="mt-2 leading-relaxed text-muted">Review in Pomodoro sprints and track daily focus.</p></article>
     </section>
   </div>
 )

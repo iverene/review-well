@@ -21,7 +21,7 @@ const Guide = () => (
       </section>
       <section>
         <h2 className="flex items-center gap-2 font-display text-xl font-bold"><Timer className="h-5 w-5" aria-hidden="true" /> 4. Focus With Pomodoro</h2>
-        <p className="mt-1 text-muted">Link a focus session to your reviewer, work in timed sprints, and build streaks toward your daily focus goal.</p>
+        <p className="mt-1 text-muted">Link a focus session to your reviewer, work in timed sprints toward your daily focus goal.</p>
       </section>
       <section>
         <h2 className="font-display text-xl font-bold">5. Share and Save</h2>

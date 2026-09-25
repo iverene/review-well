@@ -127,7 +127,7 @@ The reviewer detail view is a study hub with tabbed modes plus a focus dock, all
 - **Source tab:** the uploaded file (embedded viewer or download link) on Paper.
 - **Flashcards tab:** Butter accents for the AI deck action and quota states (`decksLeft`); Mint for known/complete states; flip, add, edit, and delete stay inline.
 - **Blurting tab:** open-ended recall prompts with AI grades (score, feedback, missed points) in Powder info surfaces; self-rating fallback when the grade quota runs out.
-- **Pomodoro dock:** focus timer linked to the reviewer with streaks and the daily goal, styled as a compact Mint/Butter companion panel.
+- **Pomodoro dock:** focus timer linked to the reviewer with the daily goal, styled as a compact Mint/Butter companion panel.
 - Guest nudges (`returnTo` links) use Powder surfaces with Cocoa text — never color alone.
 - Keep destructive actions (card delete, reviewer delete) behind confirmation.
 - Show quota and save feedback as friendly states: `Saving`, `Saved`, or `Needs attention`.
