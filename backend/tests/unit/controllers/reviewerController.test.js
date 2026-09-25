@@ -251,6 +251,22 @@ describe('Reviewer Controller', () => {
 
       expect(notificationModel.createMany).not.toHaveBeenCalled()
     })
+
+    it('should clear the draft flag when created non-private', async () => {
+      const req = createMockRequest({
+        user: { id: 'author-1' },
+        validatedBody: { title: 'Live Guide', visibility: 'public', isDraft: true },
+      })
+      const res = createMockResponse()
+
+      reviewerModel.create.mockResolvedValue({ id: 'r1', authorId: 'author-1', visibility: 'public', isDraft: false })
+
+      await createReviewer(req, res)
+
+      expect(reviewerModel.create).toHaveBeenCalledWith(
+        expect.objectContaining({ visibility: 'public', isDraft: false, authorId: 'author-1' })
+      )
+    })
   })
 
   describe('updateReviewer', () => {

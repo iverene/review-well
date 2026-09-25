@@ -161,7 +161,15 @@ const getReviewerById = async (req, res) => {
 
 const createReviewer = async (req, res) => {
   try {
-    const data = req.validatedBody
+    const data = { ...req.validatedBody }
+
+    // Publishing at creation must behave like flipping to public/unlisted
+    // later: public listings (and follower notifications) require a
+    // non-draft, so non-private visibility clears the draft flag here too.
+    if (data.visibility && data.visibility !== 'private') {
+      data.isDraft = false
+    }
+
     const reviewer = await reviewerModel.create({
       ...data,
       authorId: req.user.id,
