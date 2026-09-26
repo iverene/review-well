@@ -8,7 +8,7 @@
   color-scheme: light;
   --ink: 96 74 58;
   --paper: 248 249 250;
-  --stone: 234 223 206;
+  --stone: 230 224 210;
   --accent: 201 106 131;
   --muted: 139 119 104;
   --blush: 246 198 210;
@@ -22,7 +22,7 @@
   color-scheme: dark;
   --ink: 245 234 217;
   --paper: 43 36 31;
-  --stone: 74 63 54;
+  --stone: 66 62 68;
   --accent: 224 138 160;
   --muted: 179 160 142;
   --blush: 154 99 116;
@@ -36,7 +36,7 @@
   color-scheme: light;
   --ink: 67 52 34;
   --paper: 244 236 216;
-  --stone: 216 201 168;
+  --stone: 221 211 186;
   --accent: 180 86 110;
   --muted: 125 107 84;
   --blush: 236 195 205;
