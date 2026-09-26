@@ -27,8 +27,12 @@ describe('Create file dropzone', () => {
     useAuth.mockReturnValue({ isGuest: false })
   })
 
-  it('describes drag and drop without emoji copy', () => {
+  it('defaults new reviewers to public visibility', () => {
     renderCreate()
+    expect(screen.getByRole('radio', { name: /Public/ })).toBeChecked()
+  })
+
+  it('describes drag and drop without emoji copy', () => {    renderCreate()
     expect(screen.getByText('Drag and drop your file here, or browse to choose one.', { exact: false })).toBeInTheDocument()
     expect(screen.queryByText(/study modes grow from this file/)).toBeNull()
   })

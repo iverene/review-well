@@ -46,7 +46,7 @@ const Create = () => {
     courseDescription: '',
     semester: '',
     examType: 'midterm',
-    visibility: 'private',
+    visibility: 'public',
     isDraft: true,
     colorPalette: defaultPalette,
   })
