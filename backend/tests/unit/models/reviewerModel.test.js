@@ -49,6 +49,21 @@ describe('Reviewer Model', () => {
     )
   })
 
+  it('should filter by exam type and semester', async () => {
+    await reviewerModel.findPublic({ skip: 0, take: 20, examType: 'midterm', semester: 'First Semester' })
+
+    expect(mockPrismaInstance.reviewer.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          visibility: 'public',
+          isDraft: false,
+          examType: 'midterm',
+          semester: 'First Semester',
+        }),
+      })
+    )
+  })
+
   it('should return reviewers by author', async () => {
     const result = await reviewerModel.findByAuthor('user-123')
     expect(result.reviewers).toHaveLength(2)

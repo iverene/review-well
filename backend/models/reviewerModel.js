@@ -1,7 +1,7 @@
 import { prisma } from '../config/database.js'
 import { TTL_60_SECONDS, remember } from '../utils/cache.js'
 
-const findPublic = async ({ skip = 0, take = 20, search = '' } = {}) => {
+const findPublic = async ({ skip = 0, take = 20, search = '', examType = '', semester = '' } = {}) => {
   const where = {
     visibility: 'public',
     isDraft: false,
@@ -12,9 +12,11 @@ const findPublic = async ({ skip = 0, take = 20, search = '' } = {}) => {
         { courseDescription: { contains: search, mode: 'insensitive' } },
       ],
     }),
+    ...(examType && { examType }),
+    ...(semester && { semester }),
   }
 
-  return remember(`reviewers:public:${skip}:${take}:${search}`, TTL_60_SECONDS, async () => {
+  return remember(`reviewers:public:${skip}:${take}:${search}:${examType}:${semester}`, TTL_60_SECONDS, async () => {
     const [reviewers, total] = await Promise.all([
       prisma.reviewer.findMany({
         where,

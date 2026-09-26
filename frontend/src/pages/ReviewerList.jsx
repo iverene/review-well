@@ -4,6 +4,7 @@ import axios from 'axios'
 import { BookOpen, LibraryBig, Search, X } from 'lucide-react'
 
 import ErrorAlert from '../components/common/ErrorAlert'
+import Filter from '../components/Filter'
 import PageHeader from '../components/common/PageHeader'
 import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
@@ -20,6 +21,7 @@ const ReviewerList = ({ mine = false }) => {
   const sameCourseOnly = searchParams.get('course') === 'mine'
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
+  const [filters, setFilters] = useState({ examType: '', semester: '' })
 
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedQuery(query.trim()), 300)
@@ -29,7 +31,14 @@ const ReviewerList = ({ mine = false }) => {
   useEffect(() => {
     const loadReviewers = async () => {
       try {
-        const params = mine ? {} : { limit: 50, ...(debouncedQuery ? { search: debouncedQuery } : {}) }
+        const params = mine
+          ? {}
+          : {
+              limit: 50,
+              ...(debouncedQuery ? { search: debouncedQuery } : {}),
+              ...(filters.examType ? { examType: filters.examType } : {}),
+              ...(filters.semester ? { semester: filters.semester } : {}),
+            }
         const response = await axios.get(mine ? '/api/reviewers/my' : '/api/reviewers/public', { params, withCredentials: mine })
         const loadedReviewers = response.data.reviewers || []
         setReviewers(sameCourseOnly ? loadedReviewers.filter((reviewer) => isSameCourse(reviewer, user)) : loadedReviewers)
@@ -41,7 +50,7 @@ const ReviewerList = ({ mine = false }) => {
       }
     }
     loadReviewers()
-  }, [mine, sameCourseOnly, user?.id, debouncedQuery])
+  }, [mine, sameCourseOnly, user?.id, debouncedQuery, filters])
 
   const title = mine ? 'My Reviewers' : sameCourseOnly ? 'Reviewers From the Same Course' : 'Public Reviewers'
   const Icon = mine ? LibraryBig : BookOpen
@@ -79,6 +88,14 @@ const ReviewerList = ({ mine = false }) => {
             <Search className="h-4 w-4" aria-hidden="true" />
           </span>
         </form>
+      )}
+      {!mine && (
+        <Filter
+          examType={filters.examType}
+          semester={filters.semester}
+          onChange={(patch) => setFilters((prev) => ({ ...prev, ...patch }))}
+          onClear={() => setFilters({ examType: '', semester: '' })}
+        />
       )}
       {loading ? <ReviewerGridSkeleton /> : reviewers.length === 0 ? <p className="rounded-soft border-2 border-dashed border-stone px-5 py-10 text-center text-muted">No Reviewers Here Yet.</p> : <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{reviewers.map((reviewer) => <Link key={reviewer.id} to={`/reviewer/${reviewer.id}`} className="group rounded-soft border-2 border-stone bg-paper p-4 club-shadow transition-transform hover:-translate-y-1 md:p-5"><div className="flex items-start justify-between gap-3"><h2 className="font-display text-base font-bold text-ink md:text-lg">{reviewer.title}</h2><Icon className="h-5 w-5 shrink-0 text-accent" aria-hidden="true" /></div><p className="mt-1.5 text-sm font-semibold text-muted md:mt-2">{reviewer.courseCode}</p></Link>)}</div>}
     </PageContainer>
