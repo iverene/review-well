@@ -4,18 +4,19 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import Filter from '../../src/components/Filter'
 
 describe('Filter', () => {
-  it('renders assessment and semester selects with an active count', () => {
+  it('renders assessment and semester dropdowns with an active count', () => {
     render(<Filter examType="midterm" semester="" onChange={() => {}} onClear={() => {}} />)
-    expect(screen.getByLabelText('Assessment')).toHaveValue('midterm')
-    expect(screen.getByLabelText('Semester')).toHaveValue('')
+    expect(screen.getByRole('button', { name: 'Assessment' })).toHaveTextContent('Midterm')
+    expect(screen.getByRole('button', { name: 'Semester' })).toHaveTextContent('All Semesters')
     expect(screen.getByTestId('filter-active-count')).toHaveTextContent('1')
   })
 
-  it('emits patches and clears', () => {
+  it('emits picks and clears', () => {
     const onChange = vi.fn()
     const onClear = vi.fn()
     render(<Filter examType="" semester="Summer" onChange={onChange} onClear={onClear} />)
-    fireEvent.change(screen.getByLabelText('Assessment'), { target: { value: 'quiz' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Assessment' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Quiz' }))
     expect(onChange).toHaveBeenCalledWith({ examType: 'quiz' })
     fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }))
     expect(onClear).toHaveBeenCalled()

@@ -49,8 +49,10 @@ describe('ReviewerList search', () => {
   it('sends assessment and semester filters to the server', async () => {
     renderList()
     await screen.findByText('Photosynthesis Guide')
-    fireEvent.change(screen.getByLabelText('Assessment'), { target: { value: 'midterm' } })
-    fireEvent.change(screen.getByLabelText('Semester'), { target: { value: 'Summer' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Assessment' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Midterm' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Semester' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Summer' }))
     await waitFor(() => expect(axios.get).toHaveBeenCalledWith(
       '/api/reviewers/public',
       expect.objectContaining({ params: expect.objectContaining({ examType: 'midterm', semester: 'Summer' }) })
