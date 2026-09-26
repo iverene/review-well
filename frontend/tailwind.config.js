@@ -7,15 +7,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        'ink': '#604a3a',
-        'paper': '#F8F9FA',
-        'stone': '#eadfce',
-        'accent': '#c96a83',
-        'muted': '#8b7768',
-        'blush': '#f6c6d2',
-        'powder': '#c9e6f2',
-        'mint': '#cde8d2',
-        'butter': '#f9e4a8',
+        // Theme-aware tokens backed by RGB triplets in index.css
+        // (:root = light, [data-theme='dark'], [data-theme='reading']).
+        // The triplet form keeps Tailwind opacity modifiers working.
+        'ink': 'rgb(var(--ink) / <alpha-value>)',
+        'paper': 'rgb(var(--paper) / <alpha-value>)',
+        'stone': 'rgb(var(--stone) / <alpha-value>)',
+        'accent': 'rgb(var(--accent) / <alpha-value>)',
+        'muted': 'rgb(var(--muted) / <alpha-value>)',
+        'blush': 'rgb(var(--blush) / <alpha-value>)',
+        'powder': 'rgb(var(--powder) / <alpha-value>)',
+        'mint': 'rgb(var(--mint) / <alpha-value>)',
+        'butter': 'rgb(var(--butter) / <alpha-value>)',
+        'cream': 'rgb(var(--cream) / <alpha-value>)',
       },
       fontFamily: {
         'sans': ['"Nunito"', 'sans-serif'],

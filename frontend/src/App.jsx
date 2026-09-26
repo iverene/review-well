@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 
 import { AuthProvider } from './contexts/AuthContext'
 import { ToastProvider } from './contexts/ToastContext'
+import { ThemeProvider } from './contexts/ThemeContext'
 import Layout from './components/Layout'
 import AnnouncementModal from './components/AnnouncementModal'
 import ProtectedRoute from './components/auth/ProtectedRoute'
@@ -43,6 +44,7 @@ function App() {
     <Router>
       <AuthProvider>
         <ToastProvider>
+        <ThemeProvider>
         <Layout>
           <AnnouncementModal />
           <Suspense fallback={<PageLoader />}>
@@ -135,6 +137,7 @@ function App() {
             </Routes>
           </Suspense>
         </Layout>
+        </ThemeProvider>
         </ToastProvider>
       </AuthProvider>
     </Router>

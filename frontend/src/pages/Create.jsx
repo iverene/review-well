@@ -256,12 +256,12 @@ const Create = () => {
             </div>
 
             <div
-              className={`rounded-soft border-2 border-stone bg-[#FFF7E8] p-4 transition-colors ${dragging ? 'border-accent bg-butter/40' : ''}`}
+              className={`rounded-soft border-2 border-stone bg-cream p-4 transition-colors ${dragging ? 'border-accent bg-butter/40' : ''}`}
               onDragOver={(event) => { event.preventDefault(); setDragging(true) }}
               onDragLeave={() => setDragging(false)}
               onDrop={handleDrop}
             >
-              <label htmlFor="sourceFile" className="mb-2 flex items-center gap-2 text-sm font-extrabold text-[#604A3A]">
+              <label htmlFor="sourceFile" className="mb-2 flex items-center gap-2 text-sm font-extrabold text-ink">
                 {editReviewerId ? <RefreshCcw className="h-4 w-4" aria-hidden="true" /> : <FileUp className="h-4 w-4" aria-hidden="true" />}
                 {editReviewerId ? 'Replace File (Optional)' : 'Source File'}
               </label>
@@ -272,16 +272,16 @@ const Create = () => {
                 accept=".pdf,.pptx"
                 onChange={handleFileChange}
                 required={!editReviewerId}
-                className="w-full rounded-soft border-2 border-dashed border-[#F6C6D2] bg-paper px-4 py-3 text-sm text-ink file:mr-3 file:rounded-soft file:border-2 file:border-[#604A3A] file:bg-[#F9E4A8] file:px-3 file:py-1 file:text-xs file:font-extrabold file:text-[#604A3A]"
+                className="w-full rounded-soft border-2 border-dashed border-blush bg-paper px-4 py-3 text-sm text-ink file:mr-3 file:rounded-soft file:border-2 file:border-ink file:bg-butter file:px-3 file:py-1 file:text-xs file:font-extrabold file:text-ink"
               />
               <p className="mt-2 text-xs text-muted">PDF or PPTX only, max 25 MB. {editReviewerId ? 'Swapping files may stale the AI deck.' : 'Drag and drop your file here, or browse to choose one.'}</p>
               {sourceFile && !fileError && (
-                <p className="mt-2 rounded-soft bg-[#CDE8D2] px-3 py-2 text-xs font-bold text-[#604A3A]">
+                <p className="mt-2 rounded-soft bg-mint px-3 py-2 text-xs font-bold text-ink">
                   {sourceFile.name} ({(sourceFile.size / 1024 / 1024).toFixed(2)} MB)
                 </p>
               )}
               {fileError && (
-                <p role="alert" className="mt-2 rounded-soft bg-[#F6C6D2] px-3 py-2 text-xs font-bold text-[#604A3A]">{fileError}</p>
+                <p role="alert" className="mt-2 rounded-soft bg-blush px-3 py-2 text-xs font-bold text-ink">{fileError}</p>
               )}
             </div>
           </div>
