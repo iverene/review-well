@@ -6,7 +6,7 @@ import cors from 'cors'
 import hpp from 'hpp'
 import { pathToFileURL } from 'url'
 import passport from 'passport'
-import { sessionConfig, ensureSessionCompat } from './config/session.js'
+import { sessionConfig, ensureSessionCompat, enforceAbsoluteSessionExpiry } from './config/session.js'
 import { configurePassport } from './config/googleOAuth.js'
 import { getFrontendUrl } from './config/urls.js'
 import { globalLimiter, authLimiter } from './middleware/rateLimiter.js'
@@ -36,6 +36,9 @@ app.use(ensureSessionCompat)
 app.use(passport.initialize())
 app.use(passport.session())
 configurePassport()
+
+// Absolute 30-day cap sits after deserialization so req.user is populated.
+app.use(enforceAbsoluteSessionExpiry)
 
 // Rate limiting (after session so auth state exists; trust-proxy is set in
 // production so limits apply per client IP, not per proxy).
