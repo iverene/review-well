@@ -1,35 +1,25 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import axios from 'axios'
 
 import { useAuth } from '../../contexts/AuthContext'
+import useNotificationStore from '../../stores/notificationStore'
 
 const NotificationBadge = () => {
   const { isAuthenticated } = useAuth()
-  const [unreadCount, setUnreadCount] = useState(0)
+  const unreadCount = useNotificationStore((state) => state.unreadCount)
+  const refresh = useNotificationStore((state) => state.refresh)
 
   useEffect(() => {
     if (!isAuthenticated) return
-    fetchUnreadCount()
+    refresh()
     // Live delivery without page restarts: poll plus refresh on window focus
-    const interval = setInterval(fetchUnreadCount, 20000)
-    window.addEventListener('focus', fetchUnreadCount)
+    const interval = setInterval(refresh, 20000)
+    window.addEventListener('focus', refresh)
     return () => {
       clearInterval(interval)
-      window.removeEventListener('focus', fetchUnreadCount)
+      window.removeEventListener('focus', refresh)
     }
-  }, [isAuthenticated])
-
-  const fetchUnreadCount = async () => {
-    try {
-      const response = await axios.get('/api/social/notifications/unread-count', {
-        withCredentials: true,
-      })
-      setUnreadCount(response.data.count)
-    } catch (error) {
-      console.error('Failed to fetch unread count:', error)
-    }
-  }
+  }, [isAuthenticated, refresh])
 
   if (!isAuthenticated) return null
 

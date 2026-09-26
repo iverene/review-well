@@ -9,6 +9,6 @@ describe('PageHeader', () => {
     const heading = screen.getByRole('heading', { name: 'Home', level: 1 })
     expect(heading).toBeInTheDocument()
     expect(heading.tagName).toBe('H1')
-    expect(heading).toHaveClass('font-display', 'text-3xl', 'md:text-4xl', 'font-bold', 'text-ink')
+    expect(heading).toHaveClass('font-display', 'text-2xl', 'sm:text-3xl', 'md:text-4xl', 'font-bold', 'text-ink')
   })
 })

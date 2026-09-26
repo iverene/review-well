@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 
 import NotificationItem from '../components/notifications/NotificationItem'
-import ErrorAlert from '../components/common/ErrorAlert'
 import PageHeader from '../components/common/PageHeader'
 import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
 import { useToast } from '../contexts/ToastContext'
+import useNotificationStore from '../stores/notificationStore'
 import { NotificationsSkeleton } from '../components/common/Skeleton'
 
 const Notifications = () => {
@@ -14,8 +14,11 @@ const Notifications = () => {
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
-  const [error, setError] = useState(null)
   const toast = useToast()
+  const setUnreadCount = useNotificationStore((state) => state.setUnreadCount)
+  const bumpUnread = useNotificationStore((state) => state.bumpUnread)
+  const markOneRead = useNotificationStore((state) => state.markOneRead)
+  const markAllRead = useNotificationStore((state) => state.markAllRead)
 
   useEffect(() => {
     fetchNotifications()
@@ -46,6 +49,7 @@ const Notifications = () => {
           const known = new Set(prev.map((n) => n.id))
           const unseen = fresh.filter((n) => !known.has(n.id))
           if (unseen.length > 0) {
+            bumpUnread(unseen.filter((n) => !n.isRead).length)
             toast.info(unseen.length === 1 ? 'You Have 1 New Notification' : `You Have ${unseen.length} New Notifications`)
             return [...unseen, ...prev]
           }
@@ -65,20 +69,19 @@ const Notifications = () => {
 
   const fetchNotifications = async () => {
     try {
-      setError(null)
       const response = await axios.get('/api/social/notifications', {
         params: { page, limit: 20 },
         withCredentials: true,
       })
+      const fresh = response.data.notifications || []
       setNotifications((prev) =>
-        page === 1
-          ? response.data.notifications
-          : [...prev, ...response.data.notifications]
+        page === 1 ? fresh : [...prev, ...fresh]
       )
-      setHasMore(response.data.notifications.length === 20)
+      setUnreadCount(fresh.filter((n) => !n.isRead).length)
+      setHasMore(fresh.length === 20)
     } catch (error) {
       console.error('Failed to fetch notifications:', error)
-      setError(getApiErrorMessage(error, 'Unable to load notifications.'))
+      toast.error(getApiErrorMessage(error, 'Unable to load notifications.'))
     } finally {
       setLoading(false)
     }
@@ -94,9 +97,10 @@ const Notifications = () => {
           n.id === notificationId ? { ...n, isRead: true } : n
         )
       )
+      markOneRead()
     } catch (error) {
       console.error('Failed to mark notification as read:', error)
-      setError(getApiErrorMessage(error, 'Unable to mark the notification as read.'))
+      toast.error(getApiErrorMessage(error, 'Unable to mark the notification as read.'))
     }
   }
 
@@ -108,9 +112,10 @@ const Notifications = () => {
       setNotifications((prev) =>
         prev.map((n) => ({ ...n, isRead: true }))
       )
+      markAllRead()
     } catch (error) {
       console.error('Failed to mark all as read:', error)
-      setError(getApiErrorMessage(error, 'Unable to mark notifications as read.'))
+      toast.error(getApiErrorMessage(error, 'Unable to mark notifications as read.'))
     }
   }
 
@@ -135,8 +140,6 @@ const Notifications = () => {
             </button>
           )}
         </div>
-
-        <ErrorAlert className="mb-4">{error}</ErrorAlert>
 
         {/* Notifications List */}
         {notifications.length === 0 ? (

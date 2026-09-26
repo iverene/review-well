@@ -6,6 +6,7 @@ import * as flashcardModel from '../models/flashcardModel.js'
 import { getRemainingQuota, getRemainingGrades, GRADE_LIMIT } from '../models/aiQuotaModel.js'
 import { DECK_QUOTA_LIMIT } from '../constants/quotas.js'
 import { createStorageAdapter } from '../services/adapters/storage.js'
+import { notifyEvent } from '../services/pushService.js'
 import { parsePagination } from '../utils/pagination.js'
 import { del, delPrefix } from '../utils/cache.js'
 
@@ -32,6 +33,7 @@ const notifyFollowersOfNewReviewer = async (authorId, reviewerId) => {
         reviewerId,
       }))
     )
+    notifyEvent({ actionType: 'new_reviewer', actorId: authorId, recipientIds: recipients, reviewerId })
   } catch (error) {
     console.error('New reviewer notification error:', error)
   }
@@ -40,8 +42,9 @@ const notifyFollowersOfNewReviewer = async (authorId, reviewerId) => {
 const getPublicReviewers = async (req, res) => {
   try {
     const { page, limit, skip, take } = parsePagination(req.query)
+    const { search = '', examType = '', semester = '' } = req.query
 
-    const result = await reviewerModel.findPublic({ skip, take, search: req.query.search || '' })
+    const result = await reviewerModel.findPublic({ skip, take, search, examType, semester })
 
     res.json({
       reviewers: result.reviewers,
@@ -163,8 +166,20 @@ const getReviewerById = async (req, res) => {
     // No public-URL fallback anywhere by design: a long-lived public URL
     // would leak unlisted/private files, so without signed-URL support the
     // file stays unserved (fileUrl: null, which the hub already handles).
+    // Independent enrichment fetches run concurrently so detail loads in
+    // a single round of parallel queries instead of a sequential chain.
+    const [file, cards, quota] = await Promise.all([
+      reviewerFileModel.findByReviewerId(id),
+      flashcardModel.findByReviewer(id),
+      req.user
+        ? Promise.all([
+            getRemainingQuota(req.user.id, DECK_QUOTA_LIMIT),
+            getRemainingGrades(req.user.id, GRADE_LIMIT),
+          ]).then(([decksLeft, gradesLeft]) => ({ decksLeft, gradesLeft }))
+        : Promise.resolve({ decksLeft: 0, gradesLeft: 0 }),
+    ])
+
     let fileUrl = null
-    const file = await reviewerFileModel.findByReviewerId(id)
     if (file) {
       const storage = createStorageAdapter()
       if (typeof storage.getSignedUrl === 'function') {
@@ -174,14 +189,7 @@ const getReviewerById = async (req, res) => {
       }
     }
 
-    const cards = await flashcardModel.findByReviewer(id)
     const prompts = Array.isArray(reviewer.aiPrompts) ? reviewer.aiPrompts : []
-    const quota = req.user
-      ? {
-          decksLeft: await getRemainingQuota(req.user.id, DECK_QUOTA_LIMIT),
-          gradesLeft: await getRemainingGrades(req.user.id, GRADE_LIMIT),
-        }
-      : { decksLeft: 0, gradesLeft: 0 }
 
     res.json({ reviewer: { ...reviewer, fileUrl, cards, prompts, quota } })
   } catch (error) {

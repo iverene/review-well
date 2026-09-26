@@ -9,6 +9,12 @@ const ZOOM_STEP = 25
 const ZOOM_MIN = 50
 const ZOOM_MAX = 300
 
+const LOADING_TIPS = [
+  'Sharpening every page…',
+  'Counting pages…',
+  'Warming up the viewer…',
+]
+
 // Pure helper (exported for tests): given page top offsets (px, relative to
 // the scroll container) pick the page under a probe line partway down the
 // viewport. Scroll math — unlike IntersectionObserver thresholds — stays
@@ -40,6 +46,15 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [fullscreen, setFullscreen] = useState(false)
+  const [tipIndex, setTipIndex] = useState(0)
+
+  useEffect(() => {
+    if (!loading) return
+    const timer = setInterval(() => {
+      setTipIndex((i) => (i + 1) % LOADING_TIPS.length)
+    }, 2500)
+    return () => clearInterval(timer)
+  }, [loading])
 
   pageRef.current = currentPage
 
@@ -215,8 +230,9 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
 
   return (
     <div data-testid="study-source-pdf" className="study-source-pdf overflow-hidden rounded-soft border-2 border-stone bg-paper">
-      <div className="relative flex flex-wrap items-center justify-between gap-2 border-b-2 border-stone bg-cream px-3 py-2">
-        <div className="flex items-center gap-1">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-1 px-2 py-2 sm:gap-2 sm:px-3 border-b-2 border-stone bg-cream">
+        <div />
+        <div className="flex items-center gap-1 justify-self-center">
           <button
             type="button"
             onClick={() => goToPage(currentPage - 1)}
@@ -226,11 +242,9 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
           >
             <ChevronLeft className="h-4 w-4" aria-hidden="true" />
           </button>
-        </div>
-        <p data-testid="study-doc-count" aria-label="Page count" className="min-w-16 flex-1 px-1 text-center font-mono text-xs font-bold text-ink">
-          {numPages > 0 ? `${currentPage} / ${numPages}` : '…'}
-        </p>
-        <div className="flex items-center gap-1">
+          <p data-testid="study-doc-count" aria-label="Page count" className="min-w-16 px-1 text-center font-mono text-xs font-bold text-ink">
+            {numPages > 0 ? `${currentPage} / ${numPages}` : '…'}
+          </p>
           <button
             type="button"
             onClick={() => goToPage(currentPage + 1)}
@@ -240,6 +254,8 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
           >
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </button>
+        </div>
+        <div className="flex items-center gap-1 justify-self-end">
           {fullscreen && (
             <>
               <button
@@ -278,11 +294,11 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
 
       <div ref={scrollRef} data-testid="study-doc-scroll" className="study-doc-scroll relative h-[62vh] overflow-auto bg-cream/50 p-3 md:h-[72vh] md:p-4">
         {loading && (
-          <div data-testid="study-doc-loading" className="space-y-3" aria-label="Loading document">
-            <div className="h-6 w-24 animate-pulse rounded-soft bg-stone/40" />
-            {[0, 1].map((i) => (
-              <div key={i} className="aspect-[1/1.29] w-full animate-pulse rounded-soft bg-stone/40" />
-            ))}
+          <div data-testid="study-doc-loading" className="flex flex-col items-center px-6 py-14 text-center" aria-label="Loading document">
+            <img src="/logo.png" alt="" aria-hidden="true" className="auth-logo h-20 w-20 object-contain" />
+            <p className="mt-4 font-display text-xl font-bold text-ink">Opening Your Document…</p>
+            <p className="mt-1 text-sm font-semibold text-muted" aria-live="polite">{LOADING_TIPS[tipIndex]}</p>
+            <span className="auth-bar mt-4" aria-hidden="true" />
           </div>
         )}
         {error && !loading && (

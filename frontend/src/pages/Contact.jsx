@@ -4,15 +4,15 @@ import axios from 'axios'
 import { LogIn, PartyPopper, Send } from 'lucide-react'
 
 import { useAuth } from '../contexts/AuthContext'
-import ErrorAlert from '../components/common/ErrorAlert'
+import { useToast } from '../contexts/ToastContext'
 import { getApiErrorMessage } from '../utils/apiError'
 
 const Contact = () => {
   const { user, isAuthenticated } = useAuth()
+  const toast = useToast()
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
   const [sent, setSent] = useState(false)
-  const [error, setError] = useState(null)
 
   // Locked to the signed-in account: valid by construction, never editable.
   const senderEmail = user?.email || ''
@@ -20,14 +20,14 @@ const Contact = () => {
   const handleSubmit = async (event) => {
     event.preventDefault()
     setSending(true)
-    setError(null)
     try {
       await axios.post('/api/contact', { email: senderEmail, message: message.trim() }, { withCredentials: true })
       setSent(true)
       setMessage('')
+      toast.success('Message Sent')
     } catch (err) {
       console.error('Failed to send message:', err)
-      setError(getApiErrorMessage(err, 'Unable to send your message.'))
+      toast.error(getApiErrorMessage(err, 'Unable to send your message.'))
     } finally {
       setSending(false)
     }
@@ -78,7 +78,6 @@ const Contact = () => {
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
-            <ErrorAlert>{error}</ErrorAlert>
             <div>
               <label htmlFor="contact-email" className="mb-1 block text-sm font-extrabold text-ink">
                 Sending as

@@ -233,7 +233,7 @@ const Profile = () => {
     <PageContainer>
       {/* Profile header (cardless) */}
       <div aria-label="Profile">
-        <h1 className="font-display text-3xl font-bold text-ink md:text-4xl">{profile.displayName}</h1>
+        <h1 className="break-words font-display text-3xl font-bold text-ink md:text-4xl">{profile.displayName}</h1>
         <div className="mt-3 flex items-center gap-4">
           {profile.avatarUrl ? (
             <img
@@ -317,10 +317,12 @@ const Profile = () => {
             type="button"
             role="tab"
             aria-selected={activeTab === value}
+            aria-label={label}
+            title={label}
             onClick={() => setActiveTab(value)}
             className={`flex flex-1 items-center justify-center gap-2 rounded-soft px-4 py-2.5 text-sm font-extrabold transition-colors ${activeTab === value ? 'border-2 border-accent bg-blush text-ink' : 'border-2 border-transparent text-muted hover:bg-powder hover:text-ink'}`}
           >
-            <Icon className="h-4 w-4" aria-hidden="true" /> {label}
+            <Icon className="h-4 w-4" aria-hidden="true" /> <span className="hidden sm:inline">{label}</span>
           </button>
         ))}
       </div>

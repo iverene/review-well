@@ -51,6 +51,14 @@ describe('PdfViewer', () => {
     expect(screen.getByRole('button', { name: 'View fullscreen' })).toBeInTheDocument()
   })
 
+  it('shows a friendly loader with rotating tips while opening', () => {
+    pdfjsLib.getDocument.mockReturnValue({ promise: new Promise(() => {}) })
+    render(<PdfViewer fileUrl="https://storage.example.com/v1.pdf" title="Guide" />)
+    expect(screen.getByLabelText('Loading document')).toBeInTheDocument()
+    expect(screen.getByText('Opening Your Document…')).toBeInTheDocument()
+    expect(screen.getByText('Sharpening every page…')).toBeInTheDocument()
+  })
+
   it('updates the count in real time as the user scrolls', async () => {
     render(<PdfViewer fileUrl="https://storage.example.com/v1.pdf" title="Guide" />)
     expect(await screen.findByTestId('study-doc-count')).toHaveTextContent('1 / 2')

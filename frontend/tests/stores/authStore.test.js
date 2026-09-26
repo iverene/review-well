@@ -42,4 +42,20 @@ describe('Auth Store', () => {
     })
     expect(window.localStorage.getItem('review-well-guest')).toBeNull()
   })
+
+  it('patches the user without touching auth flags', () => {
+    useAuthStore.getState().login({ id: 'user-123' })
+    useAuthStore.getState().updateUser({ announcementSeenId: 'v2' })
+
+    expect(useAuthStore.getState()).toMatchObject({
+      user: { id: 'user-123', announcementSeenId: 'v2' },
+      isAuthenticated: true,
+    })
+  })
+
+  it('ignores patches with no signed-in user', () => {
+    useAuthStore.getState().updateUser({ announcementSeenId: 'v2' })
+
+    expect(useAuthStore.getState().user).toBeNull()
+  })
 })

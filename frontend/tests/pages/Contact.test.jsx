@@ -43,11 +43,13 @@ describe('Contact', () => {
     expect(await screen.findByText('Message Sent')).toBeInTheDocument()
   })
 
-  it('shows an error when sending fails', async () => {
+  it('shows no on-screen error when sending fails (toast carries it)', async () => {
     axios.post.mockRejectedValue(new Error('Network failed'))
     render(<MemoryRouter><Contact /></MemoryRouter>)
     fireEvent.change(screen.getByLabelText('Message'), { target: { value: 'Hello developer' } })
     fireEvent.click(screen.getByRole('button', { name: 'Send Message' }))
-    expect(await screen.findByText('Unable to send your message.')).toBeInTheDocument()
+    await waitFor(() => expect(axios.post).toHaveBeenCalled())
+    expect(screen.queryByText('Unable to send your message.')).toBeNull()
+    expect(screen.queryByText('Message Sent')).toBeNull()
   })
 })

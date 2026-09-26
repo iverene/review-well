@@ -46,7 +46,7 @@ const Create = () => {
     courseDescription: '',
     semester: '',
     examType: 'midterm',
-    visibility: 'private',
+    visibility: 'public',
     isDraft: true,
     colorPalette: defaultPalette,
   })
@@ -155,7 +155,6 @@ const Create = () => {
       } catch (saveError) {
         console.error('Failed to update reviewer:', saveError)
         const message = getApiErrorMessage(saveError, 'Unable to save your reviewer. Please try again.')
-        setError(message)
         toast.error(message)
       } finally {
         setSaving(false)
@@ -191,8 +190,7 @@ const Create = () => {
         setError(getApiErrorMessage(createError, 'File upload failed, so your reviewer was not created. Please try again! 💌'))
         toast.error('Reviewer Not Created')
       } else {
-        setError(getApiErrorMessage(createError, 'Unable to create your reviewer. Please try again.'))
-        toast.error('Reviewer Not Created')
+        toast.error(getApiErrorMessage(createError, 'Unable to create your reviewer. Please try again.'))
       }
     } finally {
       setSaving(false)
@@ -213,7 +211,7 @@ const Create = () => {
         </div>
         <div>
           <p className="font-mono text-xs font-bold uppercase tracking-widest text-accent">New study guide</p>
-          <h1 className="mt-1 font-display text-3xl font-bold text-ink md:text-4xl">{editReviewerId ? 'Edit Your Reviewer' : 'Upload a Reviewer'}</h1>
+          <h1 className="mt-1 font-display text-2xl font-bold text-ink sm:text-3xl md:text-4xl">{editReviewerId ? 'Edit Your Reviewer' : 'Upload a Reviewer'}</h1>
         </div>
       </div>
 
@@ -256,12 +254,12 @@ const Create = () => {
             </div>
 
             <div
-              className={`rounded-soft border-2 border-stone bg-[#FFF7E8] p-4 transition-colors ${dragging ? 'border-accent bg-butter/40' : ''}`}
+              className={`rounded-soft border-2 border-stone bg-cream p-4 transition-colors ${dragging ? 'border-accent bg-butter/40' : ''}`}
               onDragOver={(event) => { event.preventDefault(); setDragging(true) }}
               onDragLeave={() => setDragging(false)}
               onDrop={handleDrop}
             >
-              <label htmlFor="sourceFile" className="mb-2 flex items-center gap-2 text-sm font-extrabold text-[#604A3A]">
+              <label htmlFor="sourceFile" className="mb-2 flex items-center gap-2 text-sm font-extrabold text-ink">
                 {editReviewerId ? <RefreshCcw className="h-4 w-4" aria-hidden="true" /> : <FileUp className="h-4 w-4" aria-hidden="true" />}
                 {editReviewerId ? 'Replace File (Optional)' : 'Source File'}
               </label>
@@ -272,16 +270,16 @@ const Create = () => {
                 accept=".pdf,.pptx"
                 onChange={handleFileChange}
                 required={!editReviewerId}
-                className="w-full rounded-soft border-2 border-dashed border-[#F6C6D2] bg-paper px-4 py-3 text-sm text-ink file:mr-3 file:rounded-soft file:border-2 file:border-[#604A3A] file:bg-[#F9E4A8] file:px-3 file:py-1 file:text-xs file:font-extrabold file:text-[#604A3A]"
+                className="w-full rounded-soft border-2 border-dashed border-blush bg-paper px-4 py-3 text-sm text-ink file:mr-3 file:rounded-soft file:border-2 file:border-ink file:bg-butter file:px-3 file:py-1 file:text-xs file:font-extrabold file:text-ink"
               />
               <p className="mt-2 text-xs text-muted">PDF or PPTX only, max 25 MB. {editReviewerId ? 'Swapping files may stale the AI deck.' : 'Drag and drop your file here, or browse to choose one.'}</p>
               {sourceFile && !fileError && (
-                <p className="mt-2 rounded-soft bg-[#CDE8D2] px-3 py-2 text-xs font-bold text-[#604A3A]">
+                <p className="mt-2 rounded-soft bg-mint px-3 py-2 text-xs font-bold text-ink">
                   {sourceFile.name} ({(sourceFile.size / 1024 / 1024).toFixed(2)} MB)
                 </p>
               )}
               {fileError && (
-                <p role="alert" className="mt-2 rounded-soft bg-[#F6C6D2] px-3 py-2 text-xs font-bold text-[#604A3A]">{fileError}</p>
+                <p role="alert" className="mt-2 rounded-soft bg-blush px-3 py-2 text-xs font-bold text-ink">{fileError}</p>
               )}
             </div>
           </div>

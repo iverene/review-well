@@ -6,7 +6,7 @@ import cors from 'cors'
 import hpp from 'hpp'
 import { pathToFileURL } from 'url'
 import passport from 'passport'
-import { sessionConfig, ensureSessionCompat } from './config/session.js'
+import { sessionConfig, ensureSessionCompat, enforceAbsoluteSessionExpiry } from './config/session.js'
 import { configurePassport } from './config/googleOAuth.js'
 import { getFrontendUrl } from './config/urls.js'
 import { globalLimiter, authLimiter } from './middleware/rateLimiter.js'
@@ -37,6 +37,9 @@ app.use(passport.initialize())
 app.use(passport.session())
 configurePassport()
 
+// Absolute 30-day cap sits after deserialization so req.user is populated.
+app.use(enforceAbsoluteSessionExpiry)
+
 // Rate limiting (after session so auth state exists; trust-proxy is set in
 // production so limits apply per client IP, not per proxy).
 app.use('/api/auth', authLimiter)
@@ -48,6 +51,7 @@ app.use('/api/reviewers', (await import('./routes/reviewerRoutes.js')).default)
 app.use('/api/reviewer-files', (await import('./routes/reviewerFileRoutes.js')).default)
 app.use('/api/ai', (await import('./routes/aiRoutes.js')).default)
 app.use('/api/social', (await import('./routes/socialRoutes.js')).default)
+app.use('/api/push', (await import('./routes/pushRoutes.js')).default)
 app.use('/api/profile', (await import('./routes/profileRoutes.js')).default)
 app.use('/api/contact', (await import('./routes/contactRoutes.js')).default)
 app.use('/api', (await import('./routes/flashcardRoutes.js')).default)

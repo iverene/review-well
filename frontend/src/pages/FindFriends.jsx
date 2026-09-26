@@ -4,7 +4,7 @@ import axios from 'axios'
 import { Search, UserPlus, X } from 'lucide-react'
 
 import FollowButton from '../components/social/FollowButton'
-import ErrorAlert from '../components/common/ErrorAlert'
+import { useToast } from '../contexts/ToastContext'
 import PageHeader from '../components/common/PageHeader'
 import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
@@ -13,12 +13,11 @@ const FindFriends = () => {
   const [query, setQuery] = useState('')
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
   const [searched, setSearched] = useState(false)
+  const toast = useToast()
 
   const search = useCallback(async (term) => {
     setLoading(true)
-    setError(null)
     try {
       const response = await axios.get('/api/profile/search', {
         params: { q: term, limit: 20 },
@@ -28,11 +27,11 @@ const FindFriends = () => {
       setSearched(true)
     } catch (err) {
       console.error('Failed to search users:', err)
-      setError(getApiErrorMessage(err, 'Unable to find friends right now.'))
+      toast.error(getApiErrorMessage(err, 'Unable to find friends right now.'))
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [toast])
 
   useEffect(() => {
     search('')
@@ -82,8 +81,6 @@ const FindFriends = () => {
           <Search className="h-4 w-4" aria-hidden="true" />
         </button>
       </form>
-
-      <ErrorAlert className="mt-4">{error}</ErrorAlert>
 
       <div className="mt-5 space-y-3" aria-live="polite">
         {loading && (

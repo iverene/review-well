@@ -3,6 +3,7 @@ import * as followModel from '../models/followModel.js'
 import * as notificationModel from '../models/notificationModel.js'
 import * as reviewerModel from '../models/reviewerModel.js'
 import * as userModel from '../models/userModel.js'
+import { notifyEvent } from '../services/pushService.js'
 import { parsePagination } from '../utils/pagination.js'
 import { delPrefix } from '../utils/cache.js'
 
@@ -34,6 +35,7 @@ const saveReviewer = async (req, res) => {
 
     await saveModel.create(userId, reviewerId)
     await notificationModel.createSaveNotification(reviewer.authorId, userId, reviewerId)
+    notifyEvent({ actionType: 'save', actorId: userId, recipientIds: [reviewer.authorId], reviewerId })
     delPrefix('social:')
     delPrefix('reviewers:')
 
@@ -127,6 +129,7 @@ const followUser = async (req, res) => {
       throw createError
     }
     await notificationModel.createFollowNotification(targetUserId, followerId)
+    notifyEvent({ actionType: 'follow', actorId: followerId, recipientIds: [targetUserId] })
     delPrefix('social:')
     delPrefix('profile:')
 

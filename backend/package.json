@@ -20,8 +20,8 @@
     "cors": "^2.8.5",
     "dotenv": "^17.4.2",
     "express": "^4.18.2",
-    "express-session": "^1.19.0",
     "express-rate-limit": "^7.1.0",
+    "express-session": "^1.19.0",
     "google-auth-library": "^11.0.2",
     "helmet": "^7.1.0",
     "hpp": "^0.2.3",
@@ -30,6 +30,7 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "prisma": "^5.22.0",
+    "web-push": "^3.6.7",
     "zod": "^4.5.4"
   },
   "devDependencies": {

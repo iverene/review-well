@@ -146,12 +146,10 @@ const updateAvatar = async (req, res) => {
     res.status(500).json({ error: 'Failed to update avatar' })
   }
 }
-
 const getMyProfile = async (req, res) => {
   try {
     const userId = req.user.id
     const profile = await userModel.getProfile(userId)
-
     const [reviewerCount, followerCount, followingCount] = await Promise.all([
       reviewerModel.count({ authorId: userId }),
       followModel.countFollowers(userId),
@@ -172,4 +170,31 @@ const getMyProfile = async (req, res) => {
   }
 }
 
-export { getProfile, updateProfile, updateAvatar, getMyProfile, searchUsers }
+// Announcement dismissal sync (cross-browser "seen" state). Stored per user
+// so dismissing on one browser suppresses it everywhere.
+const getAnnouncement = async (req, res) => {
+  try {
+    const announcementSeenId = await userModel.getAnnouncementSeenId(req.user.id)
+    res.json({ announcementSeenId })
+  } catch (error) {
+    console.error('Get announcement state error:', error)
+    res.status(500).json({ error: 'Failed to load announcement state' })
+  }
+}
+
+const dismissAnnouncement = async (req, res) => {
+  try {
+    const { announcementId } = req.body || {}
+    if (typeof announcementId !== 'string' || !announcementId.trim() || announcementId.length > 64) {
+      return res.status(400).json({ error: 'A valid announcementId is required' })
+    }
+
+    const result = await userModel.setAnnouncementSeenId(req.user.id, announcementId.trim())
+    res.json(result)
+  } catch (error) {
+    console.error('Dismiss announcement error:', error)
+    res.status(500).json({ error: 'Failed to dismiss announcement' })
+  }
+}
+
+export { getProfile, updateProfile, updateAvatar, getMyProfile, searchUsers, getAnnouncement, dismissAnnouncement }

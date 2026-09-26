@@ -29,7 +29,7 @@ const NavigationShell = ({ children }) => {
 
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-40 h-32 bg-gradient-to-b from-white/90 via-white/45 to-transparent md:hidden" aria-hidden="true" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-40 h-32 bg-gradient-to-b from-paper/90 via-paper/45 to-transparent md:hidden" aria-hidden="true" />
 
         {/* Header Bar */}
         <header className="absolute inset-x-0 top-0 z-50 flex items-center justify-between border-b-0 bg-transparent px-4 py-3 md:px-6">

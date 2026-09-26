@@ -1,4 +1,5 @@
 import { prisma } from '../config/database.js'
+import { Prisma } from '@prisma/client'
 import { TTL_30_SECONDS, TTL_60_SECONDS, del, delPrefix, remember } from '../utils/cache.js'
 
 const findById = async (id) => {
@@ -76,4 +77,20 @@ const getProfile = async (id) => {
   }))
 }
 
-export { findById, findByGoogleId, findByEmail, create, update, getProfile, searchUsers }
+const getAnnouncementSeenId = async (id) => {
+  // Raw SQL: works even when the generated client predates the column
+  // (regenerate + restart picks up the typed path later).
+  const rows = await prisma.$queryRaw(
+    Prisma.sql`SELECT announcement_seen_id AS "announcementSeenId" FROM users WHERE id = ${id}`
+  )
+  return rows[0]?.announcementSeenId || null
+}
+
+const setAnnouncementSeenId = async (id, announcementId) => {
+  await prisma.$executeRaw(
+    Prisma.sql`UPDATE users SET announcement_seen_id = ${announcementId}, updated_at = NOW() WHERE id = ${id}`
+  )
+  return { announcementSeenId: announcementId }
+}
+
+export { findById, findByGoogleId, findByEmail, create, update, getProfile, searchUsers, getAnnouncementSeenId, setAnnouncementSeenId }

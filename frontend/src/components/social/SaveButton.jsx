@@ -4,7 +4,6 @@ import { Bookmark } from 'lucide-react'
 
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
-import ErrorAlert from '../common/ErrorAlert'
 import { getApiErrorMessage } from '../../utils/apiError'
 
 const SaveButton = ({ reviewerId, initialSaved = false, initialSaveCount = 0 }) => {
@@ -13,7 +12,6 @@ const SaveButton = ({ reviewerId, initialSaved = false, initialSaveCount = 0 }) 
   const [saved, setSaved] = useState(initialSaved)
   const [saveCount, setSaveCount] = useState(initialSaveCount)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (!isAuthenticated) return
@@ -29,7 +27,7 @@ const SaveButton = ({ reviewerId, initialSaved = false, initialSaveCount = 0 }) 
       } catch (error) {
         if (cancelled) return
         console.error('Failed to fetch save status:', error)
-        setError(getApiErrorMessage(error, 'Unable to load save status.'))
+        toast.error(getApiErrorMessage(error, 'Unable to load save status.'))
       }
     }
     load()
@@ -42,7 +40,6 @@ const SaveButton = ({ reviewerId, initialSaved = false, initialSaveCount = 0 }) 
     if (!isAuthenticated || loading) return
 
     setLoading(true)
-    setError(null)
     try {
       if (saved) {
         const response = await axios.delete(`/api/social/reviewers/${reviewerId}/save`, {
@@ -61,9 +58,7 @@ const SaveButton = ({ reviewerId, initialSaved = false, initialSaveCount = 0 }) 
       }
     } catch (error) {
       console.error('Failed to toggle save:', error)
-      const message = getApiErrorMessage(error, 'Unable to update saved status.')
-      setError(message)
-      toast.error(message)
+      toast.error(getApiErrorMessage(error, 'Unable to update saved status.'))
     } finally {
       setLoading(false)
     }
@@ -90,7 +85,6 @@ const SaveButton = ({ reviewerId, initialSaved = false, initialSaveCount = 0 }) 
         />
         <span className="font-semibold">{saveCount}</span>
       </button>
-      <ErrorAlert className="mt-2 max-w-xs">{error}</ErrorAlert>
     </div>
   )
 }

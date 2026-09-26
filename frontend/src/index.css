@@ -2,12 +2,56 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Theme tokens (RGB triplets so Tailwind opacity modifiers keep working).
+   :root is the default light theme; Settings switches data-theme. */
+:root {
+  color-scheme: light;
+  --ink: 96 74 58;
+  --paper: 248 249 250;
+  --stone: 230 224 210;
+  --accent: 201 106 131;
+  --muted: 139 119 104;
+  --blush: 246 198 210;
+  --powder: 201 230 242;
+  --mint: 205 232 210;
+  --butter: 249 228 168;
+  --cream: 255 247 232;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --ink: 228 228 230;
+  --paper: 18 18 20;
+  --stone: 44 44 48;
+  --accent: 224 138 160;
+  --muted: 160 160 168;
+  --blush: 146 96 112;
+  --powder: 110 150 175;
+  --mint: 110 155 125;
+  --butter: 190 155 95;
+  --cream: 24 24 28;
+}
+
+[data-theme='reading'] {
+  color-scheme: light;
+  --ink: 67 52 34;
+  --paper: 244 236 216;
+  --stone: 221 211 186;
+  --accent: 180 86 110;
+  --muted: 125 107 84;
+  --blush: 236 195 205;
+  --powder: 196 221 230;
+  --mint: 196 220 200;
+  --butter: 242 221 158;
+  --cream: 250 243 226;
+}
+
 body {
   font-family: 'Nunito', sans-serif;
-  background-color: #F8F9FA;
-  background-image: radial-gradient(#e2e5e9 1px, transparent 1px);
+  background-color: rgb(var(--paper));
+  background-image: radial-gradient(rgb(var(--stone)) 1px, transparent 1px);
   background-size: 18px 18px;
-  color: #604a3a;
+  color: rgb(var(--ink));
   min-width: 320px;
 }
 
@@ -25,19 +69,19 @@ button, a, input, textarea, select {
 }
 
 button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
-  outline: 3px solid #c9e6f2;
+  outline: 3px solid rgb(var(--powder));
   outline-offset: 3px;
 }
 
 .club-surface {
-  border: 2px solid #eadfce;
+  border: 2px solid rgb(var(--stone));
   border-radius: 16px;
-  background: rgba(255, 247, 232, 0.9);
-  box-shadow: 4px 5px 0 rgba(96, 74, 58, 0.08);
+  background: rgb(var(--cream) / 0.9);
+  box-shadow: 4px 5px 0 rgb(var(--ink) / 0.08);
 }
 
 .club-shadow {
-  box-shadow: 5px 6px 0 rgba(96, 74, 58, 0.12);
+  box-shadow: 5px 6px 0 rgb(var(--ink) / 0.12);
 }
 
 @keyframes club-rise {
@@ -67,7 +111,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 
 .show-scroll {
   scrollbar-width: thin;
-  scrollbar-color: #C9BFAE transparent;
+  scrollbar-color: rgb(var(--muted)) transparent;
 }
 
 .show-scroll::-webkit-scrollbar {
@@ -78,18 +122,18 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   background: transparent;
 }
 .show-scroll::-webkit-scrollbar-thumb {
-  background: #C9BFAE;
+  background: rgb(var(--muted));
   border-radius: 8px;
-  border: 2px solid #F0EFEA;
+  border: 2px solid rgb(var(--paper));
 }
 .show-scroll::-webkit-scrollbar-thumb:hover {
-  background: #604A3A;
+  background: rgb(var(--ink));
 }
 
 /* Document viewer scrollbar (kawaii cocoa thumb on transparent track). */
 .study-doc-scroll {
   scrollbar-width: thin;
-  scrollbar-color: #604A3A transparent;
+  scrollbar-color: rgb(var(--ink)) transparent;
 }
 
 .study-doc-scroll::-webkit-scrollbar {
@@ -100,12 +144,12 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   background: transparent;
 }
 .study-doc-scroll::-webkit-scrollbar-thumb {
-  background: #604A3A;
+  background: rgb(var(--ink));
   border-radius: 8px;
-  border: 2px solid #FFF7E8;
+  border: 2px solid rgb(var(--cream));
 }
 .study-doc-scroll::-webkit-scrollbar-thumb:hover {
-  background: #8B7768;
+  background: rgb(var(--muted));
 }
 
 /* Rendered PDF pages keep their aspect and center instead of stretching. */
@@ -162,13 +206,13 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   inset: 0;
   border-radius: 9999px;
   border: 3px solid transparent;
-  border-top-color: #C96A83;
-  border-right-color: #C9E6F2;
+  border-top-color: rgb(var(--accent));
+  border-right-color: rgb(var(--powder));
   animation: auth-orbit-spin 1.4s linear infinite;
 }
 .auth-logo {
   animation: auth-logo-pulse 1.8s ease-in-out infinite;
-  box-shadow: 4px 5px 0 rgba(96, 74, 58, 0.12);
+  box-shadow: 4px 5px 0 rgb(var(--ink) / 0.12);
 }
 .auth-fade {
   animation: desk-fade 600ms ease-out both;
@@ -180,7 +224,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   overflow: hidden;
   position: relative;
   border-radius: 9999px;
-  background: #EADFCE;
+  background: rgb(var(--stone));
 }
 .auth-bar::after {
   content: "";
@@ -189,7 +233,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   bottom: 0;
   width: 32%;
   border-radius: 9999px;
-  background: #C96A83;
+  background: rgb(var(--accent));
   animation: auth-bar-slide 1.2s ease-in-out infinite;
 }
 

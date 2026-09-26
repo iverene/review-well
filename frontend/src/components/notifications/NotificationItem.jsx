@@ -110,8 +110,8 @@ const NotificationItem = ({ notification, onMarkRead }) => {
     </>
   )
 
-  const className = `flex items-start gap-3 border-b border-stone/70 px-1 py-3.5 transition-colors  ${
-    !isRead ? 'bg-blush/20' : ''
+  const className = `relative flex items-start gap-3 border-b border-stone/70 px-1 py-3.5 pl-3 transition-colors hover:bg-stone/20 ${
+    !isRead ? 'before:absolute before:bottom-2 before:left-0 before:top-2 before:w-1 before:rounded-full before:bg-accent' : ''
   }`
 
   // Row navigation lives on the inner actor/reviewer links; clicking the
