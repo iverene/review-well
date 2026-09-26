@@ -1,0 +1,29 @@
+{
+  "name": "Review Well — Cozy Study Club",
+  "short_name": "Review Well",
+  "description": "Upload lecture slides, browse study guides, and keep everything in one cozy study club.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FFF7E8",
+  "theme_color": "#C96A83",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

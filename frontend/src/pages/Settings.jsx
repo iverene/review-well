@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { ChevronRight, LogOut, Moon, Palette, ShieldCheck, Sun, UserRound } from 'lucide-react'
+import { BellRing, ChevronRight, LogOut, Moon, Palette, ShieldCheck, Sun, UserRound } from 'lucide-react'
 
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
+import PushToggle from '../components/PushToggle'
 
 const THEME_META = {
   light: { label: 'Light', description: 'Bright paper with cocoa ink.', Icon: Sun },
@@ -69,6 +70,15 @@ const Settings = () => {
               </button>
             )
           })}
+        </div>
+      </section>
+
+      <section className="mt-4 rounded-soft border-2 border-stone bg-paper p-6 club-shadow" aria-label="Notifications">
+        <h2 className="flex items-center gap-2 font-display text-xl font-bold text-ink">
+          <BellRing className="h-5 w-5 text-accent" aria-hidden="true" /> Notifications
+        </h2>
+        <div className="mt-3">
+          <PushToggle />
         </div>
       </section>
 

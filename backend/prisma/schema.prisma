@@ -27,6 +27,7 @@ model User {
   followers   Follow[]    @relation("follower")
   notifications Notification[] @relation("recipient")
   actorNotifications Notification[] @relation("actor")
+  pushSubscriptions PushSubscription[]
   dailyFocusMinutes Int @default(25) @map("daily_focus_minutes")
   blurtingAttempts BlurtingAttempt[]
   pomodoroSessions PomodoroSession[]
@@ -174,4 +175,17 @@ model Notification {
 
   @@index([recipientId, isRead, createdAt(sort: Desc)])
   @@map("notifications")
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  endpoint  String   @unique
+  keys      Json
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_subscriptions")
 }

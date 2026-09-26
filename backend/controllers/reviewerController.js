@@ -6,6 +6,7 @@ import * as flashcardModel from '../models/flashcardModel.js'
 import { getRemainingQuota, getRemainingGrades, GRADE_LIMIT } from '../models/aiQuotaModel.js'
 import { DECK_QUOTA_LIMIT } from '../constants/quotas.js'
 import { createStorageAdapter } from '../services/adapters/storage.js'
+import { notifyEvent } from '../services/pushService.js'
 import { parsePagination } from '../utils/pagination.js'
 import { del, delPrefix } from '../utils/cache.js'
 
@@ -32,6 +33,7 @@ const notifyFollowersOfNewReviewer = async (authorId, reviewerId) => {
         reviewerId,
       }))
     )
+    notifyEvent({ actionType: 'new_reviewer', actorId: authorId, recipientIds: recipients, reviewerId })
   } catch (error) {
     console.error('New reviewer notification error:', error)
   }
