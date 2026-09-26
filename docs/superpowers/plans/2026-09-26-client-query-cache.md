@@ -41,7 +41,7 @@
 
 **Interfaces:**
 - Consumes: `zustand` `create`.
-- Produces: default export `useQueryCache` (`entries`, `getEntry`, `setEntry`, `invalidate`, `reset`); named exports `cacheKey(method, url, params)`, `fetchShared(key, fetcher, { force })`.
+- Produces: default export `useQueryCache` (`entries`, `getEntry`, `setEntry`, `invalidate`, `reset`); named exports `cacheKey(method, url, params)`, `fetchShared(key, fetcher, { force, revalidate })`.
 
 - [ ] **Step 1: Write the failing test**
 
@@ -103,6 +103,21 @@ describe('Query Cache', () => {
     await expect(fetchShared('GET /api/z', fetcher2)).resolves.toBe('v2')
     expect(fetcher2).toHaveBeenCalledTimes(1)
   })
+
+  it('revalidates through the network while deduping concurrent refreshes', async () => {
+    const first = vi.fn().mockResolvedValue({ data: 'v1' })
+    await fetchShared('GET /api/r', first)
+    let resolveGate
+    const gate = new Promise((resolve) => { resolveGate = resolve })
+    const second = vi.fn().mockReturnValue(gate.then(() => ({ data: 'v2' })))
+    const a = fetchShared('GET /api/r', second, { revalidate: true })
+    const b = fetchShared('GET /api/r', second, { revalidate: true })
+    resolveGate()
+    await expect(a).resolves.toBe('v2')
+    await expect(b).resolves.toBe('v2')
+    expect(second).toHaveBeenCalledTimes(1)
+    expect(useQueryCache.getState().getEntry('GET /api/r')).toMatchObject({ data: 'v2' })
+  })
 })
 ```
 
@@ -154,10 +169,12 @@ const useQueryCache = create((set, get) => ({
 }))
 
 // Cache-first fetch shared by the hook and imperative callers. Resolves with
-// response.data. force skips both the entry and the dedup map.
-const fetchShared = (key, fetcher, { force = false } = {}) => {
+// response.data. force skips both the entry and the dedup map (explicit
+// user-initiated refresh). revalidate skips the entry but still dedups, so
+// every mount's background refresh shares one network call.
+const fetchShared = (key, fetcher, { force = false, revalidate = false } = {}) => {
   const { entries } = useQueryCache.getState()
-  if (!force && entries[key]) return Promise.resolve(entries[key].data)
+  if (!force && !revalidate && entries[key]) return Promise.resolve(entries[key].data)
   if (!force && inflight.has(key)) return inflight.get(key)
   const promise = (async () => {
     try {
@@ -179,7 +196,7 @@ export { cacheKey, fetchShared }
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `npx vitest run tests/stores/queryCache.test.js`
-Expected: PASS (5 tests)
+Expected: PASS (6 tests)
 
 - [ ] **Step 5: Lint the new files**
 
@@ -307,7 +324,9 @@ const useCachedGet = (key, fetcher, { enabled = true } = {}) => {
     let cancelled = false
     const cached = useQueryCache.getState().entries[key]
     setStatus({ loading: !cached, error: null })
-    fetchShared(key, () => fetcherRef.current())
+    // revalidate (not force): background refresh shares one network call
+    // across simultaneous mounts via the dedup map.
+    fetchShared(key, () => fetcherRef.current(), { revalidate: true })
       .then(() => {
         if (!cancelled) setStatus({ loading: false, error: null })
       })
