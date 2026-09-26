@@ -215,8 +215,9 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
 
   return (
     <div data-testid="study-source-pdf" className="study-source-pdf overflow-hidden rounded-soft border-2 border-stone bg-paper">
-      <div className="relative flex flex-wrap items-center justify-between gap-2 border-b-2 border-stone bg-cream px-3 py-2">
-        <div className="flex items-center gap-1">
+      <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 border-b-2 border-stone bg-cream px-3 py-2">
+        <div />
+        <div className="flex items-center gap-1 justify-self-center">
           <button
             type="button"
             onClick={() => goToPage(currentPage - 1)}
@@ -226,11 +227,9 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
           >
             <ChevronLeft className="h-4 w-4" aria-hidden="true" />
           </button>
-        </div>
-        <p data-testid="study-doc-count" aria-label="Page count" className="min-w-16 flex-1 px-1 text-center font-mono text-xs font-bold text-ink">
-          {numPages > 0 ? `${currentPage} / ${numPages}` : '…'}
-        </p>
-        <div className="flex items-center gap-1">
+          <p data-testid="study-doc-count" aria-label="Page count" className="min-w-16 px-1 text-center font-mono text-xs font-bold text-ink">
+            {numPages > 0 ? `${currentPage} / ${numPages}` : '…'}
+          </p>
           <button
             type="button"
             onClick={() => goToPage(currentPage + 1)}
@@ -240,6 +239,8 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
           >
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </button>
+        </div>
+        <div className="flex items-center gap-1 justify-self-end">
           {fullscreen && (
             <>
               <button
