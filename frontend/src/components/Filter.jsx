@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { SlidersHorizontal, X } from 'lucide-react'
 
 export const ASSESSMENT_OPTIONS = [
@@ -20,10 +21,32 @@ const selectClassName =
 // parent owns { examType, semester } and receives onChange patches.
 const Filter = ({ examType = '', semester = '', onChange, onClear }) => {
   const activeCount = [examType, semester].filter(Boolean).length
+  const [open, setOpen] = useState(false)
 
   return (
-    <div className="flex flex-wrap items-center gap-2" aria-label="Filter reviewers">
-      <span className="inline-flex items-center gap-1.5 text-sm font-extrabold text-muted">
+    <div aria-label="Filter reviewers">
+      <div className="flex justify-end sm:hidden">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          aria-label="Toggle filters"
+          title="Filters"
+          className={`relative inline-flex items-center rounded-soft border-2 px-3 py-2 text-ink ${open || activeCount > 0 ? 'border-accent bg-blush/40' : 'border-stone bg-paper hover:bg-powder'}`}
+        >
+          <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+          {activeCount > 0 && (
+            <span
+              data-testid="filter-active-count-mobile"
+              className="absolute -right-1.5 -top-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] font-extrabold text-paper"
+            >
+              {activeCount}
+            </span>
+          )}
+        </button>
+      </div>
+      <div className={`${open ? 'mt-2 flex' : 'hidden'} flex-wrap items-center gap-2 sm:flex`} aria-label="Filter reviewers">
+      <span className="hidden items-center gap-1.5 text-sm font-extrabold text-muted sm:inline-flex">
         <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
         Filter
         {activeCount > 0 && (
@@ -77,6 +100,7 @@ const Filter = ({ examType = '', semester = '', onChange, onClear }) => {
           <X className="h-3.5 w-3.5" aria-hidden="true" /> Clear
         </button>
       )}
+      </div>
     </div>
   )
 }

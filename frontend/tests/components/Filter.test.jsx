@@ -26,4 +26,13 @@ describe('Filter', () => {
     expect(screen.queryByTestId('filter-active-count')).toBeNull()
     expect(screen.queryByRole('button', { name: 'Clear filters' })).toBeNull()
   })
+
+  it('toggles the selects behind an icon button on mobile', () => {
+    render(<Filter examType="midterm" semester="" onChange={() => {}} onClear={() => {}} />)
+    expect(screen.getByTestId('filter-active-count-mobile')).toHaveTextContent('1')
+    const toggle = screen.getByRole('button', { name: 'Toggle filters' })
+    expect(toggle).toHaveAttribute('aria-expanded', 'false')
+    fireEvent.click(toggle)
+    expect(toggle).toHaveAttribute('aria-expanded', 'true')
+  })
 })
