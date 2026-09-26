@@ -4,7 +4,6 @@ import { UserCheck, UserPlus } from 'lucide-react'
 
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
-import ErrorAlert from '../common/ErrorAlert'
 import { getApiErrorMessage } from '../../utils/apiError'
 
 const FollowButton = ({ userId, initialFollowing = false, initialFollowerCount = 0, onToggle }) => {
@@ -13,7 +12,6 @@ const FollowButton = ({ userId, initialFollowing = false, initialFollowerCount =
   const [following, setFollowing] = useState(initialFollowing)
   const [, setFollowerCount] = useState(initialFollowerCount)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
 
   const isOwnProfile = user?.id === userId
 
@@ -31,7 +29,7 @@ const FollowButton = ({ userId, initialFollowing = false, initialFollowerCount =
       } catch (error) {
         if (cancelled) return
         console.error('Failed to fetch follow status:', error)
-        setError(getApiErrorMessage(error, 'Unable to load follow status.'))
+        toast.error(getApiErrorMessage(error, 'Unable to load follow status.'))
       }
     }
     load()
@@ -44,7 +42,6 @@ const FollowButton = ({ userId, initialFollowing = false, initialFollowerCount =
     if (!isAuthenticated || loading || isOwnProfile) return
 
     setLoading(true)
-    setError(null)
     try {
       const response = following
         ? await axios.delete(`/api/social/users/${userId}/follow`, {
@@ -60,9 +57,7 @@ const FollowButton = ({ userId, initialFollowing = false, initialFollowerCount =
       else toast.info('Unfollowed')
     } catch (error) {
       console.error('Failed to toggle follow:', error)
-      const message = getApiErrorMessage(error, 'Unable to update follow status.')
-      setError(message)
-      toast.error(message)
+      toast.error(getApiErrorMessage(error, 'Unable to update follow status.'))
     } finally {
       setLoading(false)
     }
@@ -91,7 +86,6 @@ const FollowButton = ({ userId, initialFollowing = false, initialFollowerCount =
         )}
         {loading ? 'Saving…' : following ? 'Following' : 'Follow'}
       </button>
-      <ErrorAlert className="mt-2 max-w-xs">{error}</ErrorAlert>
     </div>
   )
 }

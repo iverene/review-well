@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import axios from 'axios'
 
 import NotificationItem from '../components/notifications/NotificationItem'
-import ErrorAlert from '../components/common/ErrorAlert'
 import PageHeader from '../components/common/PageHeader'
 import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
@@ -15,7 +14,6 @@ const Notifications = () => {
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
-  const [error, setError] = useState(null)
   const toast = useToast()
   const setUnreadCount = useNotificationStore((state) => state.setUnreadCount)
   const bumpUnread = useNotificationStore((state) => state.bumpUnread)
@@ -71,7 +69,6 @@ const Notifications = () => {
 
   const fetchNotifications = async () => {
     try {
-      setError(null)
       const response = await axios.get('/api/social/notifications', {
         params: { page, limit: 20 },
         withCredentials: true,
@@ -84,7 +81,7 @@ const Notifications = () => {
       setHasMore(fresh.length === 20)
     } catch (error) {
       console.error('Failed to fetch notifications:', error)
-      setError(getApiErrorMessage(error, 'Unable to load notifications.'))
+      toast.error(getApiErrorMessage(error, 'Unable to load notifications.'))
     } finally {
       setLoading(false)
     }
@@ -103,7 +100,7 @@ const Notifications = () => {
       markOneRead()
     } catch (error) {
       console.error('Failed to mark notification as read:', error)
-      setError(getApiErrorMessage(error, 'Unable to mark the notification as read.'))
+      toast.error(getApiErrorMessage(error, 'Unable to mark the notification as read.'))
     }
   }
 
@@ -118,7 +115,7 @@ const Notifications = () => {
       markAllRead()
     } catch (error) {
       console.error('Failed to mark all as read:', error)
-      setError(getApiErrorMessage(error, 'Unable to mark notifications as read.'))
+      toast.error(getApiErrorMessage(error, 'Unable to mark notifications as read.'))
     }
   }
 
@@ -143,8 +140,6 @@ const Notifications = () => {
             </button>
           )}
         </div>
-
-        <ErrorAlert className="mb-4">{error}</ErrorAlert>
 
         {/* Notifications List */}
         {notifications.length === 0 ? (

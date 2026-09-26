@@ -155,7 +155,6 @@ const Create = () => {
       } catch (saveError) {
         console.error('Failed to update reviewer:', saveError)
         const message = getApiErrorMessage(saveError, 'Unable to save your reviewer. Please try again.')
-        setError(message)
         toast.error(message)
       } finally {
         setSaving(false)
@@ -191,8 +190,7 @@ const Create = () => {
         setError(getApiErrorMessage(createError, 'File upload failed, so your reviewer was not created. Please try again! 💌'))
         toast.error('Reviewer Not Created')
       } else {
-        setError(getApiErrorMessage(createError, 'Unable to create your reviewer. Please try again.'))
-        toast.error('Reviewer Not Created')
+        toast.error(getApiErrorMessage(createError, 'Unable to create your reviewer. Please try again.'))
       }
     } finally {
       setSaving(false)

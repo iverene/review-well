@@ -4,29 +4,28 @@ import axios from 'axios'
 import { ArrowLeft } from 'lucide-react'
 
 import FollowButton from '../components/social/FollowButton'
-import ErrorAlert from '../components/common/ErrorAlert'
 import PageHeader from '../components/common/PageHeader'
 import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
+import { useToast } from '../contexts/ToastContext'
 
 const Followers = ({ type }) => {
   const { userId } = useParams()
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const toast = useToast()
 
   const title = type === 'followers' ? 'Followers' : 'Following'
 
   useEffect(() => {
     const load = async () => {
       setLoading(true)
-      setError(null)
       try {
         const listRes = await axios.get(`/api/social/users/${userId}/${type}`, { withCredentials: true })
         setUsers(listRes.data.users || [])
       } catch (err) {
         console.error(`Failed to load ${type}:`, err)
-        setError(getApiErrorMessage(err, `Unable to load ${type}.`))
+        toast.error(getApiErrorMessage(err, `Unable to load ${type}.`))
       } finally {
         setLoading(false)
       }
@@ -41,8 +40,6 @@ const Followers = ({ type }) => {
       </Link>
       <PageHeader title={title} />
 
-      <ErrorAlert className="mt-4">{error}</ErrorAlert>
-
       <div className="mt-5 rounded-soft border-2 border-stone bg-paper p-2 club-shadow sm:p-3" aria-live="polite">
         {loading && (
           <div className="space-y-2 p-2" aria-hidden="true">
@@ -51,12 +48,12 @@ const Followers = ({ type }) => {
             ))}
           </div>
         )}
-        {!loading && !error && users.length === 0 && (
+        {!loading && users.length === 0 && (
           <p className="rounded-soft border-2 border-dashed border-stone px-5 py-8 text-center text-sm text-muted">
             No {type} yet.
           </p>
         )}
-        {!loading && !error && users.map((person) => (
+        {!loading && users.map((person) => (
           <div key={person.id} className="flex items-center gap-3 border-b border-stone/60 px-2 py-3 last:border-0">
             <Link to={`/profile/${person.id}`} className="flex min-w-0 flex-1 items-center gap-3">
               {person.avatarUrl ? (

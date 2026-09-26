@@ -1,18 +1,19 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { CircleCheck, CircleX, Info } from 'lucide-react'
 
 const ToastContext = createContext(null)
 
 const noop = () => {}
 
+// Module-level singleton so the fallback identity is stable across renders
+// (a fresh object per call would retrigger any effect depending on it).
+const fallbackToast = { toast: noop, success: noop, error: noop, info: noop, dismiss: noop }
+
 export const useToast = () => {
   const context = useContext(ToastContext)
   // No-op stub outside the provider so unit-tested pages/components work
   // without wrapping; the real provider is mounted once in App.
-  if (!context) {
-    return { toast: noop, success: noop, error: noop, info: noop, dismiss: noop }
-  }
-  return context
+  return context ?? fallbackToast
 }
 
 const TOAST_STYLES = {
@@ -50,10 +51,16 @@ export const ToastProvider = ({ children }) => {
   const error = useCallback((message) => show(message, 'error'), [show])
   const info = useCallback((message) => show(message, 'info'), [show])
 
+  // Stable identity so consumers' effects don't refire on every toast.
+  const value = useMemo(
+    () => ({ toast: show, success, error, info, dismiss }),
+    [show, success, error, info, dismiss]
+  )
+
   const { Icon, bar, icon } = toast ? TOAST_STYLES[toast.type] : {}
 
   return (
-    <ToastContext.Provider value={{ toast: show, success, error, info, dismiss }}>
+    <ToastContext.Provider value={value}>
       {children}
       {toast && (
         <div

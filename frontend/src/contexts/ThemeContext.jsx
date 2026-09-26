@@ -14,10 +14,12 @@ const readStoredTheme = () => {
   }
 }
 
+const fallbackTheme = { theme: 'light', setTheme: () => {}, themes: THEMES }
+
 export const useTheme = () => {
   const context = useContext(ThemeContext)
   if (!context) {
-    return { theme: 'light', setTheme: () => {}, themes: THEMES }
+    return fallbackTheme
   }
   return context
 }

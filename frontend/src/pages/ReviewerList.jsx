@@ -3,8 +3,8 @@ import { Link, useSearchParams } from 'react-router-dom'
 import axios from 'axios'
 import { BookOpen, LibraryBig, Plus, Search, X } from 'lucide-react'
 
-import ErrorAlert from '../components/common/ErrorAlert'
 import Filter from '../components/Filter'
+import { useToast } from '../contexts/ToastContext'
 import PageHeader from '../components/common/PageHeader'
 import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
@@ -15,9 +15,9 @@ import { ReviewerGridSkeleton } from '../components/common/Skeleton'
 const ReviewerList = ({ mine = false }) => {
   const [reviewers, setReviewers] = useState([])
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [searchParams] = useSearchParams()
   const { user } = useAuth()
+  const toast = useToast()
+  const [searchParams] = useSearchParams()
   const sameCourseOnly = searchParams.get('course') === 'mine'
   const [query, setQuery] = useState('')
   const [debouncedQuery, setDebouncedQuery] = useState('')
@@ -44,7 +44,7 @@ const ReviewerList = ({ mine = false }) => {
         setReviewers(sameCourseOnly ? loadedReviewers.filter((reviewer) => isSameCourse(reviewer, user)) : loadedReviewers)
       } catch (loadError) {
         console.error('Failed to load reviewer list:', loadError)
-        setError(getApiErrorMessage(loadError, 'Unable to load reviewers.'))
+        toast.error(getApiErrorMessage(loadError, 'Unable to load reviewers.'))
       } finally {
         setLoading(false)
       }
@@ -68,7 +68,6 @@ const ReviewerList = ({ mine = false }) => {
           </Link>
         )}
       </div>
-      <ErrorAlert>{error}</ErrorAlert>
       {!mine && (
         <form onSubmit={(e) => e.preventDefault()} className="flex gap-2" role="search">
           <div className="relative min-w-0 flex-1">

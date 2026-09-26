@@ -127,9 +127,7 @@ const Reviewer = () => {
       toast.success('Visibility Updated')
     } catch (saveError) {
       console.error('Failed to update visibility:', saveError)
-      const message = getApiErrorMessage(saveError, 'Unable to update visibility.')
-      setError(message)
-      toast.error(message)
+      toast.error(getApiErrorMessage(saveError, 'Unable to update visibility.'))
     } finally {
       setVisSaving(false)
     }
@@ -147,9 +145,7 @@ const Reviewer = () => {
       navigate('/reviewer/my')
     } catch (deleteError) {
       console.error('Failed to delete reviewer:', deleteError)
-      const message = getApiErrorMessage(deleteError, 'Unable to delete this reviewer.')
-      setError(message)
-      toast.error(message)
+      toast.error(getApiErrorMessage(deleteError, 'Unable to delete this reviewer.'))
     } finally {
       setDeleting(false)
     }
@@ -278,9 +274,7 @@ const Reviewer = () => {
       await axios.patch(`/api/blurting/${attemptId}`, { selfRating: rating }, { withCredentials: true })
     } catch (rateError) {
       console.error('Failed to save self-rating:', rateError)
-      const message = getApiErrorMessage(rateError, 'Unable to save your rating.')
-      setError(message)
-      toast.error(message)
+      toast.error(getApiErrorMessage(rateError, 'Unable to save your rating.'))
     }
   }
 

@@ -31,7 +31,7 @@ beforeEach(() => {
 describe('FindFriends', () => {
   it('lists existing users on load with a search button', async () => {
     render(<MemoryRouter><FindFriends /></MemoryRouter>)
-    expect(screen.getByRole('button', { name: 'Search' })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: 'Search' })).toBeInTheDocument()
     expect(await screen.findByText('Ann Lee')).toBeInTheDocument()
     expect(screen.getByText('Ben Cruz')).toBeInTheDocument()
     expect(mockGet).toHaveBeenCalledWith(

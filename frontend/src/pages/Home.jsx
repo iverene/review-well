@@ -4,7 +4,7 @@ import axios from 'axios'
 import { ArrowRight, BookOpen, Bookmark, Clock3, LibraryBig, Plus } from 'lucide-react'
 
 import { useAuth } from '../contexts/AuthContext'
-import ErrorAlert from '../components/common/ErrorAlert'
+import { useToast } from '../contexts/ToastContext'
 import { getApiErrorMessage } from '../utils/apiError'
 import { isSameCourse } from '../utils/courseMatching'
 import { ReviewerGridSkeleton, Skeleton } from '../components/common/Skeleton'
@@ -73,11 +73,11 @@ const Landing = () => (
 
 const Home = () => {
   const { user, isAuthenticated, isGuest } = useAuth()
+  const toast = useToast()
   const [publicReviewers, setPublicReviewers] = useState([])
   const [myReviewers, setMyReviewers] = useState([])
   const [recentReviewers, setRecentReviewers] = useState([])
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
 
   useEffect(() => {
     if (!isAuthenticated && !isGuest) return
@@ -120,7 +120,7 @@ const Home = () => {
         }
       } catch (loadError) {
         console.error('Failed to load home reviewers:', loadError)
-        setError(getApiErrorMessage(loadError, 'Unable to load reviewers right now.'))
+        toast.error(getApiErrorMessage(loadError, 'Unable to load reviewers right now.'))
       } finally {
         setLoading(false)
       }
@@ -129,12 +129,12 @@ const Home = () => {
   }, [isAuthenticated, isGuest, user?.id])
 
   if (!isAuthenticated) {
-    return <div className="space-y-8"><ErrorAlert>{error}</ErrorAlert>{isGuest ? <section className="space-y-6 pb-8"><div><p className="font-mono text-xs font-bold uppercase tracking-widest text-accent">Guest library</p><h1 className="mt-2 text-2xl font-bold text-ink sm:text-3xl md:text-4xl">Public Reviewers</h1><p className="mt-2 text-muted">Browse study guides shared by the Review Well community.</p></div>{loading ? <ReviewerGridSkeleton /> : publicReviewers.length ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{publicReviewers.map((reviewer) => <ReviewerCard key={reviewer.id} reviewer={reviewer} />)}</div> : <p className="text-muted">No public reviewers are available yet.</p>}</section> : <Landing />}</div>
+    return <div className="space-y-8">{isGuest ? <section className="space-y-6 pb-8"><div><p className="font-mono text-xs font-bold uppercase tracking-widest text-accent">Guest library</p><h1 className="mt-2 text-2xl font-bold text-ink sm:text-3xl md:text-4xl">Public Reviewers</h1><p className="mt-2 text-muted">Browse study guides shared by the Review Well community.</p></div>{loading ? <ReviewerGridSkeleton /> : publicReviewers.length ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{publicReviewers.map((reviewer) => <ReviewerCard key={reviewer.id} reviewer={reviewer} />)}</div> : <p className="text-muted">No public reviewers are available yet.</p>}</section> : <Landing />}</div>
   }
 
   const sameCourse = publicReviewers.filter((reviewer) => isSameCourse(reviewer, user))
 
-  return <div className="space-y-10 pb-8"><div className="flex flex-wrap items-end justify-between gap-4"><div><img src={characterWaving} alt="Waving student illustration" className="mb-3 h-20 w-24 object-contain object-left md:h-28 md:w-36" /><p className="font-mono text-xs font-bold uppercase tracking-widest text-accent">Good to see you, {user?.displayName?.split(' ')[0]}</p><h1 className="mt-2 text-2xl font-bold text-ink sm:text-3xl md:text-4xl">Your Study Desk</h1><p className="mt-2 text-muted">Pick up where you left off or find your next review.</p></div><Link to="/create" className="flex items-center gap-2 rounded-soft border-2 border-accent bg-accent px-4 py-3 text-sm font-extrabold text-paper hover:-translate-y-0.5"><Plus className="h-4 w-4" aria-hidden="true" /> New Reviewer</Link></div><ErrorAlert>{error}</ErrorAlert>{loading ? <div className="space-y-10"><div className="space-y-4"><Skeleton className="h-8 w-64" /><ReviewerGridSkeleton count={3} /></div><div className="space-y-4"><Skeleton className="h-8 w-72" /><ReviewerGridSkeleton count={3} /></div><div className="space-y-4"><Skeleton className="h-8 w-48" /><ReviewerGridSkeleton count={3} /></div></div> : <><Section icon={Clock3} title="Recently Viewed Reviewers" empty="Reviewers you open will show up here.">{recentReviewers.length > 0 && <div className="-mx-1 flex gap-4 overflow-x-auto px-1 pb-3 pt-2">{recentReviewers.slice(0, 5).map((reviewer) => <ReviewerCard key={reviewer.id} reviewer={reviewer} compact saves="icon" />)}</div>}</Section><Section icon={LibraryBig} title="Reviewers From the Same Course" to="/reviewer/public?course=mine" empty="No reviewers match your program yet.">{sameCourse.length > 0 && <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{sameCourse.slice(0, 3).map((reviewer) => <ReviewerCard key={reviewer.id} reviewer={reviewer} saves="icon" />)}</div>}</Section><Section icon={BookOpen} title="My Reviewers" to="/reviewer/my" empty="Create your first reviewer to see it here.">{myReviewers.length > 0 && <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{myReviewers.slice(0, 3).map((reviewer) => <ReviewerCard key={reviewer.id} reviewer={reviewer} saves="none" />)}</div>}</Section></>}</div>
+  return <div className="space-y-10 pb-8"><div className="flex flex-wrap items-end justify-between gap-4"><div><img src={characterWaving} alt="Waving student illustration" className="mb-3 h-20 w-24 object-contain object-left md:h-28 md:w-36" /><p className="font-mono text-xs font-bold uppercase tracking-widest text-accent">Good to see you, {user?.displayName?.split(' ')[0]}</p><h1 className="mt-2 text-2xl font-bold text-ink sm:text-3xl md:text-4xl">Your Study Desk</h1><p className="mt-2 text-muted">Pick up where you left off or find your next review.</p></div><Link to="/create" className="flex items-center gap-2 rounded-soft border-2 border-accent bg-accent px-4 py-3 text-sm font-extrabold text-paper hover:-translate-y-0.5"><Plus className="h-4 w-4" aria-hidden="true" /> New Reviewer</Link></div>{loading ? <div className="space-y-10"><div className="space-y-4"><Skeleton className="h-8 w-64" /><ReviewerGridSkeleton count={3} /></div><div className="space-y-4"><Skeleton className="h-8 w-72" /><ReviewerGridSkeleton count={3} /></div><div className="space-y-4"><Skeleton className="h-8 w-48" /><ReviewerGridSkeleton count={3} /></div></div> : <><Section icon={Clock3} title="Recently Viewed Reviewers" empty="Reviewers you open will show up here.">{recentReviewers.length > 0 && <div className="-mx-1 flex gap-4 overflow-x-auto px-1 pb-3 pt-2">{recentReviewers.slice(0, 5).map((reviewer) => <ReviewerCard key={reviewer.id} reviewer={reviewer} compact saves="icon" />)}</div>}</Section><Section icon={LibraryBig} title="Reviewers From the Same Course" to="/reviewer/public?course=mine" empty="No reviewers match your program yet.">{sameCourse.length > 0 && <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{sameCourse.slice(0, 3).map((reviewer) => <ReviewerCard key={reviewer.id} reviewer={reviewer} saves="icon" />)}</div>}</Section><Section icon={BookOpen} title="My Reviewers" to="/reviewer/my" empty="Create your first reviewer to see it here.">{myReviewers.length > 0 && <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{myReviewers.slice(0, 3).map((reviewer) => <ReviewerCard key={reviewer.id} reviewer={reviewer} saves="none" />)}</div>}</Section></>}</div>
 }
 
 export default Home
