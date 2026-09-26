@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import axios from 'axios'
-import { BookOpen, LibraryBig, Search, X } from 'lucide-react'
+import { BookOpen, LibraryBig, Plus, Search, X } from 'lucide-react'
 
 import ErrorAlert from '../components/common/ErrorAlert'
 import Filter from '../components/Filter'
@@ -57,7 +57,17 @@ const ReviewerList = ({ mine = false }) => {
 
   return (
     <PageContainer className="space-y-6">
-      <PageHeader title={title} />
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <PageHeader title={title} />
+        {mine && (
+          <Link
+            to="/create"
+            className="hidden items-center gap-2 rounded-soft border-2 border-accent bg-accent px-4 py-2.5 text-sm font-extrabold text-paper transition-transform hover:-translate-y-0.5 sm:inline-flex"
+          >
+            <Plus className="h-4 w-4" aria-hidden="true" /> New
+          </Link>
+        )}
+      </div>
       <ErrorAlert>{error}</ErrorAlert>
       {!mine && (
         <form onSubmit={(e) => e.preventDefault()} className="flex gap-2" role="search">
@@ -97,7 +107,33 @@ const ReviewerList = ({ mine = false }) => {
           onClear={() => setFilters({ examType: '', semester: '' })}
         />
       )}
-      {loading ? <ReviewerGridSkeleton /> : reviewers.length === 0 ? <p className="rounded-soft border-2 border-dashed border-stone px-5 py-10 text-center text-muted">No Reviewers Here Yet.</p> : <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{reviewers.map((reviewer) => <Link key={reviewer.id} to={`/reviewer/${reviewer.id}`} className="group rounded-soft border-2 border-stone bg-paper p-4 club-shadow transition-transform hover:-translate-y-1 md:p-5"><div className="flex items-start justify-between gap-3"><h2 className="font-display text-base font-bold text-ink md:text-lg">{reviewer.title}</h2><Icon className="h-5 w-5 shrink-0 text-accent" aria-hidden="true" /></div><p className="mt-1.5 text-sm font-semibold text-muted md:mt-2">{reviewer.courseCode}</p></Link>)}</div>}
+      {loading ? <ReviewerGridSkeleton /> : reviewers.length === 0 ? (
+        mine ? (
+          <div className="rounded-soft border-2 border-dashed border-stone bg-paper px-5 py-12 text-center">
+            <img src="/logo.png" alt="" className="mx-auto h-20 w-20 object-contain" />
+            <p className="mt-3 font-display text-xl font-bold text-ink">No Reviewers Yet</p>
+            <p className="mx-auto mt-2 max-w-sm text-sm text-muted">Upload your first reviewer to start your personal library.</p>
+            <Link
+              to="/create"
+              className="mt-5 inline-flex items-center gap-2 rounded-soft border-2 border-accent bg-accent px-5 py-2.5 text-sm font-extrabold text-paper transition-transform hover:-translate-y-0.5"
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" /> New Reviewer
+            </Link>
+          </div>
+        ) : (
+          <p className="rounded-soft border-2 border-dashed border-stone px-5 py-10 text-center text-muted">No Reviewers Here Yet.</p>
+        )
+      ) : <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{reviewers.map((reviewer) => <Link key={reviewer.id} to={`/reviewer/${reviewer.id}`} className="group rounded-soft border-2 border-stone bg-paper p-4 club-shadow transition-transform hover:-translate-y-1 md:p-5"><div className="flex items-start justify-between gap-3"><h2 className="font-display text-base font-bold text-ink md:text-lg">{reviewer.title}</h2><Icon className="h-5 w-5 shrink-0 text-accent" aria-hidden="true" /></div><p className="mt-1.5 text-sm font-semibold text-muted md:mt-2">{reviewer.courseCode}</p></Link>)}</div>}
+      {mine && reviewers.length > 0 && (
+        <Link
+          to="/create"
+          aria-label="New reviewer"
+          title="New reviewer"
+          className="fixed bottom-20 right-4 z-30 inline-flex h-14 w-14 items-center justify-center rounded-full border-2 border-accent bg-accent text-paper shadow-xl transition-transform hover:-translate-y-0.5 sm:hidden"
+        >
+          <Plus className="h-6 w-6" aria-hidden="true" />
+        </Link>
+      )}
     </PageContainer>
   )
 }

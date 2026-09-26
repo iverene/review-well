@@ -46,15 +46,6 @@ describe('ReviewerList search', () => {
     ), { timeout: 3000 })
   }, 10000)
 
-  it('clears the query with the X button', async () => {
-    renderList()
-    await screen.findByText('Photosynthesis Guide')
-    fireEvent.change(screen.getByLabelText('Search reviewers'), { target: { value: 'photo' } })
-    expect(screen.getByRole('button', { name: 'Clear search' })).toBeInTheDocument()
-    fireEvent.click(screen.getByRole('button', { name: 'Clear search' }))
-    expect(screen.getByLabelText('Search reviewers')).toHaveValue('')
-  })
-
   it('sends assessment and semester filters to the server', async () => {
     renderList()
     await screen.findByText('Photosynthesis Guide')
@@ -65,4 +56,35 @@ describe('ReviewerList search', () => {
       expect.objectContaining({ params: expect.objectContaining({ examType: 'midterm', semester: 'Summer' }) })
     ), { timeout: 3000 })
   }, 10000)
+
+  it('clears the query with the X button', async () => {
+    renderList()
+    await screen.findByText('Photosynthesis Guide')
+    fireEvent.change(screen.getByLabelText('Search reviewers'), { target: { value: 'photo' } })
+    expect(screen.getByRole('button', { name: 'Clear search' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Clear search' }))
+    expect(screen.getByLabelText('Search reviewers')).toHaveValue('')
+  })
+
+  it('shows an inline New button and FAB on My Reviewers', async () => {    render(
+      <MemoryRouter initialEntries={['/reviewer/my']}>
+        <ReviewerList mine />
+      </MemoryRouter>
+    )
+    await screen.findByText('Photosynthesis Guide')
+    expect(screen.getByRole('link', { name: 'New' })).toHaveAttribute('href', '/create')
+    expect(screen.getByRole('link', { name: 'New reviewer' })).toHaveAttribute('href', '/create')
+  })
+
+  it('shows an upload empty state with logo when My Reviewers is empty', async () => {
+    axios.get.mockResolvedValue({ data: { reviewers: [] } })
+    render(
+      <MemoryRouter initialEntries={['/reviewer/my']}>
+        <ReviewerList mine />
+      </MemoryRouter>
+    )
+    expect(await screen.findByText('No Reviewers Yet')).toBeInTheDocument()
+    expect(screen.getByText('Upload your first reviewer to start your personal library.')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'New Reviewer' })).toHaveAttribute('href', '/create')
+  })
 })
