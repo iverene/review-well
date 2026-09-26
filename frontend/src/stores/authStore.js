@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 
+import useQueryCache from './queryCache'
+
 const guestStorageKey = 'review-well-guest'
 
 // Storage can throw (private mode, disabled cookies) — never let auth boot
@@ -29,6 +31,10 @@ const useAuthStore = create((set) => ({
   isGuest: hasGuestSession(),
   login: (user) => {
     writeGuestSession(false)
+    const previous = useAuthStore.getState()
+    if (!previous.isAuthenticated || previous.user?.id !== user?.id) {
+      useQueryCache.getState().reset()
+    }
     set({ user, isAuthenticated: true, isGuest: false })
   },
   updateUser: (patch) => {
@@ -36,10 +42,15 @@ const useAuthStore = create((set) => ({
   },
   enterGuest: () => {
     writeGuestSession(true)
+    const previous = useAuthStore.getState()
+    if (!previous.isGuest) {
+      useQueryCache.getState().reset()
+    }
     set({ user: null, isAuthenticated: false, isGuest: true })
   },
   logout: () => {
     writeGuestSession(false)
+    useQueryCache.getState().reset()
     set({ user: null, isAuthenticated: false, isGuest: false })
   },
 }))

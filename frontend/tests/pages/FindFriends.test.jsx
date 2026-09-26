@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 
 import FindFriends from '../../src/pages/FindFriends'
+import useQueryCache from '../../src/stores/queryCache'
 
 const { authState } = vi.hoisted(() => ({
   authState: { user: { id: 'me' }, isAuthenticated: true },
@@ -25,6 +26,7 @@ const users = [
 
 beforeEach(() => {
   mockGet.mockReset()
+  useQueryCache.getState().reset()
   mockGet.mockImplementation(() => Promise.resolve({ data: { users } }))
 })
 

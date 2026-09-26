@@ -23,6 +23,8 @@ import SaveButton from '../components/social/SaveButton'
 import StudyTabs from '../components/StudyTabs'
 import ErrorAlert from '../components/common/ErrorAlert'
 import PageContainer from '../components/common/PageContainer'
+import useCachedGet from '../hooks/useCachedGet'
+import useQueryCache from '../stores/queryCache'
 import { getApiErrorMessage } from '../utils/apiError'
 import { formatExamType } from '../utils/examType'
 import { purgeRecentReviewer } from '../utils/recentReviewers'
@@ -71,41 +73,50 @@ const Reviewer = () => {
   const loginHref = `/login?returnTo=${encodeURIComponent(loginReturnTo)}`
   const sendGuestToLogin = () => navigate(loginHref)
 
-  const loadReviewer = async () => {
-    try {
-      const response = await axios.get(`/api/reviewers/${id}`, { withCredentials: true })
-      const loadedReviewer = response.data.reviewer
-      setReviewer(loadedReviewer)
-      setCards(Array.isArray(loadedReviewer.cards) ? loadedReviewer.cards : [])
-
-      if (isAuthenticated && user?.id) {
-        // Storage must never fail the page: corrupt entries fall back to a
-        // fresh rail instead of pushing the loaded reviewer into onError.
-        try {
-          const key = recentReviewersKey(user.id)
-          const parsed = JSON.parse(window.localStorage.getItem(key) || '[]')
-          const recent = Array.isArray(parsed) ? parsed : []
-          const withoutCurrent = recent.filter((item) => item?.id !== loadedReviewer.id)
-          window.localStorage.setItem(key, JSON.stringify([loadedReviewer, ...withoutCurrent].slice(0, 5)))
-        } catch {
-          // Corrupt rail — leave storage alone and keep the loaded reviewer.
-        }
-      }
-    } catch (loadError) {
-      console.error('Failed to load reviewer:', loadError)
-      // A ghost entry (deleted since it was listed or saved) heals itself:
-      // evict it from Recently Viewed on every surface.
-      if (loadError.response?.status === 404) purgeRecentReviewer(id)
-      setError(getApiErrorMessage(loadError, 'Unable to load this reviewer.'))
-    } finally {
-      setLoading(false)
-    }
-  }
+  const detailKey = `GET /api/reviewers/${id}`
+  const {
+    data: detailData,
+    loading: detailLoading,
+    error: detailError,
+    refresh: refreshDetail,
+  } = useCachedGet(detailKey, () => axios.get(`/api/reviewers/${id}`, { withCredentials: true }), {
+    enabled: !!id,
+  })
 
   useEffect(() => {
-    loadReviewer()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, isAuthenticated, user?.id])
+    setLoading(detailLoading)
+  }, [detailLoading])
+
+  useEffect(() => {
+    const loadedReviewer = detailData?.reviewer
+    if (!loadedReviewer) return
+    setReviewer(loadedReviewer)
+    setCards(Array.isArray(loadedReviewer.cards) ? loadedReviewer.cards : [])
+    if (isAuthenticated && user?.id) {
+      // Storage must never fail the page: corrupt entries fall back to a
+      // fresh rail instead of pushing the loaded reviewer into onError.
+      try {
+        const key = recentReviewersKey(user.id)
+        const parsed = JSON.parse(window.localStorage.getItem(key) || '[]')
+        const recent = Array.isArray(parsed) ? parsed : []
+        const withoutCurrent = recent.filter((item) => item?.id !== loadedReviewer.id)
+        window.localStorage.setItem(key, JSON.stringify([loadedReviewer, ...withoutCurrent].slice(0, 5)))
+      } catch {
+        // Corrupt rail — leave storage alone and keep the loaded reviewer.
+      }
+    }
+  }, [detailData, isAuthenticated, user?.id])
+
+  useEffect(() => {
+    if (!detailError) {
+      setError(null)
+      return
+    }
+    // A ghost entry (deleted since it was listed or saved) heals itself:
+    // evict it from Recently Viewed on every surface.
+    if (detailError.response?.status === 404) purgeRecentReviewer(id)
+    setError(getApiErrorMessage(detailError, 'Unable to load this reviewer.'))
+  }, [detailError, id])
 
   if (loading) return <ReviewerSkeleton />
 
@@ -124,6 +135,7 @@ const Reviewer = () => {
       const payload = visibility === 'private' ? { visibility } : { visibility, isDraft: false }
       const response = await axios.put(`/api/reviewers/${id}`, payload, { withCredentials: true })
       setReviewer(response.data?.reviewer || { ...reviewer, ...payload })
+      useQueryCache.getState().invalidate('GET /api/reviewers')
       toast.success('Visibility Updated')
     } catch (saveError) {
       console.error('Failed to update visibility:', saveError)
@@ -141,6 +153,7 @@ const Reviewer = () => {
     try {
       await axios.delete(`/api/reviewers/${id}`, { withCredentials: true })
       purgeRecentReviewer(id)
+      useQueryCache.getState().invalidate('GET /api/reviewers')
       toast.success('Reviewer Deleted')
       navigate('/reviewer/my')
     } catch (deleteError) {
@@ -181,6 +194,7 @@ const Reviewer = () => {
       const response = await axios.patch(`/api/cards/${cardId}`, { known }, { withCredentials: true })
       const updated = response.data?.card
       setCards((prev) => prev.map((card) => (card.id === cardId ? updated || { ...card, known } : card)))
+      useQueryCache.getState().invalidate(detailKey)
     } catch (toggleError) {
       console.error('Failed to update card:', toggleError)
       setError(getApiErrorMessage(toggleError, 'Unable to update this card.'))
@@ -195,6 +209,7 @@ const Reviewer = () => {
     try {
       const response = await axios.post(`/api/reviewers/${id}/cards`, { front, back }, { withCredentials: true })
       if (response.data?.card) setCards((prev) => [...prev, response.data.card])
+      useQueryCache.getState().invalidate(detailKey)
     } catch (addError) {
       console.error('Failed to add card:', addError)
       setError(getApiErrorMessage(addError, 'Unable to add this card.'))
@@ -210,6 +225,7 @@ const Reviewer = () => {
       const response = await axios.patch(`/api/cards/${cardId}`, { front, back }, { withCredentials: true })
       const updated = response.data?.card
       setCards((prev) => prev.map((card) => (card.id === cardId ? updated || { ...card, front, back } : card)))
+      useQueryCache.getState().invalidate(detailKey)
     } catch (editError) {
       console.error('Failed to edit card:', editError)
       setError(getApiErrorMessage(editError, 'Unable to edit this card.'))
@@ -224,6 +240,7 @@ const Reviewer = () => {
     try {
       await axios.delete(`/api/cards/${cardId}`, { withCredentials: true })
       setCards((prev) => prev.filter((card) => card.id !== cardId))
+      useQueryCache.getState().invalidate(detailKey)
     } catch (deleteError) {
       console.error('Failed to delete card:', deleteError)
       setError(getApiErrorMessage(deleteError, 'Unable to delete this card.'))
@@ -250,8 +267,7 @@ const Reviewer = () => {
         if (reviewer?.courseCode) form.append('courseCode', reviewer.courseCode)
         if (reviewer?.courseDescription) form.append('courseDescription', reviewer.courseDescription)
         await axios.post('/api/ai/extract', form, { withCredentials: true })
-        setLoading(true)
-        await loadReviewer()
+        await refreshDetail()
       } catch (generateError) {
         console.error('Failed to generate deck:', generateError)
         setError(getApiErrorMessage(generateError, 'Unable to generate the starter deck.'))
@@ -266,12 +282,14 @@ const Reviewer = () => {
       return { gradedVia: 'self', sourceExcerpt: '', keyPoints: [] }
     }
     const response = await axios.post(`/api/reviewers/${id}/blurting`, { dumpText }, { withCredentials: true })
+    useQueryCache.getState().invalidate(detailKey)
     return response.data
   }
 
   const handleBlurtingRate = async (attemptId, rating) => {
     try {
       await axios.patch(`/api/blurting/${attemptId}`, { selfRating: rating }, { withCredentials: true })
+      useQueryCache.getState().invalidate(detailKey)
     } catch (rateError) {
       console.error('Failed to save self-rating:', rateError)
       toast.error(getApiErrorMessage(rateError, 'Unable to save your rating.'))

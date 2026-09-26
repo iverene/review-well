@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 
 import PdfViewer, { currentPageFromTops } from '../../src/components/PdfViewer'
 import * as pdfjsLib from 'pdfjs-dist'
+import useQueryCache from '../../src/stores/queryCache'
 
 vi.mock('pdfjs-dist', () => ({
   GlobalWorkerOptions: {},
@@ -26,6 +27,7 @@ const pdfDouble = (numPages = 2) => ({
 describe('PdfViewer', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    useQueryCache.getState().reset()
     pdfjsLib.getDocument.mockReturnValue({ promise: Promise.resolve(pdfDouble(2)) })
   })
 

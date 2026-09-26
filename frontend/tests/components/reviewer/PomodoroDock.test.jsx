@@ -3,6 +3,7 @@ import { render, screen, fireEvent, act } from '@testing-library/react'
 import axios from 'axios'
 
 import PomodoroDock from '../../../src/components/PomodoroDock'
+import useQueryCache from '../../../src/stores/queryCache'
 
 vi.mock('axios')
 
@@ -10,6 +11,7 @@ const signedProps = { reviewerId: 'reviewer-1', guest: false }
 
 beforeEach(() => {
   vi.useFakeTimers()
+  useQueryCache.getState().reset()
   axios.post.mockResolvedValue({ data: { session: { id: 'session-1' } } })
 })
 

@@ -10,6 +10,8 @@ import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
 import { isSameCourse } from '../utils/courseMatching'
 import { useAuth } from '../contexts/AuthContext'
+import useCachedGet from '../hooks/useCachedGet'
+import { cacheKey } from '../stores/queryCache'
 import { ReviewerGridSkeleton } from '../components/common/Skeleton'
 
 const ReviewerList = ({ mine = false }) => {
@@ -28,29 +30,41 @@ const ReviewerList = ({ mine = false }) => {
     return () => clearTimeout(timer)
   }, [query])
 
-  useEffect(() => {
-    const loadReviewers = async () => {
-      try {
-        const params = mine
-          ? {}
-          : {
-              limit: 50,
-              ...(debouncedQuery ? { search: debouncedQuery } : {}),
-              ...(filters.examType ? { examType: filters.examType } : {}),
-              ...(filters.semester ? { semester: filters.semester } : {}),
-            }
-        const response = await axios.get(mine ? '/api/reviewers/my' : '/api/reviewers/public', { params, withCredentials: mine })
-        const loadedReviewers = response.data.reviewers || []
-        setReviewers(sameCourseOnly ? loadedReviewers.filter((reviewer) => isSameCourse(reviewer, user)) : loadedReviewers)
-      } catch (loadError) {
-        console.error('Failed to load reviewer list:', loadError)
-        toast.error(getApiErrorMessage(loadError, 'Unable to load reviewers.'))
-      } finally {
-        setLoading(false)
+  const listParams = mine
+    ? {}
+    : {
+        limit: 50,
+        ...(debouncedQuery ? { search: debouncedQuery } : {}),
+        ...(filters.examType ? { examType: filters.examType } : {}),
+        ...(filters.semester ? { semester: filters.semester } : {}),
       }
+  const listKey = mine ? 'GET /api/reviewers/my' : cacheKey('GET', '/api/reviewers/public', listParams)
+  const {
+    data: listData,
+    loading: listLoading,
+    error: listError,
+  } = useCachedGet(
+    listKey,
+    () =>
+      axios.get(mine ? '/api/reviewers/my' : '/api/reviewers/public', {
+        params: listParams,
+        withCredentials: mine,
+      }),
+    { enabled: mine ? !!user?.id : true }
+  )
+
+  useEffect(() => {
+    const loadedReviewers = listData?.reviewers || []
+    setReviewers(sameCourseOnly ? loadedReviewers.filter((reviewer) => isSameCourse(reviewer, user)) : loadedReviewers)
+    setLoading(listLoading)
+  }, [listData, listLoading, sameCourseOnly, user])
+
+  useEffect(() => {
+    if (listError && reviewers.length === 0) {
+      toast.error(getApiErrorMessage(listError, 'Unable to load reviewers.'))
     }
-    loadReviewers()
-  }, [mine, sameCourseOnly, user?.id, debouncedQuery, filters])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listError])
 
   const title = mine ? 'My Reviewers' : sameCourseOnly ? 'Reviewers From the Same Course' : 'Public Reviewers'
   const Icon = mine ? LibraryBig : BookOpen

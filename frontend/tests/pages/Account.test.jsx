@@ -5,6 +5,7 @@ import axios from 'axios'
 
 import Account from '../../src/pages/Account'
 import { useAuth } from '../../src/contexts/AuthContext'
+import useQueryCache from '../../src/stores/queryCache'
 
 vi.mock('axios')
 vi.mock('../../src/contexts/AuthContext', () => ({
@@ -25,6 +26,7 @@ const profile = {
 describe('Account', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    useQueryCache.getState().reset()
     URL.createObjectURL = vi.fn(() => 'blob:preview')
     URL.revokeObjectURL = vi.fn()
     useAuth.mockReturnValue({

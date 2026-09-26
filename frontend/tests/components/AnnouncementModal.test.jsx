@@ -1,15 +1,15 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import axios from 'axios'
 
 import AnnouncementModal, { STORAGE_KEY, ANNOUNCEMENT_ID } from '../../src/components/AnnouncementModal'
 import { useAuth } from '../../src/contexts/AuthContext'
 import useAuthStore from '../../src/stores/authStore'
+import useQueryCache from '../../src/stores/queryCache'
 
 vi.mock('axios', () => ({
   default: { get: vi.fn(), put: vi.fn() },
 }))
-
-import axios from 'axios'
 
 vi.mock('../../src/contexts/AuthContext', () => ({
   useAuth: vi.fn(),
@@ -18,6 +18,7 @@ vi.mock('../../src/contexts/AuthContext', () => ({
 describe('AnnouncementModal', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    useQueryCache.getState().reset()
     window.localStorage.clear()
     useAuth.mockReturnValue({ user: null, isAuthenticated: false })
     axios.get.mockResolvedValue({ data: { announcementSeenId: null } })
@@ -58,6 +59,18 @@ describe('AnnouncementModal', () => {
     render(<AnnouncementModal />)
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
     expect(axios.get).toHaveBeenCalledWith('/api/profile/me/announcement', { withCredentials: true })
+    expect(window.localStorage.getItem(STORAGE_KEY)).toBe('dismissed')
+  })
+
+  it('does not flash again on refresh after a server-synced dismissal', async () => {
+    useAuth.mockReturnValue({ user: { id: 'u1' }, isAuthenticated: true })
+    axios.get.mockResolvedValue({ data: { announcementSeenId: ANNOUNCEMENT_ID } })
+    const { unmount } = render(<AnnouncementModal />)
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull())
+    unmount()
+    // Simulate refresh: fresh mount, same browser storage.
+    render(<AnnouncementModal />)
+    expect(screen.queryByRole('dialog')).toBeNull()
   })
 
   it('syncs dismissal to the server for signed-in users', async () => {

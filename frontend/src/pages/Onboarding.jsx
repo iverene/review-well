@@ -5,6 +5,7 @@ import axios from 'axios'
 import { useAuth } from '../contexts/AuthContext'
 import ErrorAlert from '../components/common/ErrorAlert'
 import { getApiErrorMessage } from '../utils/apiError'
+import useQueryCache from '../stores/queryCache'
 
 const steps = [
   { title: 'Make It Yours', fields: ['displayName'] },
@@ -63,6 +64,7 @@ const Onboarding = () => {
     setError(null)
     try {
       await axios.put('/api/profile/me', formData, { withCredentials: true })
+      useQueryCache.getState().invalidate('GET /api/profile/me')
       await refreshUser()
       setCompleted(true)
     } catch (saveError) {

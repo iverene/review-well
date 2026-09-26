@@ -10,6 +10,8 @@ import PageHeader from '../components/common/PageHeader'
 import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
 import { ProfileSkeleton } from '../components/common/Skeleton'
+import useCachedGet from '../hooks/useCachedGet'
+import useQueryCache from '../stores/queryCache'
 
 const Account = () => {
   const { user, refreshUser } = useAuth()
@@ -22,21 +24,19 @@ const Account = () => {
 
   const isOnboarding = !!location.state?.onboarding
 
-  useEffect(() => {
-    fetchProfile()
-  }, [])
+  const { data: profileData, loading: profileLoading, error: profileError } = useCachedGet(
+    'GET /api/profile/me',
+    () => axios.get('/api/profile/me', { withCredentials: true })
+  )
 
-  const fetchProfile = async () => {
-    try {
-      const response = await axios.get('/api/profile/me', { withCredentials: true })
-      setProfile(response.data.user)
-    } catch (err) {
-      console.error('Failed to fetch profile:', err)
-      setError(getApiErrorMessage(err, 'Unable to load your profile.'))
-    } finally {
-      setLoading(false)
-    }
-  }
+  useEffect(() => {
+    setProfile(profileData?.user || null)
+    setLoading(profileLoading)
+  }, [profileData, profileLoading])
+
+  useEffect(() => {
+    if (profileError) setError(getApiErrorMessage(profileError, 'Unable to load your profile.'))
+  }, [profileError])
 
   const handleSave = async (updates) => {
     setSaving(true)
@@ -48,6 +48,7 @@ const Account = () => {
         withCredentials: true,
       })
       setProfile(response.data.user)
+      useQueryCache.getState().invalidate('GET /api/profile/me')
       setSuccess(true)
       await refreshUser()
     } catch (err) {
@@ -68,6 +69,7 @@ const Account = () => {
         headers: { 'Content-Type': 'multipart/form-data' },
       })
       setProfile(response.data.user)
+      useQueryCache.getState().invalidate('GET /api/profile/me')
       await refreshUser()
     } catch (err) {
       console.error('Failed to upload avatar:', err)

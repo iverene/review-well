@@ -8,6 +8,7 @@ import { useToast } from '../contexts/ToastContext'
 import PageHeader from '../components/common/PageHeader'
 import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
+import { fetchShared, cacheKey } from '../stores/queryCache'
 
 const FindFriends = () => {
   const [query, setQuery] = useState('')
@@ -19,10 +20,11 @@ const FindFriends = () => {
   const search = useCallback(async (term) => {
     setLoading(true)
     try {
-      const response = await axios.get('/api/profile/search', {
+      const key = cacheKey('GET', '/api/profile/search', { q: term, limit: 20 })
+      const response = { data: await fetchShared(key, () => axios.get('/api/profile/search', {
         params: { q: term, limit: 20 },
         withCredentials: true,
-      })
+      })) }
       setUsers(response.data.users || [])
       setSearched(true)
     } catch (err) {

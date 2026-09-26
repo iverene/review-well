@@ -3,6 +3,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 
 import Followers from '../../src/pages/Followers'
+import useQueryCache from '../../src/stores/queryCache'
 
 const { authState } = vi.hoisted(() => ({
   authState: { user: { id: 'me' }, isAuthenticated: true },
@@ -29,6 +30,7 @@ const renderFollowers = (type) => render(
 
 beforeEach(() => {
   mockGet.mockReset()
+  useQueryCache.getState().reset()
   mockGet.mockImplementation((url) => {
     if (url === '/api/profile/user-9') {
       return Promise.resolve({ data: { user: { id: 'user-9', displayName: 'Ann Lee' } } })

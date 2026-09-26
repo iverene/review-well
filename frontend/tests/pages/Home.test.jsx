@@ -6,6 +6,7 @@ import axios from 'axios'
 
 import Home from '../../src/pages/Home'
 import { useAuth } from '../../src/contexts/AuthContext'
+import useQueryCache from '../../src/stores/queryCache'
 
 vi.mock('../../src/contexts/AuthContext', () => ({
   useAuth: vi.fn(),
@@ -16,6 +17,7 @@ vi.mock('axios')
 describe('Home landing copy', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    useQueryCache.getState().reset()
     useAuth.mockReturnValue({
       user: null,
       isAuthenticated: false,
@@ -63,6 +65,7 @@ describe('Home desk saves display', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    useQueryCache.getState().reset()
     window.localStorage.clear()
     useAuth.mockReturnValue({
       user: { id: 'user-1', displayName: 'Iverene' },

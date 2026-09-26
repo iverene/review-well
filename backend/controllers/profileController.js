@@ -120,7 +120,7 @@ const updateAvatar = async (req, res) => {
       return res.status(400).json({ error: 'No avatar provided' })
     }
 
-    const storage = createStorageAdapter()
+    const storage = createStorageAdapter(process.env.SUPABASE_AVATAR_BUCKET || 'avatars')
     const extension = AVATAR_EXTENSIONS[req.file.mimetype] || 'jpg'
     const storagePath = `avatars/${userId}/${Date.now()}.${extension}`
 

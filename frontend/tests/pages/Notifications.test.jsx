@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import axios from 'axios'
 
 import Notifications from '../../src/pages/Notifications'
+import useQueryCache from '../../src/stores/queryCache'
 
 vi.mock('axios')
 
@@ -27,6 +28,7 @@ const notification = (id, actionType = 'follow') => ({
 describe('Notifications', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    useQueryCache.getState().reset()
   })
 
   afterEach(() => {

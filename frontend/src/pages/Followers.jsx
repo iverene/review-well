@@ -8,6 +8,7 @@ import PageHeader from '../components/common/PageHeader'
 import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
 import { useToast } from '../contexts/ToastContext'
+import { fetchShared } from '../stores/queryCache'
 
 const Followers = ({ type }) => {
   const { userId } = useParams()
@@ -21,8 +22,9 @@ const Followers = ({ type }) => {
     const load = async () => {
       setLoading(true)
       try {
-        const listRes = await axios.get(`/api/social/users/${userId}/${type}`, { withCredentials: true })
-        setUsers(listRes.data.users || [])
+        const key = `GET /api/social/users/${userId}/${type}`
+        const listData = await fetchShared(key, () => axios.get(`/api/social/users/${userId}/${type}`, { withCredentials: true }))
+        setUsers(listData.users || [])
       } catch (err) {
         console.error(`Failed to load ${type}:`, err)
         toast.error(getApiErrorMessage(err, `Unable to load ${type}.`))

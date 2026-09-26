@@ -203,6 +203,28 @@ describe('Profile Controller', () => {
       )
     })
 
+    it('should upload avatars to the public avatar bucket, not the private reviewer bucket', async () => {
+      const previous = process.env.SUPABASE_AVATAR_BUCKET
+      process.env.SUPABASE_AVATAR_BUCKET = 'test-avatars'
+      try {
+        const req = createMockRequest({ user: { id: 'user-123' }, file: avatarFile() })
+        const res = createMockResponse()
+        createStorageAdapter.mockReturnValue({
+          upload: vi.fn().mockResolvedValue({ data: {}, error: null }),
+          getPublicUrl: vi.fn().mockReturnValue({ data: { publicUrl: 'https://cdn.example.com/x.png' } }),
+        })
+        userModel.update.mockResolvedValue({})
+        userModel.getProfile.mockResolvedValue({ id: 'user-123' })
+
+        await updateAvatar(req, res)
+
+        expect(createStorageAdapter).toHaveBeenCalledWith('test-avatars')
+      } finally {
+        if (previous === undefined) delete process.env.SUPABASE_AVATAR_BUCKET
+        else process.env.SUPABASE_AVATAR_BUCKET = previous
+      }
+    })
+
     it('should accept an avatar URL without a file', async () => {
       const req = createMockRequest({
         user: { id: 'user-123' },

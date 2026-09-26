@@ -5,6 +5,7 @@ import axios from 'axios'
 
 import Contact from '../../src/pages/Contact'
 import { useAuth } from '../../src/contexts/AuthContext'
+import useQueryCache from '../../src/stores/queryCache'
 
 vi.mock('axios')
 vi.mock('../../src/contexts/AuthContext', () => ({
@@ -14,6 +15,7 @@ vi.mock('../../src/contexts/AuthContext', () => ({
 describe('Contact', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    useQueryCache.getState().reset()
     useAuth.mockReturnValue({ user: { email: 'student@example.com' }, isAuthenticated: true })
   })
 

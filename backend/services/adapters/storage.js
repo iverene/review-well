@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 
-const createStorageAdapter = () => {
+const createStorageAdapter = (bucketName) => {
   const supabaseUrl = process.env.SUPABASE_URL
   const supabaseKey = process.env.SUPABASE_SERVICE_KEY
 
@@ -17,7 +17,10 @@ const createStorageAdapter = () => {
   }
 
   const supabase = createClient(supabaseUrl, supabaseKey)
-  const bucket = process.env.SUPABASE_STORAGE_BUCKET || 'uploads'
+  // One adapter serves every caller, but buckets differ by purpose: the
+  // default bucket holds private reviewer files, while callers needing
+  // public URLs (avatars) pass their own public bucket explicitly.
+  const bucket = bucketName || process.env.SUPABASE_STORAGE_BUCKET || 'uploads'
 
   const upload = async (file, path, contentType) => {
     try {
