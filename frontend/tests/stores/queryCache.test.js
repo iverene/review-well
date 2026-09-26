@@ -55,4 +55,19 @@ describe('Query Cache', () => {
     await expect(fetchShared('GET /api/z', fetcher2)).resolves.toBe('v2')
     expect(fetcher2).toHaveBeenCalledTimes(1)
   })
+
+  it('revalidates through the network while deduping concurrent refreshes', async () => {
+    const first = vi.fn().mockResolvedValue({ data: 'v1' })
+    await fetchShared('GET /api/r', first)
+    let resolveGate
+    const gate = new Promise((resolve) => { resolveGate = resolve })
+    const second = vi.fn().mockReturnValue(gate.then(() => ({ data: 'v2' })))
+    const a = fetchShared('GET /api/r', second, { revalidate: true })
+    const b = fetchShared('GET /api/r', second, { revalidate: true })
+    resolveGate()
+    await expect(a).resolves.toBe('v2')
+    await expect(b).resolves.toBe('v2')
+    expect(second).toHaveBeenCalledTimes(1)
+    expect(useQueryCache.getState().getEntry('GET /api/r')).toMatchObject({ data: 'v2' })
+  })
 })

@@ -43,10 +43,12 @@ const useQueryCache = create((set, get) => ({
 }))
 
 // Cache-first fetch shared by the hook and imperative callers. Resolves with
-// response.data. force skips both the entry and the dedup map.
-const fetchShared = (key, fetcher, { force = false } = {}) => {
+// response.data. force skips both the entry and the dedup map (explicit
+// user-initiated refresh). revalidate skips the entry but still dedups, so
+// every mount's background refresh shares one network call.
+const fetchShared = (key, fetcher, { force = false, revalidate = false } = {}) => {
   const { entries } = useQueryCache.getState()
-  if (!force && entries[key]) return Promise.resolve(entries[key].data)
+  if (!force && !revalidate && entries[key]) return Promise.resolve(entries[key].data)
   if (!force && inflight.has(key)) return inflight.get(key)
   const promise = (async () => {
     const seen = generation
