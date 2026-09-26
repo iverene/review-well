@@ -5,6 +5,8 @@ import { ArrowRight, BookOpen, Bookmark, Clock3, LibraryBig, Plus } from 'lucide
 
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
+import useCachedGet from '../hooks/useCachedGet'
+import { cacheKey } from '../stores/queryCache'
 import { getApiErrorMessage } from '../utils/apiError'
 import { isSameCourse } from '../utils/courseMatching'
 import { ReviewerGridSkeleton, Skeleton } from '../components/common/Skeleton'
@@ -79,54 +81,81 @@ const Home = () => {
   const [recentReviewers, setRecentReviewers] = useState([])
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    if (!isAuthenticated && !isGuest) return
-    const loadReviewers = async () => {
-      setLoading(true)
-      try {
-        const publicResponse = await axios.get('/api/reviewers/public', { params: { limit: 50 } })
-        setPublicReviewers(publicResponse.data.reviewers || [])
-        if (isAuthenticated) {
-          if (!user?.id) return
-          const myResponse = await axios.get('/api/reviewers/my', { withCredentials: true })
-          setMyReviewers(myResponse.data.reviewers || [])
-          // Server-side validation: evict deleted (or now-private) entries so
-          // ghosts never render — localStorage is per-browser and goes stale
-          // across devices after deletes.
-          let stored = []
-          try {
-            const parsed = JSON.parse(window.localStorage.getItem(recentReviewersKey(user.id)) || '[]')
-            stored = Array.isArray(parsed) ? parsed : []
-          } catch {
-            stored = []
-          }
-          if (stored.length > 0) {
-            try {
-              const ids = [...new Set(stored.map((entry) => entry?.id).filter(Boolean))]
-              const validResponse = await axios.get('/api/reviewers/exists', {
-                params: { ids: ids.join(',') },
-                withCredentials: true,
-              })
-              const valid = new Set(validResponse.data.ids || [])
-              const pruned = stored.filter((entry) => valid.has(entry?.id))
-              window.localStorage.setItem(recentReviewersKey(user.id), JSON.stringify(pruned))
-              setRecentReviewers(pruned)
-            } catch {
-              setRecentReviewers(stored)
-            }
-          } else {
-            setRecentReviewers(stored)
-          }
-        }
-      } catch (loadError) {
-        console.error('Failed to load home reviewers:', loadError)
-        toast.error(getApiErrorMessage(loadError, 'Unable to load reviewers right now.'))
-      } finally {
-        setLoading(false)
-      }
+  const publicKey = cacheKey('GET', '/api/reviewers/public', { limit: 50 })
+  const {
+    data: publicData,
+    loading: publicLoading,
+    error: publicError,
+  } = useCachedGet(publicKey, () => axios.get('/api/reviewers/public', { params: { limit: 50 } }), {
+    enabled: isAuthenticated || isGuest,
+  })
+
+  const myKey = 'GET /api/reviewers/my'
+  const { data: myData } = useCachedGet(myKey, () => axios.get('/api/reviewers/my', { withCredentials: true }), {
+    enabled: !!isAuthenticated && !!user?.id,
+  })
+
+  const storedRail = (() => {
+    if (!isAuthenticated || !user?.id) return []
+    try {
+      const parsed = JSON.parse(window.localStorage.getItem(recentReviewersKey(user.id)) || '[]')
+      return Array.isArray(parsed) ? parsed : []
+    } catch {
+      return []
     }
-    loadReviewers()
-  }, [isAuthenticated, isGuest, user?.id])
+  })()
+  const railIds = [...new Set(storedRail.map((entry) => entry?.id).filter(Boolean))]
+  const existsKey = railIds.length > 0 ? cacheKey('GET', '/api/reviewers/exists', { ids: railIds.join(',') }) : null
+  const { data: existsData } = useCachedGet(
+    existsKey,
+    () =>
+      axios.get('/api/reviewers/exists', {
+        params: { ids: railIds.join(',') },
+        withCredentials: true,
+      }),
+    { enabled: !!existsKey }
+  )
+
+  useEffect(() => {
+    setPublicReviewers(publicData?.reviewers || [])
+  }, [publicData])
+
+  useEffect(() => {
+    if (!isAuthenticated) return
+    setMyReviewers(myData?.reviewers || [])
+  }, [myData, isAuthenticated])
+
+  useEffect(() => {
+    if (!isAuthenticated || !user?.id) return
+    if (storedRail.length === 0) {
+      setRecentReviewers([])
+      return
+    }
+    if (!existsData) return
+    // Server-side validation: evict deleted (or now-private) entries so
+    // ghosts never render — localStorage is per-browser and goes stale
+    // across devices after deletes.
+    const valid = new Set(existsData.ids || [])
+    const pruned = storedRail.filter((entry) => valid.has(entry?.id))
+    try {
+      window.localStorage.setItem(recentReviewersKey(user.id), JSON.stringify(pruned))
+    } catch {
+      // Corrupt rail — keep the in-memory list and try again next visit.
+    }
+    setRecentReviewers(pruned)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [existsData, isAuthenticated, user?.id])
+
+  useEffect(() => {
+    setLoading(publicLoading)
+  }, [publicLoading])
+
+  useEffect(() => {
+    if (publicError && publicReviewers.length === 0) {
+      toast.error(getApiErrorMessage(publicError, 'Unable to load reviewers right now.'))
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [publicError])
 
   if (!isAuthenticated) {
     return <div className="space-y-8">{isGuest ? <section className="space-y-6 pb-8"><div><p className="font-mono text-xs font-bold uppercase tracking-widest text-accent">Guest library</p><h1 className="mt-2 text-2xl font-bold text-ink sm:text-3xl md:text-4xl">Public Reviewers</h1><p className="mt-2 text-muted">Browse study guides shared by the Review Well community.</p></div>{loading ? <ReviewerGridSkeleton /> : publicReviewers.length ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{publicReviewers.map((reviewer) => <ReviewerCard key={reviewer.id} reviewer={reviewer} />)}</div> : <p className="text-muted">No public reviewers are available yet.</p>}</section> : <Landing />}</div>

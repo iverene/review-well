@@ -7,6 +7,7 @@ import ErrorAlert from '../components/common/ErrorAlert'
 import { getApiErrorMessage } from '../utils/apiError'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
+import useQueryCache from '../stores/queryCache'
 
 // Kawaii tokens (spec): Cream #FFF7E8 Cocoa #604A3A Blush #F6C6D2 Powder #C9E6F2 Mint #CDE8D2 Butter #F9E4A8 Berry #C96A83
 const MAX_FILE_BYTES = 25 * 1024 * 1024
@@ -121,6 +122,7 @@ const Create = () => {
     payload.append('reviewerId', reviewerId)
     payload.append('file', file)
     await axios.post('/api/reviewer-files', payload, { withCredentials: true })
+    useQueryCache.getState().invalidate('GET /api/reviewers')
   }
 
   const handleSubmit = async (event) => {
@@ -145,10 +147,12 @@ const Create = () => {
       try {
         const { title, courseCode, courseDescription, semester, examType, visibility } = formData
         await axios.put(`/api/reviewers/${editReviewerId}`, { title, courseCode, courseDescription, semester, examType, visibility }, { withCredentials: true })
+        useQueryCache.getState().invalidate('GET /api/reviewers')
         if (sourceFile) {
           const payload = new FormData()
           payload.append('file', sourceFile)
           await axios.put(`/api/reviewer-files/${editReviewerId}`, payload, { withCredentials: true })
+          useQueryCache.getState().invalidate('GET /api/reviewers')
         }
         toast.success('Reviewer Updated')
         navigate(`/reviewer/${editReviewerId}`)
@@ -172,6 +176,7 @@ const Create = () => {
     let reviewerId = null
     try {
       const response = await axios.post('/api/reviewers', { ...formData }, { withCredentials: true })
+      useQueryCache.getState().invalidate('GET /api/reviewers')
       reviewerId = response.data.reviewer.id
       await uploadSourceFile(reviewerId, sourceFile)
       toast.success('Reviewer Created')
@@ -184,6 +189,7 @@ const Create = () => {
       if (reviewerId && createError.config?.url === '/api/reviewer-files') {
         try {
           await axios.delete(`/api/reviewers/${reviewerId}`, { withCredentials: true })
+          useQueryCache.getState().invalidate('GET /api/reviewers')
         } catch (rollbackError) {
           console.error('Failed to roll back orphan reviewer:', rollbackError)
         }
