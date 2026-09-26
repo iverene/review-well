@@ -372,8 +372,8 @@ const Reviewer = () => {
       {shareOpen && (
         <>
           <div className="fixed inset-0 z-40 bg-ink/30" aria-hidden="true" onClick={() => setShareOpen(false)} />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setShareOpen(false)} onKeyDown={(event) => { if (event.key === 'Escape') setShareOpen(false) }}>
-            <div className="w-full max-w-sm rounded-soft border-2 border-stone bg-paper p-4 shadow-xl" role="dialog" aria-modal="true" aria-label="Share This Reviewer" onClick={(e) => e.stopPropagation()}>
+          <div className="fixed inset-0 z-50 flex items-end justify-center p-0 pb-[env(safe-area-inset-bottom)] sm:items-center sm:p-4" onClick={() => setShareOpen(false)} onKeyDown={(event) => { if (event.key === 'Escape') setShareOpen(false) }}>
+            <div className="w-full rounded-t-2xl border-2 border-b-0 border-stone bg-paper p-4 shadow-xl club-rise sm:mx-auto sm:max-w-sm sm:rounded-soft sm:border-b-2" role="dialog" aria-modal="true" aria-label="Share This Reviewer" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between gap-2">
                 <p className="text-sm font-extrabold text-ink">Share This Reviewer</p>
                 <button
@@ -436,8 +436,8 @@ const Reviewer = () => {
       {confirmingDelete && (
         <>
           <div className="fixed inset-0 z-40 bg-ink/30" onClick={() => setConfirmingDelete(false)} />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setConfirmingDelete(false)}>
-            <div className="w-full max-w-sm rounded-soft border-2 border-stone bg-paper p-5 club-shadow" role="alertdialog" aria-modal="true" aria-labelledby="delete-reviewer-title" aria-describedby="delete-reviewer-copy" onClick={(e) => e.stopPropagation()}>
+          <div className="fixed inset-0 z-50 flex items-end justify-center p-0 pb-[env(safe-area-inset-bottom)] sm:items-center sm:p-4" onClick={() => setConfirmingDelete(false)}>
+            <div className="w-full rounded-t-2xl border-2 border-b-0 border-stone bg-paper p-5 club-shadow club-rise sm:mx-auto sm:max-w-sm sm:rounded-soft sm:border-b-2" role="alertdialog" aria-modal="true" aria-labelledby="delete-reviewer-title" aria-describedby="delete-reviewer-copy" onClick={(e) => e.stopPropagation()}>
               <h2 id="delete-reviewer-title" className="font-display text-xl font-bold text-ink">Delete This Reviewer?</h2>
               <p id="delete-reviewer-copy" className="mt-2 text-sm leading-relaxed text-muted">Its file, flashcards, blurting history, and focus sessions will be removed and can’t be recovered.</p>
               <div className="mt-5 flex justify-end gap-2">
@@ -485,8 +485,8 @@ const Reviewer = () => {
       {detailsOpen && (
         <>
           <div className="fixed inset-0 z-40 bg-ink/30" onClick={() => setDetailsOpen(false)} />
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setDetailsOpen(false)}>
-            <div className="w-full max-w-sm rounded-soft border-2 border-stone bg-mint p-5 club-shadow" role="dialog" aria-modal="true" aria-label="Study details" onClick={(e) => e.stopPropagation()}>
+          <div className="fixed inset-0 z-50 flex items-end justify-center p-0 pb-[env(safe-area-inset-bottom)] sm:items-center sm:p-4" onClick={() => setDetailsOpen(false)}>
+            <div className="w-full rounded-t-2xl border-2 border-b-0 border-stone bg-mint p-5 club-shadow club-rise sm:mx-auto sm:max-w-sm sm:rounded-soft sm:border-b-2" role="dialog" aria-modal="true" aria-label="Study details" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-center justify-between gap-2">
                 <h2 className="font-display text-xl font-bold text-ink">Study Details</h2>
                 <button
