@@ -47,7 +47,7 @@ vi.mock('../../../services/adapters/storage.js', () => ({
   createStorageAdapter: vi.fn(),
 }))
 
-import { getProfile, updateProfile, getMyProfile, searchUsers, updateAvatar } from '../../../controllers/profileController.js'
+import { getProfile, updateProfile, getMyProfile, searchUsers, updateAvatar, getAnnouncement, dismissAnnouncement } from '../../../controllers/profileController.js'
 import { createStorageAdapter } from '../../../services/adapters/storage.js'
 import * as userModel from '../../../models/userModel.js'
 import * as reviewerModel from '../../../models/reviewerModel.js'
@@ -277,6 +277,43 @@ describe('Profile Controller', () => {
           }),
         })
       )
+    })
+  })
+
+  describe('announcement sync', () => {
+    it('should return the seen announcement id', async () => {
+      const req = createMockRequest({ user: { id: 'user-123' } })
+      const res = createMockResponse()
+
+      userModel.getAnnouncementSeenId = vi.fn().mockResolvedValue('v1')
+
+      await getAnnouncement(req, res)
+
+      expect(res.json).toHaveBeenCalledWith({ announcementSeenId: 'v1' })
+    })
+
+    it('should store a valid dismissal', async () => {
+      const req = createMockRequest({
+        user: { id: 'user-123' },
+        body: { announcementId: 'v2' },
+      })
+      const res = createMockResponse()
+
+      userModel.setAnnouncementSeenId = vi.fn().mockResolvedValue({ announcementSeenId: 'v2' })
+
+      await dismissAnnouncement(req, res)
+
+      expect(userModel.setAnnouncementSeenId).toHaveBeenCalledWith('user-123', 'v2')
+      expect(res.json).toHaveBeenCalledWith({ announcementSeenId: 'v2' })
+    })
+
+    it('should reject invalid announcement ids with 400', async () => {
+      const req = createMockRequest({ user: { id: 'user-123' }, body: { announcementId: '' } })
+      const res = createMockResponse()
+
+      await dismissAnnouncement(req, res)
+
+      expect(res.status).toHaveBeenCalledWith(400)
     })
   })
 })

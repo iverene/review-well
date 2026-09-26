@@ -1,14 +1,22 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import axios from 'axios'
 import { Megaphone, Sparkles } from 'lucide-react'
 
 import characterWaving from '../assets/character-waving.png'
+import { useAuth } from '../contexts/AuthContext'
+import useAuthStore from '../stores/authStore'
 
-const STORAGE_KEY = 'review-well-announcement-v1'
+// Bump this id for every new announcement. Everyone (signed-in users on any
+// browser, guests per browser) sees each id exactly once: guests via
+// localStorage, signed-in users via the server-synced dismissal.
+const ANNOUNCEMENT_ID = 'v2-whats-new'
+const STORAGE_KEY = `review-well-announcement-${ANNOUNCEMENT_ID}`
 
-const CURRENT_FEATURES = [
-  'Upload Reviewers as PDF or PPTX',
-  'Browse public study guides',
-  'Save guides and follow other students',
+const NEW_FEATURES = [
+  'Light, dark, and reading themes',
+  'Search and filters on public reviewers',
+  'Installable app with offline support',
+  'Push notifications and live badges',
 ]
 
 const COMING_SOON_FEATURES = [
@@ -17,20 +25,38 @@ const COMING_SOON_FEATURES = [
   'Blurting',
 ]
 
-// First-visit announcement. Renders nothing once dismissed — the flag lives
-// in localStorage, so it shows once per browser.
+// First-visit announcement per announcement id. Dismissal persists in this
+// browser (guests and signed-in users) and, for signed-in users, on the
+// server — so closing it here never resurfaces it on another browser.
 const AnnouncementModal = () => {
+  const { user, isAuthenticated } = useAuth()
   const [dismissed, setDismissed] = useState(() => {
     try {
       return window.localStorage.getItem(STORAGE_KEY) === 'dismissed'
     } catch {
-      // Storage blocked (sandboxed preview, disabled cookies): fail visible
-      // so first-time visitors still get the announcement.
+      // Storage blocked — fail visible; the server check below still applies.
       return false
     }
   })
 
-  if (dismissed) return null
+  // Server-synced dismissal: closing on one browser suppresses the same
+  // announcement everywhere. Reads the dedicated endpoint (not the session
+  // user object) so it works regardless of client field coverage.
+  useEffect(() => {
+    if (!isAuthenticated || !user) return
+    let cancelled = false
+    axios
+      .get('/api/profile/me/announcement', { withCredentials: true })
+      .then((response) => {
+        if (!cancelled && response.data?.announcementSeenId === ANNOUNCEMENT_ID) {
+          setDismissed(true)
+        }
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [isAuthenticated, user])
 
   const close = () => {
     try {
@@ -38,8 +64,18 @@ const AnnouncementModal = () => {
     } catch {
       // Private browsing without storage access — just hide for this visit.
     }
+    if (isAuthenticated && user) {
+      axios
+        .put('/api/profile/me/announcement', { announcementId: ANNOUNCEMENT_ID }, { withCredentials: true })
+        .then(() => {
+          useAuthStore.getState().updateUser({ announcementSeenId: ANNOUNCEMENT_ID })
+        })
+        .catch(() => {})
+    }
     setDismissed(true)
   }
+
+  if (dismissed) return null
 
   return (
     <>
@@ -51,13 +87,13 @@ const AnnouncementModal = () => {
             <Megaphone className="h-5 w-5" />
           </div>
           <h2 id="announcement-title" className="mt-2 font-display text-2xl font-bold text-ink">
-            Welcome to Review Well
+            What’s New in Review Well
           </h2>
           <p className="mt-2 text-sm leading-relaxed text-muted">
-            Here is what you can do right now:
+            Fresh in this update:
           </p>
           <ul className="mt-3 space-y-1.5 text-sm font-semibold text-ink">
-            {CURRENT_FEATURES.map((feature) => (
+            {NEW_FEATURES.map((feature) => (
               <li key={feature} className="flex items-start gap-2">
                 <span className="text-accent" aria-hidden="true">*</span> {feature}
               </li>
@@ -89,4 +125,4 @@ const AnnouncementModal = () => {
 }
 
 export default AnnouncementModal
-export { STORAGE_KEY }
+export { STORAGE_KEY, ANNOUNCEMENT_ID }

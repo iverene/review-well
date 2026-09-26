@@ -29,6 +29,7 @@ model User {
   actorNotifications Notification[] @relation("actor")
   pushSubscriptions PushSubscription[]
   dailyFocusMinutes Int @default(25) @map("daily_focus_minutes")
+  announcementSeenId String? @map("announcement_seen_id")
   blurtingAttempts BlurtingAttempt[]
   pomodoroSessions PomodoroSession[]
 

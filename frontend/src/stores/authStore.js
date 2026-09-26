@@ -31,6 +31,9 @@ const useAuthStore = create((set) => ({
     writeGuestSession(false)
     set({ user, isAuthenticated: true, isGuest: false })
   },
+  updateUser: (patch) => {
+    set((state) => (state.user ? { user: { ...state.user, ...patch } } : state))
+  },
   enterGuest: () => {
     writeGuestSession(true)
     set({ user: null, isAuthenticated: false, isGuest: true })
