@@ -287,7 +287,7 @@ const Reviewer = () => {
   return (
     <PageContainer>
       <header className="py-2">
-        <div className="min-w-0"><h1 className="font-display text-3xl font-bold text-ink md:text-4xl">{reviewer.title}</h1><p className="mt-3 text-muted">{reviewer.courseDescription}</p></div>
+        <div className="min-w-0"><h1 className="break-words font-display text-2xl font-bold text-ink sm:text-3xl md:text-4xl">{reviewer.title}</h1><p className="mt-3 text-muted">{reviewer.courseDescription}</p></div>
         <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
           <SaveButton reviewerId={reviewer.id} initialSaveCount={reviewer._count?.saves || 0} />
           {reviewer.fileUrl && (

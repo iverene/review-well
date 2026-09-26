@@ -233,7 +233,7 @@ const Profile = () => {
     <PageContainer>
       {/* Profile header (cardless) */}
       <div aria-label="Profile">
-        <h1 className="font-display text-3xl font-bold text-ink md:text-4xl">{profile.displayName}</h1>
+        <h1 className="break-words font-display text-3xl font-bold text-ink md:text-4xl">{profile.displayName}</h1>
         <div className="mt-3 flex items-center gap-4">
           {profile.avatarUrl ? (
             <img

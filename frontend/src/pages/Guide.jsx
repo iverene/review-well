@@ -2,7 +2,7 @@ import { BookOpen, FileUp, Globe2, Bookmark, Sparkles } from 'lucide-react'
 
 const Guide = () => (
   <section className="mx-auto max-w-2xl py-8">
-    <h1 className="mt-3 flex items-center gap-2 text-3xl font-extrabold text-ink md:text-4xl">
+    <h1 className="mt-3 flex items-center gap-2 text-2xl font-extrabold text-ink sm:text-3xl md:text-4xl">
       <BookOpen className="h-8 w-8" aria-hidden="true" /> Review Well Guide
     </h1>
 

@@ -213,7 +213,7 @@ const Create = () => {
         </div>
         <div>
           <p className="font-mono text-xs font-bold uppercase tracking-widest text-accent">New study guide</p>
-          <h1 className="mt-1 font-display text-3xl font-bold text-ink md:text-4xl">{editReviewerId ? 'Edit Your Reviewer' : 'Upload a Reviewer'}</h1>
+          <h1 className="mt-1 font-display text-2xl font-bold text-ink sm:text-3xl md:text-4xl">{editReviewerId ? 'Edit Your Reviewer' : 'Upload a Reviewer'}</h1>
         </div>
       </div>
 
