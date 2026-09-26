@@ -451,12 +451,16 @@ login: (user) => {
 enterGuest: () => {
   writeGuestSession(true)
   const previous = useAuthStore.getState()
-  if (previous.isAuthenticated || previous.user) {
+  if (!previous.isGuest) {
     useQueryCache.getState().reset()
   }
   set({ user: null, isAuthenticated: false, isGuest: true })
 },
 ```
+
+(Resets on every transition *into* guest mode — authed→guest and
+logged-out→guest — while staying idempotent for guest→guest re-entry,
+mirroring `login`'s same-session preservation.)
 
 ```js
 logout: () => {
