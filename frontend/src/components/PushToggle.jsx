@@ -97,26 +97,43 @@ const PushToggle = () => {
   }
 
   return (
-    <div>
+    <div className="flex items-center justify-between gap-3">
+      <div className="min-w-0">
+        <p className="flex items-center gap-2 text-sm font-extrabold text-ink">
+          {enabled ? (
+            <BellRing className="h-4 w-4 text-accent" aria-hidden="true" />
+          ) : (
+            <BellOff className="h-4 w-4 text-muted" aria-hidden="true" />
+          )}
+          Push Notifications
+        </p>
+        <p className="mt-0.5 text-xs font-semibold text-muted">
+          {enabled ? 'On — new follows, saves, and reviews will buzz you.' : 'Off — turn on to get buzzed.'}
+        </p>
+        {error && (
+          <p role="alert" className="mt-1 text-xs font-bold text-accent">
+            {error}
+          </p>
+        )}
+      </div>
       <button
         type="button"
+        role="switch"
+        aria-checked={enabled}
+        aria-label="Push notifications"
         onClick={enabled ? disable : enable}
         disabled={busy}
-        aria-pressed={enabled}
-        className="inline-flex items-center gap-2 rounded-soft border-2 border-stone bg-paper px-4 py-2 text-sm font-extrabold text-ink hover:bg-powder disabled:opacity-60"
+        className={`relative h-7 w-12 shrink-0 rounded-full border-2 transition-colors disabled:opacity-60 ${
+          enabled ? 'border-accent bg-accent' : 'border-stone bg-stone/40'
+        }`}
       >
-        {enabled ? (
-          <BellOff className="h-4 w-4" aria-hidden="true" />
-        ) : (
-          <BellRing className="h-4 w-4" aria-hidden="true" />
-        )}
-        {busy ? 'Saving…' : enabled ? 'Disable Push' : 'Enable Push'}
+        <span
+          aria-hidden="true"
+          className={`absolute top-1/2 h-5 w-5 -translate-y-1/2 rounded-full bg-paper shadow transition-all ${
+            enabled ? 'left-[22px]' : 'left-[2px]'
+          }`}
+        />
       </button>
-      {error && (
-        <p role="alert" className="mt-2 text-sm font-semibold text-accent">
-          {error}
-        </p>
-      )}
     </div>
   )
 }
