@@ -78,6 +78,7 @@ const Reviewer = () => {
     data: detailData,
     loading: detailLoading,
     error: detailError,
+    refresh: refreshDetail,
   } = useCachedGet(detailKey, () => axios.get(`/api/reviewers/${id}`, { withCredentials: true }), {
     enabled: !!id,
   })
@@ -266,7 +267,7 @@ const Reviewer = () => {
         if (reviewer?.courseCode) form.append('courseCode', reviewer.courseCode)
         if (reviewer?.courseDescription) form.append('courseDescription', reviewer.courseDescription)
         await axios.post('/api/ai/extract', form, { withCredentials: true })
-        useQueryCache.getState().invalidate(detailKey)
+        await refreshDetail()
       } catch (generateError) {
         console.error('Failed to generate deck:', generateError)
         setError(getApiErrorMessage(generateError, 'Unable to generate the starter deck.'))
