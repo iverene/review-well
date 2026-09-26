@@ -1,11 +1,13 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 
 import useAuthStore from '../../src/stores/authStore'
+import useQueryCache from '../../src/stores/queryCache'
 
 describe('Auth Store', () => {
   beforeEach(() => {
     window.localStorage.clear()
     useAuthStore.setState({ user: null, isAuthenticated: false, isGuest: false })
+    useQueryCache.setState({ entries: {} })
   })
 
   it('enters guest mode without authenticating', () => {
@@ -57,5 +59,30 @@ describe('Auth Store', () => {
     useAuthStore.getState().updateUser({ announcementSeenId: 'v2' })
 
     expect(useAuthStore.getState().user).toBeNull()
+  })
+
+  it('clears the query cache when a different user logs in', () => {
+    useQueryCache.getState().setEntry('GET /api/reviewers/my', [])
+    useQueryCache.getState().setEntry('GET /api/profile/me', {})
+    useAuthStore.getState().login({ id: 'user-123' })
+    expect(useQueryCache.getState().getEntry('GET /api/reviewers/my')).toBeNull()
+    expect(useQueryCache.getState().getEntry('GET /api/profile/me')).toBeNull()
+  })
+
+  it('keeps the query cache when the same user session refreshes', () => {
+    useAuthStore.getState().login({ id: 'user-123' })
+    useQueryCache.getState().setEntry('GET /api/reviewers/my', [])
+    useAuthStore.getState().login({ id: 'user-123' })
+    expect(useQueryCache.getState().getEntry('GET /api/reviewers/my')).not.toBeNull()
+  })
+
+  it('clears the query cache on logout and guest switch', () => {
+    useAuthStore.getState().login({ id: 'user-123' })
+    useQueryCache.getState().setEntry('GET /api/reviewers/my', [])
+    useAuthStore.getState().logout()
+    expect(useQueryCache.getState().getEntry('GET /api/reviewers/my')).toBeNull()
+    useQueryCache.getState().setEntry('GET /api/reviewers/my', [])
+    useAuthStore.getState().enterGuest()
+    expect(useQueryCache.getState().getEntry('GET /api/reviewers/my')).toBeNull()
   })
 })
