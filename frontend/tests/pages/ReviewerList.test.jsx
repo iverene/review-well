@@ -5,6 +5,7 @@ import axios from 'axios'
 
 import ReviewerList from '../../src/pages/ReviewerList'
 import { useAuth } from '../../src/contexts/AuthContext'
+import useQueryCache from '../../src/stores/queryCache'
 
 vi.mock('axios', () => ({
   default: { get: vi.fn() },
@@ -22,6 +23,7 @@ const reviewers = [
 describe('ReviewerList search', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    useQueryCache.getState().reset()
     useAuth.mockReturnValue({ user: null })
     axios.get.mockResolvedValue({ data: { reviewers } })
   })
@@ -68,7 +70,9 @@ describe('ReviewerList search', () => {
     expect(screen.getByLabelText('Search reviewers')).toHaveValue('')
   })
 
-  it('shows an inline New button and FAB on My Reviewers', async () => {    render(
+  it('shows an inline New button and FAB on My Reviewers', async () => {
+    useAuth.mockReturnValue({ user: { id: 'u1' }, isAuthenticated: true })
+    render(
       <MemoryRouter initialEntries={['/reviewer/my']}>
         <ReviewerList mine />
       </MemoryRouter>
@@ -79,6 +83,7 @@ describe('ReviewerList search', () => {
   })
 
   it('shows an upload empty state with logo when My Reviewers is empty', async () => {
+    useAuth.mockReturnValue({ user: { id: 'u1' }, isAuthenticated: true })
     axios.get.mockResolvedValue({ data: { reviewers: [] } })
     render(
       <MemoryRouter initialEntries={['/reviewer/my']}>
