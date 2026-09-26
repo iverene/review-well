@@ -41,7 +41,9 @@ const AnnouncementModal = () => {
 
   // Server-synced dismissal: closing on one browser suppresses the same
   // announcement everywhere. Reads the dedicated endpoint (not the session
-  // user object) so it works regardless of client field coverage.
+  // user object) so it works regardless of client field coverage. A remote
+  // dismissal is mirrored to this browser's storage so later refreshes stay
+  // hidden from the first paint instead of flashing and hiding again.
   useEffect(() => {
     if (!isAuthenticated || !user) return
     let cancelled = false
@@ -49,6 +51,11 @@ const AnnouncementModal = () => {
       .get('/api/profile/me/announcement', { withCredentials: true })
       .then((response) => {
         if (!cancelled && response.data?.announcementSeenId === ANNOUNCEMENT_ID) {
+          try {
+            window.localStorage.setItem(STORAGE_KEY, 'dismissed')
+          } catch {
+            // Storage blocked — hide for this visit; the server stays the source of truth.
+          }
           setDismissed(true)
         }
       })
