@@ -10,6 +10,7 @@ import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
 import { formatYearLevel } from '../utils/profile'
 import { ProfileSkeleton } from '../components/common/Skeleton'
+import { fetchShared } from '../stores/queryCache'
 
 const WEEKDAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
@@ -150,8 +151,8 @@ const Profile = () => {
     setError(null)
     try {
       const url = userId ? `/api/profile/${userId}` : '/api/profile/me'
-      const response = await axios.get(url, { withCredentials: true })
-      const loaded = response.data.user
+      const response = await fetchShared(`GET ${url}`, () => axios.get(url, { withCredentials: true }), { force: silent })
+      const loaded = response.user
       setProfile(loaded)
       setFollowing(!!loaded.isFollowing)
       setFollowerCount(loaded.followerCount || 0)
@@ -165,7 +166,7 @@ const Profile = () => {
     }
   }, [userId])
 
-  const fetchLists = useCallback(async (loadedProfile) => {
+  const fetchLists = useCallback(async (loadedProfile, silent = false) => {
     const targetId = loadedProfile?.id || profileId
     if (!targetId) return
     setListLoading(true)
@@ -173,13 +174,13 @@ const Profile = () => {
       const own = !userId || userId === currentUser?.id
       const reviewersUrl = own ? '/api/reviewers/my' : `/api/reviewers/author/${targetId}`
       const [reviewersRes, savedRes] = await Promise.all([
-        axios.get(reviewersUrl, { withCredentials: true }),
+        fetchShared(`GET ${reviewersUrl}`, () => axios.get(reviewersUrl, { withCredentials: true }), { force: silent }),
         own
-          ? axios.get('/api/social/saved', { withCredentials: true })
+          ? fetchShared('GET /api/social/saved', () => axios.get('/api/social/saved', { withCredentials: true }), { force: silent })
           : Promise.resolve({ data: { reviewers: [] } }),
       ])
-      setReviewers(reviewersRes.data.reviewers || [])
-      setSavedReviewers(savedRes.data.reviewers || [])
+      setReviewers(reviewersRes.reviewers || [])
+      setSavedReviewers(savedRes.reviewers || [])
     } catch (err) {
       console.error('Failed to fetch profile lists:', err)
       setError(getApiErrorMessage(err, 'Unable to load reviewers.'))
@@ -191,7 +192,7 @@ const Profile = () => {
   useEffect(() => {
     setActiveTab('reviewers')
     fetchProfile().then((loaded) => {
-      if (loaded) fetchLists(loaded)
+      if (loaded) fetchLists(loaded, false)
     })
   }, [userId, fetchProfile, fetchLists])
 

@@ -4,6 +4,7 @@ import { MemoryRouter, Routes, Route } from 'react-router-dom'
 
 import Login, { isGuestSafePath } from '../../src/pages/Login'
 import { useAuth } from '../../src/contexts/AuthContext'
+import useQueryCache from '../../src/stores/queryCache'
 
 vi.mock('../../src/contexts/AuthContext', () => ({
   useAuth: vi.fn(),
@@ -16,6 +17,7 @@ vi.mock('../../src/components/auth/LoginButton', () => ({
 describe('Login', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    useQueryCache.getState().reset()
     useAuth.mockReturnValue({
       isAuthenticated: false,
       isGuest: false,

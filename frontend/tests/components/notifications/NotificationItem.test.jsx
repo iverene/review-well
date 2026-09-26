@@ -3,6 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 
 import NotificationItem from '../../../src/components/notifications/NotificationItem'
+import useQueryCache from '../../../src/stores/queryCache'
 
 const { authState } = vi.hoisted(() => ({
   authState: { user: { id: 'me' }, isAuthenticated: true },
@@ -35,6 +36,7 @@ const renderItem = (notification, onMarkRead = () => {}) => render(
 describe('NotificationItem', () => {
   beforeEach(() => {
     mockGet.mockReset()
+    useQueryCache.getState().reset()
     mockGet.mockResolvedValue({ data: { saved: false, saveCount: 0, following: false, followerCount: 0 } })
   })
 

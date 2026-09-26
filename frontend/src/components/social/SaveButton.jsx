@@ -5,6 +5,7 @@ import { Bookmark } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { getApiErrorMessage } from '../../utils/apiError'
+import useQueryCache from '../../stores/queryCache'
 
 const SaveButton = ({ reviewerId, initialSaved = false, initialSaveCount = 0 }) => {
   const { isAuthenticated } = useAuth()
@@ -47,6 +48,8 @@ const SaveButton = ({ reviewerId, initialSaved = false, initialSaveCount = 0 }) 
         })
         setSaved(response.data.saved)
         setSaveCount(response.data.saveCount)
+        useQueryCache.getState().invalidate('GET /api/social/saved')
+        useQueryCache.getState().invalidate('GET /api/reviewers')
         toast.info('Removed From Saved')
       } else {
         const response = await axios.post(`/api/social/reviewers/${reviewerId}/save`, {}, {
@@ -54,6 +57,8 @@ const SaveButton = ({ reviewerId, initialSaved = false, initialSaveCount = 0 }) 
         })
         setSaved(response.data.saved)
         setSaveCount(response.data.saveCount)
+        useQueryCache.getState().invalidate('GET /api/social/saved')
+        useQueryCache.getState().invalidate('GET /api/reviewers')
         toast.success('Saved to Your Library')
       }
     } catch (error) {

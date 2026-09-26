@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 
 import Create from '../../src/pages/Create'
 import { useAuth } from '../../src/contexts/AuthContext'
+import useQueryCache from '../../src/stores/queryCache'
 
 vi.mock('../../src/contexts/AuthContext', () => ({
   useAuth: vi.fn(),
@@ -24,6 +25,7 @@ const pdfFile = (name = 'slides.pdf') => new File(['%PDF-1.4'], name, { type: 'a
 describe('Create file dropzone', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    useQueryCache.getState().reset()
     useAuth.mockReturnValue({ isGuest: false })
   })
 

@@ -7,7 +7,7 @@ import ErrorAlert from '../components/common/ErrorAlert'
 import { getApiErrorMessage } from '../utils/apiError'
 import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
-import useQueryCache from '../stores/queryCache'
+import useQueryCache, { fetchShared } from '../stores/queryCache'
 
 // Kawaii tokens (spec): Cream #FFF7E8 Cocoa #604A3A Blush #F6C6D2 Powder #C9E6F2 Mint #CDE8D2 Butter #F9E4A8 Berry #C96A83
 const MAX_FILE_BYTES = 25 * 1024 * 1024
@@ -62,7 +62,7 @@ const Create = () => {
     const loadReviewer = async () => {
       setLoadingEdit(true)
       try {
-        const response = await axios.get(`/api/reviewers/${editReviewerId}`, { withCredentials: true })
+        const response = { data: await fetchShared(`GET /api/reviewers/${editReviewerId}`, () => axios.get(`/api/reviewers/${editReviewerId}`, { withCredentials: true })) }
         if (cancelled) return
         const reviewer = response.data.reviewer
         setFormData((previous) => ({

@@ -5,6 +5,7 @@ import { UserCheck, UserPlus } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { getApiErrorMessage } from '../../utils/apiError'
+import useQueryCache from '../../stores/queryCache'
 
 const FollowButton = ({ userId, initialFollowing = false, initialFollowerCount = 0, onToggle }) => {
   const { user, isAuthenticated } = useAuth()
@@ -52,6 +53,8 @@ const FollowButton = ({ userId, initialFollowing = false, initialFollowerCount =
         })
       setFollowing(response.data.following)
       setFollowerCount(response.data.followerCount)
+      useQueryCache.getState().invalidate('GET /api/social/users/')
+      useQueryCache.getState().invalidate('GET /api/profile/')
       onToggle?.(response.data.following, response.data.followerCount)
       if (response.data.following) toast.success('Following')
       else toast.info('Unfollowed')

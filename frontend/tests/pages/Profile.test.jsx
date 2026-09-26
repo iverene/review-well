@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 
 import Profile from '../../src/pages/Profile'
+import useQueryCache from '../../src/stores/queryCache'
 
 const { authState } = vi.hoisted(() => ({
   authState: { user: { id: 'me' }, isAuthenticated: true },
@@ -63,6 +64,7 @@ const renderProfile = (entry, path) => render(
 
 beforeEach(() => {
   mockGet.mockReset()
+  useQueryCache.getState().reset()
   mockGet.mockImplementation((url) => {
     if (url === '/api/profile/me') return Promise.resolve({ data: { user: ownProfile } })
     if (url === '/api/profile/user-9') return Promise.resolve({ data: { user: otherProfile } })

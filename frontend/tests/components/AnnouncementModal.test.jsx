@@ -5,6 +5,7 @@ import axios from 'axios'
 import AnnouncementModal, { STORAGE_KEY, ANNOUNCEMENT_ID } from '../../src/components/AnnouncementModal'
 import { useAuth } from '../../src/contexts/AuthContext'
 import useAuthStore from '../../src/stores/authStore'
+import useQueryCache from '../../src/stores/queryCache'
 
 vi.mock('axios', () => ({
   default: { get: vi.fn(), put: vi.fn() },
@@ -17,6 +18,7 @@ vi.mock('../../src/contexts/AuthContext', () => ({
 describe('AnnouncementModal', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    useQueryCache.getState().reset()
     window.localStorage.clear()
     useAuth.mockReturnValue({ user: null, isAuthenticated: false })
     axios.get.mockResolvedValue({ data: { announcementSeenId: null } })

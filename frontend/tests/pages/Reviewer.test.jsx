@@ -4,6 +4,7 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import axios from 'axios'
 
 import Reviewer from '../../src/pages/Reviewer'
+import useQueryCache from '../../src/stores/queryCache'
 
 const { authState } = vi.hoisted(() => ({
   authState: { user: { id: 'user-1' }, isAuthenticated: true },
@@ -73,6 +74,7 @@ beforeEach(() => {
   mockPatch.mockReset()
   mockPost.mockReset()
   mockDelete.mockReset()
+  useQueryCache.getState().reset()
   mockGet.mockImplementation((url) => {
     if (String(url).includes('/save')) {
       return Promise.resolve({ data: { saved: false, saveCount: 3 } })
@@ -221,9 +223,10 @@ describe('Reviewer', () => {
 
   it('hides the delete button from non-owners and guests', async () => {
     authState.user = { id: 'someone-else' }
-    renderReviewer()
+    const { unmount } = renderReviewer()
     await screen.findByLabelText('Study hub')
     expect(screen.queryByRole('button', { name: 'Delete' })).toBeNull()
+    unmount()
 
     authState.user = null
     authState.isAuthenticated = false
