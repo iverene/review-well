@@ -20,16 +20,16 @@
 
 [data-theme='dark'] {
   color-scheme: dark;
-  --ink: 245 234 217;
-  --paper: 43 36 31;
-  --stone: 66 62 68;
+  --ink: 228 228 230;
+  --paper: 18 18 20;
+  --stone: 44 44 48;
   --accent: 224 138 160;
-  --muted: 179 160 142;
-  --blush: 154 99 116;
-  --powder: 122 158 178;
-  --mint: 116 158 128;
-  --butter: 196 158 92;
-  --cream: 52 44 38;
+  --muted: 160 160 168;
+  --blush: 146 96 112;
+  --powder: 110 150 175;
+  --mint: 110 155 125;
+  --butter: 190 155 95;
+  --cream: 24 24 28;
 }
 
 [data-theme='reading'] {
