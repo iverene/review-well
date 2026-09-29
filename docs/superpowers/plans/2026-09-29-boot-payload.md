@@ -56,20 +56,29 @@ const { chromium } = require('@playwright/test')
 ;(async () => {
   const browser = await chromium.launch()
   try {
-    for (const [name, viewport, path] of [
-      ['login-wide', { width: 1280, height: 720 }, '/login'],
-      ['announce-narrow', { width: 390, height: 844 }, '/'],
-    ]) {
-      const context = await browser.newContext({ viewport })
-      const page = await context.newPage()
-      await page.route('**/api/auth/me', (route) =>
-        route.fulfill({ status: 401, contentType: 'application/json', body: '{}' })
-      )
-      await page.goto(`http://localhost:4173${path}`, { waitUntil: 'networkidle' })
-      await page.waitForTimeout(2500)
-      await page.screenshot({ path: `C:/Users/IVEREN~1/AppData/Local/Temp/opencode/${name}-before.png` })
-      await context.close()
-    }
+    // Login shot: modal dismissed via storage seed so the logo is visible.
+    const loginCtx = await browser.newContext({ viewport: { width: 1280, height: 720 } })
+    await loginCtx.addInitScript(() => {
+      window.localStorage.setItem('review-well-announcement-v2-whats-new', 'dismissed')
+    })
+    const loginPage = await loginCtx.newPage()
+    await loginPage.route('**/api/auth/me', (route) =>
+      route.fulfill({ status: 401, contentType: 'application/json', body: '{}' })
+    )
+    await loginPage.goto('http://localhost:4173/login', { waitUntil: 'networkidle' })
+    await loginPage.waitForTimeout(2500)
+    await loginPage.screenshot({ path: 'C:/Users/IVEREN~1/AppData/Local/Temp/opencode/login-wide-before.png' })
+    await loginCtx.close()
+    // Narrow shot: fresh profile, modal open — covers the illustration.
+    const narrowCtx = await browser.newContext({ viewport: { width: 390, height: 844 } })
+    const narrowPage = await narrowCtx.newPage()
+    await narrowPage.route('**/api/auth/me', (route) =>
+      route.fulfill({ status: 401, contentType: 'application/json', body: '{}' })
+    )
+    await narrowPage.goto('http://localhost:4173/', { waitUntil: 'networkidle' })
+    await narrowPage.waitForTimeout(2500)
+    await narrowPage.screenshot({ path: 'C:/Users/IVEREN~1/AppData/Local/Temp/opencode/announce-narrow-before.png' })
+    await narrowCtx.close()
     console.log('BASELINE_DONE')
   } finally {
     await browser.close()
@@ -86,7 +95,7 @@ Run, with workdir `frontend/`:
 Copy-Item -LiteralPath "C:\Users\IVEREN~1\AppData\Local\Temp\opencode\shot_before.cjs" -Destination ".\shot_before_tmp.cjs"; $preview = Start-Process -FilePath "npx.cmd" -ArgumentList "vite preview --port 4173 --strictPort" -PassThru; Start-Sleep -Seconds 8; node ".\shot_before_tmp.cjs" 2>&1 | Select-Object -Last 2; Stop-Process -Id $preview.Id -Force -ErrorAction SilentlyContinue; Remove-Item -LiteralPath ".\shot_before_tmp.cjs" -ErrorAction SilentlyContinue
 ```
 
-Expected: `BASELINE_DONE` and two PNGs in the temp dir. (The `/login` shot covers the 64–96px logo; the `/` narrow shot covers the announcement illustration. If the announcement modal does not appear, seed it first with `addInitScript` localStorage removal — i.e. replace the init script with `window.localStorage.removeItem('review-well-announcement-v2-whats-new')` — then re-run.)
+Expected: `BASELINE_DONE` and two PNGs in the temp dir (`login-wide-before.png` shows the login logo with no modal; `announce-narrow-before.png` shows the announcement modal with the illustration).
 
 - [ ] **Step 2: Optimize both images**
 
