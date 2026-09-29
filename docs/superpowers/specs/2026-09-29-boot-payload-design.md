@@ -21,10 +21,11 @@ self-hosting.
 
 ## Images
 
-- Resize `frontend/public/logo.png` from 1080px (1.3MB) to 256px (~30KB).
-  Still 4× its largest render, so no visible change.
-- Compress `frontend/src/assets/character-waving.png` from 300KB to ~80KB
-  (quantized PNG, same dimensions).
+- Resize `frontend/public/logo.png` from 1080px (1.3MB) to 192px (~45KB).
+  Still 2× its largest 96px render, so retina-crisp with no visible change.
+- Halve `frontend/src/assets/character-waving.png` from 546×457 (300KB) to
+  273×229 with quantized color (~60–90KB). Still ~1.9× its largest 144px
+  render, so no visible change.
 - Keep both filenames: precache, favicon, login, splash, and announcement
   art slim down with zero code changes.
 - Acceptance: logo under 50KB, character under 120KB, PNG dimensions

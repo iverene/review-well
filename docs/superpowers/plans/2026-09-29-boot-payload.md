@@ -11,8 +11,7 @@
 ## Global Constraints
 
 - No new dependencies.
-- Keep both image filenames (pre-cache, favicon, login, splash, announcement art update with zero code changes).
-- Logo stays 256px RGBA (4× its largest 64–96px render); character keeps its 546×457 dimensions.
+- Keep both image filenames (pre-cache, favicon, login, splash, announcement art update with zero code changes). Logo goes 1080→192px (2× its largest 96px render, retina-crisp); character halves to 273×229 (~1.9× its largest 144px render).
 - Poppins is the only font change (verified unreferenced 2026-09-29); weights and other families stay.
 - Do not touch the Reviewer chunk, the PDF worker, or font self-hosting (later sub-projects).
 - If any size gate fails, report NEEDS_CONTEXT — never degrade quality to hit a number.
@@ -31,8 +30,8 @@
 ### Task 1: Shrink images
 
 **Files:**
-- Modify: `frontend/public/logo.png` (1080×1080 RGBA, 1.3MB → 256×256 RGBA, under 50KB)
-- Modify: `frontend/src/assets/character-waving.png` (546×457 RGBA, 300KB → same dimensions, under 120KB)
+- Modify: `frontend/public/logo.png` (1080×1080 RGBA, 1.3MB → 192×192 RGBA, under 50KB)
+- Modify: `frontend/src/assets/character-waving.png` (546×457 RGBA, 300KB → 273×229 RGBA, under 120KB)
 
 **Interfaces:**
 - Consumes: Pillow via `python3`, Playwright chromium for screenshots.
@@ -102,7 +101,7 @@ Expected: `BASELINE_DONE` and two PNGs in the temp dir (`login-wide-before.png` 
 Run, with workdir `C:\Users\Iverene Grace\Projects\review-well`:
 
 ```bash
-python3 -c "from PIL import Image; logo = Image.open('frontend/public/logo.png'); logo.resize((256, 256), Image.LANCZOS).save('frontend/public/logo.png', optimize=True); img = Image.open('frontend/src/assets/character-waving.png').convert('RGBA'); r, g, b, a = img.split(); rgb = Image.merge('RGB', (r, g, b)).quantize(colors=255, method=Image.Quantize.MEDIANCUT).convert('RGB'); Image.merge('RGBA', (*rgb.split(), a)).save('frontend/src/assets/character-waving.png', optimize=True); print('OPTIMIZED')"
+python3 -c "from PIL import Image; logo = Image.open('frontend/public/logo.png'); logo.resize((192, 192), Image.LANCZOS).save('frontend/public/logo.png', optimize=True); img = Image.open('frontend/src/assets/character-waving.png').convert('RGBA'); img = img.resize((273, 229), Image.LANCZOS); r, g, b, a = img.split(); rgb = Image.merge('RGB', (r, g, b)).quantize(colors=255, method=Image.Quantize.MEDIANCUT).convert('RGB'); Image.merge('RGBA', (*rgb.split(), a)).save('frontend/src/assets/character-waving.png', optimize=True); print('OPTIMIZED')"
 ```
 
 Expected: `OPTIMIZED`.
