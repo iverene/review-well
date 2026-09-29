@@ -304,3 +304,4 @@ Expected: full suite green, no new lint errors. If anything is red, do NOT fix i
 - **Spec coverage:** images (Task 1: sizes, dimensions, filenames, screenshot verification), vendor chunk (Task 2: manualChunks, smaller main bundle, warning gone for main), fonts (Task 3: Poppins only, visual check), testing (Task 4 + per-task suites; binary/build changes verified by measurement per the spec's Testing section).
 - **Placeholder scan:** every step has exact code, commands, paths, and expected outputs. No TBD/TODO. The one conditional (announcement modal seeding in Task 1 Step 1) gives the exact fallback line.
 - **Type consistency:** chunk names, file paths, and the `manualChunks` key (`vendor`) are used identically everywhere. Task 4's table references the exact baselines from exploration (1339KB, 300KB, 252KB, 4 families).
+

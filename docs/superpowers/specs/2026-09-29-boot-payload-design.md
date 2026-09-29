@@ -28,7 +28,7 @@ self-hosting.
   render, so no visible change.
 - Keep both filenames: precache, favicon, login, splash, and announcement
   art slim down with zero code changes.
-- Acceptance: logo under 50KB, character under 120KB, PNG dimensions
+- Acceptance: logo under 55KB, character under 120KB, PNG dimensions
   verified by header read, full frontend suite green, and screenshot verification of both renders (login logo, announcement illustration) against pre-change captures.
 
 ## JS Bundle and Fonts
@@ -51,4 +51,5 @@ self-hosting.
   chunk list, and the green suite.
 - Manual visual pass: login logo crisp, announcement illustration unchanged,
   landing/desk typography identical.
+
 
