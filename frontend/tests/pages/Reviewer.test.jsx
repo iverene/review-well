@@ -167,6 +167,28 @@ describe('Reviewer', () => {
     expect(await screen.findByRole('button', { name: 'Copied' })).toBeInTheDocument()
   })
 
+  it('warns the owner when the shared link only works for them', async () => {
+    renderReviewer()
+    await screen.findByLabelText('Study hub')
+    fireEvent.click(screen.getByRole('button', { name: 'Share' }))
+    await screen.findByRole('dialog', { name: 'Share This Reviewer' })
+    expect(screen.getByText((content, el) => el?.tagName === 'SPAN' && el?.textContent?.startsWith('Only you can open this link'))).toBeInTheDocument()
+  })
+
+  it('shows no link warning once the reviewer is unlisted', async () => {
+    mockGet.mockImplementation((url) => {
+      if (String(url).includes('/save')) {
+        return Promise.resolve({ data: { saved: false, saveCount: 3 } })
+      }
+      return Promise.resolve({ data: { reviewer: { ...mockReviewer, visibility: 'unlisted', isDraft: false } } })
+    })
+    renderReviewer()
+    await screen.findByLabelText('Study hub')
+    fireEvent.click(screen.getByRole('button', { name: 'Share' }))
+    await screen.findByRole('dialog', { name: 'Share This Reviewer' })
+    expect(screen.queryByText((content, el) => el?.tagName === 'SPAN' && el?.textContent?.startsWith('Only you can open this link'))).toBeNull()
+  })
+
   it('uses the reviewer title and description as the page header', async () => {
     renderReviewer()
     expect(await screen.findByRole('heading', { name: 'Calculus', level: 1 })).toBeInTheDocument()
@@ -263,3 +285,4 @@ describe('Reviewer', () => {
     expect(await screen.findByLabelText('Study hub')).toBeInTheDocument()
   })
 })
+

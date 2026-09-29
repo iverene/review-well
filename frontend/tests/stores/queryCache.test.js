@@ -1,9 +1,10 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 
-import useQueryCache, { cacheKey, fetchShared } from '../../src/stores/queryCache'
+import useQueryCache, { cacheKey, fetchShared, loadPersistedEntries, PERSIST_KEY } from '../../src/stores/queryCache'
 
 describe('Query Cache', () => {
   beforeEach(() => {
+    window.sessionStorage.clear()
     useQueryCache.setState({ entries: {} })
   })
 
@@ -69,5 +70,58 @@ describe('Query Cache', () => {
     await expect(b).resolves.toBe('v2')
     expect(second).toHaveBeenCalledTimes(1)
     expect(useQueryCache.getState().getEntry('GET /api/r')).toMatchObject({ data: 'v2' })
+  })
+})
+
+describe('Query Cache persistence', () => {
+  beforeEach(() => {
+    window.sessionStorage.clear()
+    useQueryCache.setState({ entries: {} })
+  })
+
+  it('restores entries after a reboot without fetching', async () => {
+    const fetcher = vi.fn().mockResolvedValue({ data: { reviewers: [1] } })
+    await fetchShared('GET /api/persist', fetcher)
+    // Simulate a browser-driven tab reload: memory wiped, storage kept.
+    useQueryCache.setState({ entries: loadPersistedEntries() })
+    expect(useQueryCache.getState().getEntry('GET /api/persist')).toMatchObject({
+      data: { reviewers: [1] },
+    })
+    const refetch = vi.fn().mockResolvedValue({ data: { reviewers: [2] } })
+    await expect(fetchShared('GET /api/persist', refetch)).resolves.toEqual({ reviewers: [1] })
+    expect(refetch).not.toHaveBeenCalled()
+  })
+
+  it('drops entries older than the TTL on restore', async () => {
+    const realNow = Date.now
+    try {
+      vi.spyOn(Date, 'now').mockReturnValue(realNow())
+      const fetcher = vi.fn().mockResolvedValue({ data: 'fresh' })
+      await fetchShared('GET /api/ttl', fetcher)
+      vi.spyOn(Date, 'now').mockReturnValue(realNow() + 31 * 60 * 1000)
+      expect(loadPersistedEntries()).toEqual({})
+    } finally {
+      vi.restoreAllMocks()
+    }
+  })
+
+  it('drops corrupt or version-mismatched payloads on restore', () => {
+    window.sessionStorage.setItem(PERSIST_KEY, 'not-json{{{')
+    expect(loadPersistedEntries()).toEqual({})
+    window.sessionStorage.setItem(PERSIST_KEY, JSON.stringify({ version: 9999, entries: { x: 1 } }))
+    expect(loadPersistedEntries()).toEqual({})
+  })
+
+  it('keeps working memory-only when storage throws', async () => {
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('quota exceeded')
+    })
+    try {
+      const fetcher = vi.fn().mockResolvedValue({ data: 'mem' })
+      await expect(fetchShared('GET /api/mem', fetcher)).resolves.toBe('mem')
+      expect(useQueryCache.getState().getEntry('GET /api/mem')).toMatchObject({ data: 'mem' })
+    } finally {
+      vi.restoreAllMocks()
+    }
   })
 })

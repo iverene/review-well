@@ -414,6 +414,12 @@ const Reviewer = () => {
             {copied ? 'Copied' : 'Copy'}
           </button>
         </div>
+        {isOwner && (reviewer.visibility === 'private' || reviewer.isDraft) && (
+          <p className="mt-3 flex items-start gap-2 rounded-soft border-2 border-butter bg-butter/30 px-3 py-2 text-xs font-bold text-ink">
+            <LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" aria-hidden="true" />
+            <span>Only you can open this link — switch to Unlisted above so recipients can view it.</span>
+          </p>
+        )}
         {isOwner && (
           <div className="mt-3 border-t-2 border-stone pt-3">
             <p className="text-xs font-extrabold uppercase tracking-widest text-muted">Visibility</p>

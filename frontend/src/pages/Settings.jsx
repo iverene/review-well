@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { BellRing, ChevronRight, LogOut, Moon, Palette, ShieldCheck, Sun, UserRound } from 'lucide-react'
+import { BellRing, ChevronRight, Download, LogOut, Moon, Palette, ShieldCheck, Sun, UserRound } from 'lucide-react'
 
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
+import useInstallPrompt from '../hooks/useInstallPrompt'
 import PushToggle from '../components/PushToggle'
 
 const THEME_META = {
@@ -17,6 +18,17 @@ const Settings = () => {
   const { theme, setTheme, themes } = useTheme()
   const navigate = useNavigate()
   const [signingOut, setSigningOut] = useState(false)
+  const { canInstall, install } = useInstallPrompt()
+  const [installing, setInstalling] = useState(false)
+
+  const handleInstall = async () => {
+    setInstalling(true)
+    try {
+      await install()
+    } finally {
+      setInstalling(false)
+    }
+  }
 
   const handleSignOut = async () => {
     setSigningOut(true)
@@ -43,6 +55,17 @@ const Settings = () => {
             <span className="flex-1">Account Information</span>
             <ChevronRight className="h-4 w-4 text-muted" aria-hidden="true" />
           </Link>
+          {canInstall && (
+            <button
+              type="button"
+              onClick={handleInstall}
+              disabled={installing}
+              className="flex items-center gap-2 rounded-soft px-2 py-2 text-left text-ink hover:bg-powder disabled:opacity-60"
+            >
+              <Download className="h-4 w-4 text-accent" aria-hidden="true" />
+              <span className="flex-1">{installing ? 'Installing…' : 'Install app'}</span>
+            </button>
+          )}
         </div>
       </section>
 

@@ -53,6 +53,27 @@ describe('Home landing copy', () => {
   })
 })
 
+describe('Home auth loading gate', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    useQueryCache.getState().reset()
+  })
+
+  it('shows a loading screen while the session resolves for returning users', () => {
+    useAuth.mockReturnValue({ user: null, isAuthenticated: false, isGuest: false, loading: true })
+    render(<MemoryRouter><Home /></MemoryRouter>)
+    expect(screen.getByRole('status', { name: 'Loading your study desk' })).toBeTruthy()
+    expect(screen.queryByText('Upload your slides. Study them well.')).toBeNull()
+  })
+
+  it('shows the landing page immediately for guests without a loading screen', () => {
+    useAuth.mockReturnValue({ user: null, isAuthenticated: false, isGuest: true, loading: true })
+    render(<MemoryRouter><Home /></MemoryRouter>)
+    expect(screen.queryByRole('status', { name: 'Loading your study desk' })).toBeNull()
+    expect(screen.queryByText('Guest library')).toBeTruthy()
+  })
+})
+
 describe('Home desk saves display', () => {
   const deskReviewer = (id, saves) => ({
     id,

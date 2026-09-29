@@ -98,6 +98,6 @@ describe('Reviewer Model', () => {
     await reviewerModel.findPublic({ skip: 0, take: 5 })
 
     expect(mockPrismaInstance.reviewer.findMany).toHaveBeenCalledTimes(1)
-    expect(mockPrismaInstance.reviewer.count).toHaveBeenCalledTimes(1)
+    expect(mockPrismaInstance.reviewer.count).not.toHaveBeenCalled()
   })
 })

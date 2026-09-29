@@ -74,7 +74,7 @@ const Landing = () => (
 )
 
 const Home = () => {
-  const { user, isAuthenticated, isGuest } = useAuth()
+  const { user, isAuthenticated, isGuest, loading: authLoading } = useAuth()
   const toast = useToast()
   const [publicReviewers, setPublicReviewers] = useState([])
   const [myReviewers, setMyReviewers] = useState([])
@@ -156,6 +156,15 @@ const Home = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [publicError])
+
+  // While the session resolves, identity is unknown: hold a loading screen
+  // instead of flashing the landing page at returning users. Known guests
+  // skip the gate and land immediately.
+  if (authLoading && !isGuest) {
+    return (
+      <div className="mx-auto min-h-screen max-w-md space-y-5 px-4 py-20" role="status" aria-label="Loading your study desk"><img src="/logo.png" alt="" className="mx-auto h-16 w-16 object-contain" /><Skeleton className="h-10 w-3/4 mx-auto" /><Skeleton className="h-40 w-full" /></div>
+    )
+  }
 
   if (!isAuthenticated) {
     return <div className="space-y-8">{isGuest ? <section className="space-y-6 pb-8"><div><p className="font-mono text-xs font-bold uppercase tracking-widest text-accent">Guest library</p><h1 className="mt-2 text-2xl font-bold text-ink sm:text-3xl md:text-4xl">Public Reviewers</h1><p className="mt-2 text-muted">Browse study guides shared by the Review Well community.</p></div>{loading ? <ReviewerGridSkeleton /> : publicReviewers.length ? <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">{publicReviewers.map((reviewer) => <ReviewerCard key={reviewer.id} reviewer={reviewer} />)}</div> : <p className="text-muted">No public reviewers are available yet.</p>}</section> : <Landing />}</div>
