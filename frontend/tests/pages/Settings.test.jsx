@@ -51,4 +51,20 @@ describe('Settings', () => {
     expect(screen.getByRole('link', { name: /Account Information/ })).toHaveAttribute('href', '/settings/account')
     expect(screen.queryByText('me@example.com')).toBeNull()
   })
+
+  it('hides the install row until the browser offers installation', async () => {
+    render(<MemoryRouter><Settings /></MemoryRouter>)
+    await screen.findByRole('heading', { name: 'Settings' })
+    expect(screen.queryByRole('button', { name: 'Install app' })).toBeNull()
+  })
+
+  it('shows the install row when the browser fires the install prompt', async () => {
+    render(<MemoryRouter><Settings /></MemoryRouter>)
+    await screen.findByRole('heading', { name: 'Settings' })
+    const event = new Event('beforeinstallprompt', { cancelable: true })
+    event.prompt = vi.fn()
+    event.userChoice = Promise.resolve({ outcome: 'dismissed' })
+    window.dispatchEvent(event)
+    expect(await screen.findByRole('button', { name: 'Install app' })).toBeInTheDocument()
+  })
 })
