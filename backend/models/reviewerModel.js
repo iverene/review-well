@@ -17,24 +17,21 @@ const findPublic = async ({ skip = 0, take = 20, search = '', examType = '', sem
   }
 
   return remember(`reviewers:public:${skip}:${take}:${search}:${examType}:${semester}`, TTL_60_SECONDS, async () => {
-    const [reviewers, total] = await Promise.all([
-      prisma.reviewer.findMany({
-        where,
-        include: {
-          user: { select: { id: true, displayName: true, avatarUrl: true } },
-          _count: { select: { saves: true } },
-        },
-        orderBy: { updatedAt: 'desc' },
-        skip,
-        take,
-      }),
-      prisma.reviewer.count({ where }),
-    ])
+    const reviewers = await prisma.reviewer.findMany({
+      where,
+      include: {
+        user: { select: { id: true, displayName: true, avatarUrl: true } },
+        _count: { select: { saves: true } },
+      },
+      orderBy: { updatedAt: 'desc' },
+      skip,
+      take,
+    })
 
     return {
       reviewers,
-      total,
-      hasMore: skip + take < total,
+      total: reviewers.length,
+      hasMore: false,
     }
   })
 }
@@ -42,47 +39,41 @@ const findPublic = async ({ skip = 0, take = 20, search = '', examType = '', sem
 const findPublicByAuthor = async (authorId, { skip = 0, take = 50 } = {}) => {
   const where = { authorId, visibility: 'public', isDraft: false }
   return remember(`reviewers:author:${authorId}:${skip}:${take}`, TTL_60_SECONDS, async () => {
-    const [reviewers, total] = await Promise.all([
-      prisma.reviewer.findMany({
-        where,
-        include: {
-          user: { select: { id: true, displayName: true, avatarUrl: true } },
-          _count: { select: { saves: true } },
-        },
-        orderBy: { updatedAt: 'desc' },
-        skip,
-        take,
-      }),
-      prisma.reviewer.count({ where }),
-    ])
+    const reviewers = await prisma.reviewer.findMany({
+      where,
+      include: {
+        user: { select: { id: true, displayName: true, avatarUrl: true } },
+        _count: { select: { saves: true } },
+      },
+      orderBy: { updatedAt: 'desc' },
+      skip,
+      take,
+    })
 
     return {
       reviewers,
-      total,
-      hasMore: skip + take < total,
+      total: reviewers.length,
+      hasMore: false,
     }
   })
 }
 
 const findByAuthor = async (authorId, { skip = 0, take = 50 } = {}) => {
   return remember(`reviewers:my:${authorId}:${skip}:${take}`, TTL_60_SECONDS, async () => {
-    const [reviewers, total] = await Promise.all([
-      prisma.reviewer.findMany({
-        where: { authorId },
-        include: {
-          _count: { select: { saves: true } },
-        },
-        orderBy: { updatedAt: 'desc' },
-        skip,
-        take,
-      }),
-      prisma.reviewer.count({ where: { authorId } }),
-    ])
+    const reviewers = await prisma.reviewer.findMany({
+      where: { authorId },
+      include: {
+        _count: { select: { saves: true } },
+      },
+      orderBy: { updatedAt: 'desc' },
+      skip,
+      take,
+    })
 
     return {
       reviewers,
-      total,
-      hasMore: skip + take < total,
+      total: reviewers.length,
+      hasMore: false,
     }
   })
 }
