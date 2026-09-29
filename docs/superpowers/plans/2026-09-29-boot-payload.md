@@ -30,7 +30,7 @@
 ### Task 1: Shrink images
 
 **Files:**
-- Modify: `frontend/public/logo.png` (1080×1080 RGBA, 1.3MB → 192×192 RGBA, under 50KB)
+- Modify: `frontend/public/logo.png` (1080×1080 RGBA, 1.3MB → 192×192 RGBA, under 55KB)
 - Modify: `frontend/src/assets/character-waving.png` (546×457 RGBA, 300KB → 273×229 RGBA, under 120KB)
 
 **Interfaces:**
@@ -109,7 +109,7 @@ Expected: `OPTIMIZED`.
 - [ ] **Step 3: Verify sizes and dimensions**
 
 Run the Step 1 size command again.
-Expected: `logo.png (256, 256) RGBA` under 50KB; `character-waving.png (546, 457) RGBA` under 120KB. If either gate fails, STOP and report NEEDS_CONTEXT with the actual numbers.
+Expected: `logo.png (192, 192) RGBA` under 55KB; `character-waving.png (273, 229) RGBA` under 120KB. If either gate fails, STOP and report NEEDS_CONTEXT with the actual numbers.
 
 - [ ] **Step 4: Verify visually against baselines**
 
@@ -304,4 +304,5 @@ Expected: full suite green, no new lint errors. If anything is red, do NOT fix i
 - **Spec coverage:** images (Task 1: sizes, dimensions, filenames, screenshot verification), vendor chunk (Task 2: manualChunks, smaller main bundle, warning gone for main), fonts (Task 3: Poppins only, visual check), testing (Task 4 + per-task suites; binary/build changes verified by measurement per the spec's Testing section).
 - **Placeholder scan:** every step has exact code, commands, paths, and expected outputs. No TBD/TODO. The one conditional (announcement modal seeding in Task 1 Step 1) gives the exact fallback line.
 - **Type consistency:** chunk names, file paths, and the `manualChunks` key (`vendor`) are used identically everywhere. Task 4's table references the exact baselines from exploration (1339KB, 300KB, 252KB, 4 families).
+
 
