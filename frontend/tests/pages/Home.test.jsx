@@ -123,6 +123,29 @@ describe('Home desk saves display', () => {
     expect(screen.queryByText('7 saves')).toBeNull()
   })
 
+  it('keeps recently viewed cards at a readable width and lets the rail scroll', async () => {
+    window.localStorage.setItem(
+      'review-well-recent-reviewers:user-1',
+      JSON.stringify([
+        deskReviewer('recent-1', 5),
+        deskReviewer('recent-2', 4),
+        deskReviewer('recent-3', 3),
+        deskReviewer('recent-4', 2),
+        deskReviewer('recent-5', 1),
+      ])
+    )
+    render(<MemoryRouter><Home /></MemoryRouter>)
+
+    const card = (await screen.findByText('Guide recent-1')).closest('a')
+    const rail = card.parentElement
+
+    expect(rail).toHaveClass('overflow-x-auto')
+    expect(rail).toHaveClass('show-scroll')
+    expect(card).toHaveClass('min-w-[250px]')
+    expect(card).toHaveClass('shrink-0')
+    expect(card).not.toHaveClass('md:min-w-0')
+  })
+
   it('prunes deleted reviewers from Recently Viewed on load', async () => {
     window.localStorage.setItem(
       'review-well-recent-reviewers:user-1',
