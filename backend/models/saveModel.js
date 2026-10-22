@@ -29,22 +29,31 @@ const countByReviewer = async (reviewerId) => {
   }))
 }
 
-const findByUser = async (userId) => {
-  return remember(`social:saved:${userId}`, TTL_60_SECONDS, () => prisma.save.findMany({
-    where: { userId },
-    include: {
-      reviewer: {
-        select: {
-          id: true,
-          title: true,
-          courseCode: true,
-          visibility: true,
-          user: { select: { id: true, displayName: true } },
-          _count: { select: { saves: true } },
+const findByUser = async (userId, { skip = 0, take = 20 } = {}) => {
+  return remember(`social:saved:${userId}:${skip}:${take}`, TTL_60_SECONDS, async () => {
+    const [saves, total] = await Promise.all([
+      prisma.save.findMany({
+        where: { userId },
+        include: {
+          reviewer: {
+            select: {
+              id: true,
+              title: true,
+              courseCode: true,
+              visibility: true,
+              user: { select: { id: true, displayName: true } },
+              _count: { select: { saves: true } },
+            },
+          },
         },
-      },
-    },
-  }))
+        skip,
+        take,
+      }),
+      prisma.save.count({ where: { userId } }),
+    ])
+
+    return { saves, total }
+  })
 }
 
 const hasUserSaved = async (userId, reviewerId) => {

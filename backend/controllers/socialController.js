@@ -88,10 +88,17 @@ const getSaveStatus = async (req, res) => {
 
 const getSavedReviewers = async (req, res) => {
   try {
-    const saves = await saveModel.findByUser(req.user.id)
+    const { page, skip, take } = parsePagination(req.query)
+    const result = await saveModel.findByUser(req.user.id, { skip, take })
 
     res.json({
-      reviewers: saves.map((save) => save.reviewer).filter(Boolean),
+      reviewers: result.saves.map((save) => save.reviewer).filter(Boolean),
+      pagination: {
+        page,
+        limit: take,
+        total: result.total,
+        hasMore: skip + result.saves.length < result.total,
+      },
     })
   } catch (error) {
     console.error('Get saved reviewers error:', error)

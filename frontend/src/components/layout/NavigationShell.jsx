@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 import { useAuth } from '../../contexts/AuthContext'
 import NotificationBadge from '../notifications/NotificationBadge'
@@ -10,13 +10,6 @@ import Sidebar from './Sidebar'
 
 const NavigationShell = ({ children }) => {
   const { isAuthenticated } = useAuth()
-  const location = useLocation()
-  // Reviewer reading view keeps a visible scrollbar; everything else hides it.
-  const reviewerSegment = location.pathname.split('/')[2]
-  const isReviewerDetail = location.pathname.startsWith('/reviewer/')
-    && !!reviewerSegment
-    && reviewerSegment !== 'my'
-    && reviewerSegment !== 'public'
 
   return (
     <div className="relative flex h-screen bg-paper">
@@ -52,7 +45,7 @@ const NavigationShell = ({ children }) => {
         </header>
 
         {/* Page Content */}
-        <main className={`relative flex-1 overflow-y-auto pb-24 pt-10 md:pb-0 md:pt-16${isReviewerDetail ? ' show-scroll' : ''}`}>{children}</main>
+        <main id="main-content" className="relative flex-1 overflow-y-auto show-scroll pb-24 pt-16 md:pb-0">{children}</main>
       </div>
 
       {/* Mobile Bottom Dock */}

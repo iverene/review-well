@@ -190,17 +190,26 @@ describe('Social Controller', () => {
   })
 
   describe('getSavedReviewers', () => {
-    it('should return the current user saved reviewers', async () => {
-      const req = createMockRequest({ user: { id: 'user-123' } })
+    it('should return the current user saved reviewers with pagination', async () => {
+      const req = createMockRequest({
+        user: { id: 'user-123' },
+        query: { page: '2', limit: '10' },
+      })
       const res = createMockResponse()
       const reviewer = { id: 'reviewer-1', title: 'Saved Reviewer' }
 
-      saveModel.findByUser.mockResolvedValue([{ reviewer }, { reviewer: null }])
+      saveModel.findByUser.mockResolvedValue({
+        saves: [{ reviewer }, { reviewer: null }],
+        total: 11,
+      })
 
       await getSavedReviewers(req, res)
 
-      expect(saveModel.findByUser).toHaveBeenCalledWith('user-123')
-      expect(res.json).toHaveBeenCalledWith({ reviewers: [reviewer] })
+      expect(saveModel.findByUser).toHaveBeenCalledWith('user-123', { skip: 10, take: 10 })
+      expect(res.json).toHaveBeenCalledWith({
+        reviewers: [reviewer],
+        pagination: { page: 2, limit: 10, total: 11, hasMore: false },
+      })
     })
   })
 

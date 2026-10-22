@@ -4,15 +4,29 @@ import axios from 'axios'
 import { Bookmark, LibraryBig, Pencil } from 'lucide-react'
 
 import { useAuth } from '../contexts/AuthContext'
+import { useToast } from '../contexts/ToastContext'
 import FollowButton from '../components/social/FollowButton'
 import ErrorAlert from '../components/common/ErrorAlert'
 import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
 import { formatYearLevel } from '../utils/profile'
 import { ProfileSkeleton } from '../components/common/Skeleton'
-import { fetchShared } from '../stores/queryCache'
+import { cacheKey, fetchShared } from '../stores/queryCache'
 
 const WEEKDAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+const PAGE_SIZE = 20
+
+const appendUnique = (previous, incoming) => {
+  const next = [...previous]
+  const seen = new Set(previous.map((item) => item.id))
+  for (const item of incoming) {
+    if (item && !seen.has(item.id)) {
+      seen.add(item.id)
+      next.push(item)
+    }
+  }
+  return next
+}
 
 // Pomodoro-linked focus section is parked with the study modes — flip back
 // on to re-enable (API and tests are intact).
@@ -133,6 +147,7 @@ const ReviewerTile = ({ reviewer, showVisibility }) => (
 const Profile = () => {
   const { userId } = useParams()
   const { user: currentUser } = useAuth()
+  const { error: toastError } = useToast()
   const [profile, setProfile] = useState(null)
   const [reviewers, setReviewers] = useState([])
   const [savedReviewers, setSavedReviewers] = useState([])
@@ -142,6 +157,11 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState('reviewers')
   const [following, setFollowing] = useState(false)
   const [followerCount, setFollowerCount] = useState(0)
+  const [reviewerPage, setReviewerPage] = useState(1)
+  const [reviewerHasMore, setReviewerHasMore] = useState(false)
+  const [savedPage, setSavedPage] = useState(1)
+  const [savedHasMore, setSavedHasMore] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(null)
 
   const isOwnProfile = currentUser?.id === userId || !userId
   const profileId = userId || currentUser?.id
@@ -173,14 +193,28 @@ const Profile = () => {
     try {
       const own = !userId || userId === currentUser?.id
       const reviewersUrl = own ? '/api/reviewers/my' : `/api/reviewers/author/${targetId}`
+      const reviewersParams = { page: 1, limit: PAGE_SIZE }
+      const savedParams = { page: 1, limit: PAGE_SIZE }
       const [reviewersRes, savedRes] = await Promise.all([
-        fetchShared(`GET ${reviewersUrl}`, () => axios.get(reviewersUrl, { withCredentials: true }), { force: silent }),
+        fetchShared(
+          cacheKey('GET', reviewersUrl, reviewersParams),
+          () => axios.get(reviewersUrl, { params: reviewersParams, withCredentials: true }),
+          { force: silent }
+        ),
         own
-          ? fetchShared('GET /api/social/saved', () => axios.get('/api/social/saved', { withCredentials: true }), { force: silent })
-          : Promise.resolve({ data: { reviewers: [] } }),
+          ? fetchShared(
+            cacheKey('GET', '/api/social/saved', savedParams),
+            () => axios.get('/api/social/saved', { params: savedParams, withCredentials: true }),
+            { force: silent }
+          )
+          : Promise.resolve({ reviewers: [], pagination: { hasMore: false } }),
       ])
       setReviewers(reviewersRes.reviewers || [])
+      setReviewerPage(1)
+      setReviewerHasMore(!!reviewersRes.pagination?.hasMore)
       setSavedReviewers(savedRes.reviewers || [])
+      setSavedPage(1)
+      setSavedHasMore(!!savedRes.pagination?.hasMore)
     } catch (err) {
       console.error('Failed to fetch profile lists:', err)
       setError(getApiErrorMessage(err, 'Unable to load reviewers.'))
@@ -191,10 +225,56 @@ const Profile = () => {
 
   useEffect(() => {
     setActiveTab('reviewers')
+    setReviewers([])
+    setSavedReviewers([])
+    setReviewerPage(1)
+    setReviewerHasMore(false)
+    setSavedPage(1)
+    setSavedHasMore(false)
+    setLoadingMore(null)
     fetchProfile().then((loaded) => {
       if (loaded) fetchLists(loaded, false)
     })
   }, [userId, fetchProfile, fetchLists])
+
+  const loadMore = async (tab) => {
+    const own = !userId || userId === currentUser?.id
+    const isSaved = tab === 'saved'
+    if (loadingMore || (isSaved && !own)) return
+
+    const targetId = profile?.id || profileId
+    if (!targetId) return
+
+    const nextPage = (isSaved ? savedPage : reviewerPage) + 1
+    const url = isSaved
+      ? '/api/social/saved'
+      : own ? '/api/reviewers/my' : `/api/reviewers/author/${targetId}`
+    const params = { page: nextPage, limit: PAGE_SIZE }
+
+    setLoadingMore(tab)
+    try {
+      const response = await fetchShared(
+        cacheKey('GET', url, params),
+        () => axios.get(url, { params, withCredentials: true })
+      )
+      const incoming = response.reviewers || []
+      const hasMore = !!response.pagination?.hasMore
+
+      if (isSaved) {
+        setSavedReviewers((previous) => appendUnique(previous, incoming))
+        setSavedPage(nextPage)
+        setSavedHasMore(hasMore)
+      } else {
+        setReviewers((previous) => appendUnique(previous, incoming))
+        setReviewerPage(nextPage)
+        setReviewerHasMore(hasMore)
+      }
+    } catch (err) {
+      toastError(getApiErrorMessage(err, 'Unable to load more reviewers.'))
+    } finally {
+      setLoadingMore(null)
+    }
+  }
 
   const handleFollowToggle = (isFollowing, count) => {
     setFollowing(isFollowing)
@@ -229,6 +309,7 @@ const Profile = () => {
     : [{ value: 'reviewers', label: 'Reviewers', icon: LibraryBig }]
 
   const visibleReviewers = activeTab === 'saved' ? savedReviewers : reviewers
+  const visibleHasMore = activeTab === 'saved' ? savedHasMore : reviewerHasMore
 
   return (
     <PageContainer>
@@ -357,6 +438,23 @@ const Profile = () => {
             {visibleReviewers.map((reviewer) => (
               <ReviewerTile key={reviewer.id} reviewer={reviewer} showVisibility={isOwnProfile} />
             ))}
+          </div>
+        )}
+
+        {visibleHasMore && (
+          <div className="mt-5 flex justify-center">
+            <button
+              type="button"
+              onClick={() => loadMore(activeTab)}
+              disabled={loadingMore === activeTab}
+              className="rounded-soft border-2 border-stone bg-paper px-5 py-2 text-sm font-extrabold text-ink hover:bg-powder disabled:opacity-50"
+            >
+              {loadingMore === activeTab
+                ? 'Loading…'
+                : activeTab === 'saved'
+                  ? 'Load more saved reviewers'
+                  : 'Load more reviewers'}
+            </button>
           </div>
         )}
       </div>

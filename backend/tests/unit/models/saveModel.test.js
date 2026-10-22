@@ -15,10 +15,12 @@ const { mockPrismaInstance } = vi.hoisted(() => ({
 vi.mock('../../../config/database.js', () => ({ prisma: mockPrismaInstance }))
 
 import * as saveModel from '../../../models/saveModel.js'
+import { clearAll } from '../../../utils/cache.js'
 
 describe('Save Model', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    clearAll()
   })
 
   it('should fetch saved reviewers using the user relation', async () => {
@@ -40,6 +42,33 @@ describe('Save Model', () => {
         }),
       })
     )
+  })
+
+  it('should page saved reviewers and return the total', async () => {
+    const saves = [{ reviewer: { id: 'r1' } }]
+    mockPrismaInstance.save.findMany.mockResolvedValue(saves)
+    mockPrismaInstance.save.count.mockResolvedValue(7)
+
+    await expect(saveModel.findByUser('user-123', { skip: 20, take: 20 })).resolves.toEqual({
+      saves,
+      total: 7,
+    })
+
+    expect(mockPrismaInstance.save.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { userId: 'user-123' }, skip: 20, take: 20 })
+    )
+    expect(mockPrismaInstance.save.count).toHaveBeenCalledWith({ where: { userId: 'user-123' } })
+  })
+
+  it('should cache saved reviewers per page', async () => {
+    mockPrismaInstance.save.findMany.mockResolvedValue([])
+    mockPrismaInstance.save.count.mockResolvedValue(0)
+
+    await saveModel.findByUser('user-123', { skip: 0, take: 20 })
+    await saveModel.findByUser('user-123', { skip: 20, take: 20 })
+
+    expect(mockPrismaInstance.save.findMany).toHaveBeenCalledTimes(2)
+    expect(mockPrismaInstance.save.count).toHaveBeenCalledTimes(2)
   })
 
   it('should report whether a user saved a reviewer', async () => {

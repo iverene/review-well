@@ -480,7 +480,7 @@ const Reviewer = () => {
       )}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_220px]">
-        <main className="min-w-0" aria-label="Study hub section">
+        <section className="min-w-0" aria-label="Study hub section">
           <StudyTabs
             reviewer={reviewer}
             cards={cards}
@@ -496,7 +496,7 @@ const Reviewer = () => {
             onBlurtingSubmit={handleBlurtingSubmit}
             onBlurtingRate={handleBlurtingRate}
           />
-        </main>
+        </section>
         <aside className="hidden h-fit rounded-soft border-2 border-stone bg-mint/40 p-5 lg:block"><h2 className="font-display text-xl font-bold text-ink">Study Details</h2><div className="mt-4"><StudyDetailsList reviewer={reviewer} /></div></aside>
       </div>
 
