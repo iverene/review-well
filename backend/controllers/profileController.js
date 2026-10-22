@@ -13,13 +13,16 @@ const searchUsers = async (req, res) => {
     const take = Math.min(parseInt(limit) || 20, 50)
 
     const users = await userModel.searchUsers(q.trim(), { take, excludeId: req.user.id })
-
-    const usersWithFollow = await Promise.all(
-      users.map(async (user) => ({
-        ...user,
-        isFollowing: await followModel.isFollowing(req.user.id, user.id),
-      }))
+    const followingIds = await followModel.followingIdsFor(
+      req.user.id,
+      users.map((user) => user.id)
     )
+    const followingSet = followingIds || new Set()
+
+    const usersWithFollow = users.map((user) => ({
+      ...user,
+      isFollowing: followingSet.has(user.id),
+    }))
 
     res.json({ users: usersWithFollow })
   } catch (error) {

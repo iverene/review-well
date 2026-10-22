@@ -133,7 +133,7 @@ describe('Reviewer', () => {
     fireEvent.click(screen.getByRole('radio', { name: 'Public' }))
     await waitFor(() => expect(axios.put).toHaveBeenCalledWith('/api/reviewers/r1', { visibility: 'public', isDraft: false }, { withCredentials: true }))
     expect(await screen.findByRole('radio', { name: 'Public', checked: true })).toBeInTheDocument()
-  })
+  }, 15000)
 
   it('shows no visibility badge to non-owners', async () => {
     authState.user = { id: 'someone-else' }

@@ -9,13 +9,17 @@ import { useToast } from '../contexts/ToastContext'
 import useNotificationStore from '../stores/notificationStore'
 import { NotificationsSkeleton } from '../components/common/Skeleton'
 
+const appendUnique = (previous, incoming) => {
+  const known = new Set(previous.map((notification) => notification.id))
+  return [...previous, ...incoming.filter((notification) => !known.has(notification.id))]
+}
+
 const Notifications = () => {
   const [notifications, setNotifications] = useState([])
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
   const toast = useToast()
-  const setUnreadCount = useNotificationStore((state) => state.setUnreadCount)
   const bumpUnread = useNotificationStore((state) => state.bumpUnread)
   const markOneRead = useNotificationStore((state) => state.markOneRead)
   const markAllRead = useNotificationStore((state) => state.markAllRead)
@@ -75,10 +79,14 @@ const Notifications = () => {
       })
       const fresh = response.data.notifications || []
       setNotifications((prev) =>
-        page === 1 ? fresh : [...prev, ...fresh]
+        page === 1 ? fresh : appendUnique(prev, fresh)
       )
-      setUnreadCount(fresh.filter((n) => !n.isRead).length)
-      setHasMore(fresh.length === 20)
+      const total = Number(response.data.total)
+      setHasMore(
+        Number.isFinite(total)
+          ? page * 20 < total
+          : fresh.length === 20
+      )
     } catch (error) {
       console.error('Failed to fetch notifications:', error)
       toast.error(getApiErrorMessage(error, 'Unable to load notifications.'))

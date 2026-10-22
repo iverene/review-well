@@ -9,6 +9,13 @@ const ZOOM_STEP = 25
 const ZOOM_MIN = 50
 const ZOOM_MAX = 300
 
+// Keep the DOM light for long documents: only pages within half a viewport
+// of the visible area keep a canvas mounted.
+const PAGE_GAP_PX = 12
+const VIEWPORT_BUFFER_RATIO = 0.5
+const MAX_DEVICE_PIXEL_RATIO = 2
+const MAX_CANVAS_PIXELS = 6_000_000
+
 const LOADING_TIPS = [
   'Sharpening every page…',
   'Counting pages…',
@@ -30,16 +37,23 @@ export const currentPageFromTops = (tops, scrollTop, viewportHeight, probeRatio 
   return current
 }
 
-// PDF viewer: every page rendered to canvas at a readable width (never
-// stretched full-bleed), inside a responsive scroll container with a custom
-// cocoa scrollbar. Toolbar has prev/next, a live "current / total" count
-// driven by scroll position, fullscreen toggle, and — in fullscreen only —
-// percent zoom controls.
+// PDF viewer: pages are laid out as sized placeholders and only the visible
+// window is rendered to canvas. This keeps memory bounded for long PDFs while
+// preserving the scroll-position page counter, zoom, and fullscreen behavior.
 const PdfViewer = ({ fileUrl, title = 'Document' }) => {
   const scrollRef = useRef(null)
   const pagesRef = useRef([])
   const docRef = useRef(null)
   const pageRef = useRef(1)
+  const pageSizeRef = useRef({ width: 100, height: 129 })
+  const renderedRef = useRef(new Set())
+  const inflightRef = useRef(new Map())
+  const renderTasksRef = useRef(new Map())
+  const wantedRef = useRef(new Set())
+  const generationRef = useRef(0)
+  const scrollFrameRef = useRef(null)
+  const scrollUsesRafRef = useRef(true)
+  const zoomRef = useRef(100)
   const [numPages, setNumPages] = useState(0)
   const [currentPage, setCurrentPage] = useState(1)
   const [zoomPct, setZoomPct] = useState(100)
@@ -57,79 +71,250 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
   }, [loading])
 
   pageRef.current = currentPage
-
-  // Re-renders triggered outside the load effect (zoom, fullscreen
-  // transitions) share one abortable controller so rapid changes and
-  // unmounts never leave orphaned renders.
-  const renderControllerRef = useRef(null)
-
-  const zoomRef = useRef(100)
   zoomRef.current = zoomPct
+
+  const pageTops = useCallback(() => {
+    let cursor = 0
+    return pagesRef.current.map((element, index) => {
+      const height = element.offsetHeight || parseInt(element.style.height, 10) || 0
+      // jsdom reports 0 for every offsetTop; fall back to the height-based
+      // layout there while using real browser measurements when available.
+      const measured = element.offsetTop
+      const top = measured > 0 || index === 0 ? measured : cursor
+      cursor = Math.max(cursor, top + height + PAGE_GAP_PX)
+      return top
+    })
+  }, [])
 
   const updateCurrentFromScroll = useCallback(() => {
     const container = scrollRef.current
     if (!container || pagesRef.current.length === 0) return
-    const tops = pagesRef.current.map((el) => el.offsetTop)
-    const next = currentPageFromTops(tops, container.scrollTop, container.clientHeight)
+    const tops = pageTops()
+    const next = currentPageFromTops(
+      tops,
+      container.scrollTop || 0,
+      container.clientHeight || 800
+    )
+    pageRef.current = next
     setCurrentPage((previous) => (previous === next ? previous : next))
-  }, [])
+  }, [pageTops])
 
-  const renderAll = useCallback(async (pdf, signal, zoomFactor) => {
+  const buildPlaceholders = useCallback((count, zoomFactor = 1) => {
     const container = scrollRef.current
     const pagesEl = container?.querySelector('[data-testid="study-doc-pages"]')
-    if (!container || !pagesEl) return
+    if (!pagesEl) return
+
     pagesEl.innerHTML = ''
     pagesRef.current = []
-    const containerWidth = container.clientWidth || 800
-    // Render above CSS resolution (device pixels) so pages stay sharp on
-    // hidpi screens and when zoomed — the canvas backing store is denser
-    // than its displayed CSS size.
-    const dpr = Math.min(window.devicePixelRatio || 1, 3)
-    for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber += 1) {
-      if (signal.aborted) return
-      // eslint-disable-next-line no-await-in-loop
-      const page = await pdf.getPage(pageNumber)
-      if (signal.aborted) return
-      const baseViewport = page.getViewport({ scale: 1 })
-      const cssWidth = (containerWidth * 0.92) * zoomFactor
-      const scale = (cssWidth / baseViewport.width) * dpr
-      const viewport = page.getViewport({ scale })
-      const canvas = document.createElement('canvas')
-      canvas.width = Math.floor(viewport.width)
-      canvas.height = Math.floor(viewport.height)
-      canvas.style.width = `${Math.floor(cssWidth)}px`
-      canvas.style.height = 'auto'
-      const context = canvas.getContext('2d')
-      // eslint-disable-next-line no-await-in-loop
-      await page.render({ canvasContext: context, viewport }).promise
-      if (signal.aborted) return
+    renderedRef.current.clear()
+    inflightRef.current.clear()
+    renderTasksRef.current.clear()
+    wantedRef.current.clear()
+
+    const width = Math.floor((container.clientWidth || 800) * 0.92 * zoomFactor)
+    const base = pageSizeRef.current
+    const height = Math.max(1, Math.floor(width * (base.height / base.width)))
+
+    for (let pageNumber = 1; pageNumber <= count; pageNumber += 1) {
       const wrapper = document.createElement('div')
       wrapper.dataset.page = String(pageNumber)
       wrapper.className = 'study-doc-page'
-      wrapper.style.width = `${Math.floor(cssWidth)}px`
-      wrapper.appendChild(canvas)
+      wrapper.style.width = `${width}px`
+      wrapper.style.height = `${height}px`
+      wrapper.style.marginInline = 'auto'
+      wrapper.setAttribute('data-testid', `study-doc-page-${pageNumber}`)
       pagesEl.appendChild(wrapper)
       pagesRef.current.push(wrapper)
     }
   }, [])
 
-  const rerenderAt = useCallback((zoomFactor) => {
-    if (!docRef.current) return Promise.resolve()
-    renderControllerRef.current?.abort()
-    const controller = new AbortController()
-    renderControllerRef.current = controller
-    return renderAll(docRef.current, controller.signal, zoomFactor).then(() => {
-      if (!controller.signal.aborted) {
-        const el = pagesRef.current[pageRef.current - 1]
-        el?.scrollIntoView?.({ block: 'start' })
-        updateCurrentFromScroll()
+  const applyLayout = useCallback((zoomFactor) => {
+    const container = scrollRef.current
+    if (!container) return
+    const width = Math.floor((container.clientWidth || 800) * 0.92 * zoomFactor)
+    const base = pageSizeRef.current
+    const height = Math.max(1, Math.floor(width * (base.height / base.width)))
+    pagesRef.current.forEach((wrapper) => {
+      wrapper.style.width = `${width}px`
+      wrapper.style.height = `${height}px`
+    })
+  }, [])
+
+  const releasePage = useCallback((pageNumber) => {
+    const task = renderTasksRef.current.get(pageNumber)
+    task?.cancel?.()
+    renderTasksRef.current.delete(pageNumber)
+
+    const wrapper = pagesRef.current[pageNumber - 1]
+    const canvas = wrapper?.querySelector('canvas')
+    if (canvas) {
+      canvas.width = 0
+      canvas.height = 0
+      canvas.remove()
+    }
+    renderedRef.current.delete(pageNumber)
+  }, [])
+
+  const clearRendered = useCallback(() => {
+    generationRef.current += 1
+    renderTasksRef.current.forEach((task) => task.cancel?.())
+    renderTasksRef.current.clear()
+    inflightRef.current.clear()
+    wantedRef.current.clear()
+    pagesRef.current.forEach((wrapper) => {
+      const canvas = wrapper.querySelector('canvas')
+      if (canvas) {
+        canvas.width = 0
+        canvas.height = 0
+        canvas.remove()
       }
     })
-  }, [renderAll, updateCurrentFromScroll])
-
-  useEffect(() => () => {
-    renderControllerRef.current?.abort()
+    renderedRef.current.clear()
   }, [])
+
+  const renderPage = useCallback(async (pageNumber) => {
+    const pdf = docRef.current
+    const wrapper = pagesRef.current[pageNumber - 1]
+    if (!pdf || !wrapper) return
+    if (renderedRef.current.has(pageNumber) || inflightRef.current.has(pageNumber)) return
+
+    const generation = generationRef.current
+    inflightRef.current.set(pageNumber, generation)
+
+    try {
+      const page = await pdf.getPage(pageNumber)
+      if (generation !== generationRef.current || !wantedRef.current.has(pageNumber)) return
+
+      const baseViewport = page.getViewport({ scale: 1 })
+      const containerWidth = scrollRef.current?.clientWidth || 800
+      const cssWidth = Math.floor(containerWidth * 0.92 * (zoomRef.current / 100))
+      const cssHeight = Math.max(1, Math.floor(cssWidth * (baseViewport.height / baseViewport.width)))
+      wrapper.style.width = `${cssWidth}px`
+      wrapper.style.height = `${cssHeight}px`
+
+      // Never allocate more than 2x device pixels. Very large zoom levels can
+      // still produce huge canvases, so cap total backing-store pixels too.
+      const dpr = Math.min(window.devicePixelRatio || 1, MAX_DEVICE_PIXEL_RATIO)
+      let scale = (cssWidth / baseViewport.width) * dpr
+      let viewport = page.getViewport({ scale })
+      const pixelCount = viewport.width * viewport.height
+      if (pixelCount > MAX_CANVAS_PIXELS) {
+        scale *= Math.sqrt(MAX_CANVAS_PIXELS / pixelCount)
+        viewport = page.getViewport({ scale })
+      }
+
+      const canvas = document.createElement('canvas')
+      canvas.width = Math.floor(viewport.width)
+      canvas.height = Math.floor(viewport.height)
+      canvas.style.width = `${cssWidth}px`
+      canvas.style.height = 'auto'
+      canvas.className = 'block h-auto max-w-full'
+      canvas.setAttribute('data-testid', `study-doc-canvas-${pageNumber}`)
+
+      const context = canvas.getContext('2d')
+      const task = page.render({ canvasContext: context, viewport })
+      renderTasksRef.current.set(pageNumber, task)
+      await task.promise
+      if (renderTasksRef.current.get(pageNumber) === task) {
+        renderTasksRef.current.delete(pageNumber)
+      }
+
+      if (generation !== generationRef.current || !wantedRef.current.has(pageNumber)) {
+        canvas.width = 0
+        canvas.height = 0
+        return
+      }
+      if (pagesRef.current[pageNumber - 1] !== wrapper) {
+        canvas.width = 0
+        canvas.height = 0
+        return
+      }
+
+      wrapper.querySelectorAll('canvas').forEach((existing) => existing.remove())
+      wrapper.appendChild(canvas)
+      renderedRef.current.add(pageNumber)
+    } catch (renderError) {
+      renderTasksRef.current.delete(pageNumber)
+      if (generation === generationRef.current && wantedRef.current.has(pageNumber)) {
+        console.error('Failed to render PDF page:', renderError)
+      }
+    } finally {
+      if (inflightRef.current.get(pageNumber) === generation) {
+        inflightRef.current.delete(pageNumber)
+      }
+    }
+  }, [])
+
+  const renderVisiblePages = useCallback(async () => {
+    const container = scrollRef.current
+    if (!container || pagesRef.current.length === 0) return
+
+    const viewportHeight = container.clientHeight || 800
+    const scrollTop = container.scrollTop || 0
+    const buffer = viewportHeight * VIEWPORT_BUFFER_RATIO
+    const start = scrollTop - buffer
+    const end = scrollTop + viewportHeight + buffer
+    const tops = pageTops()
+    const wanted = new Set()
+
+    tops.forEach((top, index) => {
+      const wrapper = pagesRef.current[index]
+      const height = wrapper.offsetHeight || parseInt(wrapper.style.height, 10) || 0
+      if (top + height >= start && top <= end) wanted.add(index + 1)
+    })
+    if (pageRef.current >= 1 && pageRef.current <= pagesRef.current.length) {
+      wanted.add(pageRef.current)
+    }
+    wantedRef.current = wanted
+
+    renderedRef.current.forEach((pageNumber) => {
+      if (!wanted.has(pageNumber)) releasePage(pageNumber)
+    })
+
+    await Promise.all([...wanted].map((pageNumber) => renderPage(pageNumber)))
+  }, [pageTops, releasePage, renderPage])
+
+  const cancelScheduledRender = useCallback(() => {
+    if (scrollFrameRef.current === null) return
+    if (scrollUsesRafRef.current && typeof window.cancelAnimationFrame === 'function') {
+      window.cancelAnimationFrame(scrollFrameRef.current)
+    } else {
+      window.clearTimeout(scrollFrameRef.current)
+    }
+    scrollFrameRef.current = null
+  }, [])
+
+  const scheduleRenderVisible = useCallback(() => {
+    if (scrollFrameRef.current !== null) return
+    const run = () => {
+      scrollFrameRef.current = null
+      renderVisiblePages()
+    }
+    if (typeof window.requestAnimationFrame === 'function') {
+      scrollUsesRafRef.current = true
+      scrollFrameRef.current = window.requestAnimationFrame(run)
+    } else {
+      scrollUsesRafRef.current = false
+      scrollFrameRef.current = window.setTimeout(run, 16)
+    }
+  }, [renderVisiblePages])
+
+  const handleScroll = useCallback(() => {
+    updateCurrentFromScroll()
+    scheduleRenderVisible()
+  }, [updateCurrentFromScroll, scheduleRenderVisible])
+
+  const rerenderAt = useCallback((zoomFactor) => {
+    if (!docRef.current) return Promise.resolve()
+    cancelScheduledRender()
+    clearRendered()
+    applyLayout(zoomFactor)
+    return renderVisiblePages().then(() => {
+      const element = pagesRef.current[pageRef.current - 1]
+      element?.scrollIntoView?.({ block: 'start' })
+      updateCurrentFromScroll()
+    })
+  }, [applyLayout, cancelScheduledRender, clearRendered, renderVisiblePages, updateCurrentFromScroll])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -138,34 +323,54 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
     setNumPages(0)
     setCurrentPage(1)
     setZoomPct(100)
+    zoomRef.current = 100
+    pageRef.current = 1
+    pagesRef.current = []
     const pagesEl = scrollRef.current?.querySelector('[data-testid="study-doc-pages"]')
     if (pagesEl) pagesEl.innerHTML = ''
 
-    pdfjsLib
-      .getDocument({ url: fileUrl })
-      .promise.then(async (pdf) => {
-        if (controller.signal.aborted) return
+    const load = async () => {
+      let pdf = null
+      try {
+        pdf = await pdfjsLib.getDocument({ url: fileUrl }).promise
+        if (controller.signal.aborted) {
+          pdf.destroy?.()
+          return
+        }
+        const firstPage = await pdf.getPage(1)
+        if (controller.signal.aborted) {
+          pdf.destroy?.()
+          return
+        }
+
+        const baseViewport = firstPage.getViewport({ scale: 1 })
+        pageSizeRef.current = {
+          width: baseViewport.width,
+          height: baseViewport.height,
+        }
         docRef.current = pdf
         setNumPages(pdf.numPages)
-        await renderAll(pdf, controller.signal, 1)
+        buildPlaceholders(pdf.numPages, 1)
+        await renderVisiblePages()
         if (!controller.signal.aborted) {
           setLoading(false)
           updateCurrentFromScroll()
         }
-      })
-      .catch((loadError) => {
+      } catch (loadError) {
         if (controller.signal.aborted) return
         console.error('Failed to load PDF:', loadError)
         setError('Unable to display this PDF. Try downloading it instead.')
         setLoading(false)
-      })
-
-    const onResize = () => {
-      if (docRef.current && !controller.signal.aborted) {
-        renderAll(docRef.current, controller.signal, zoomRef.current / 100)
       }
     }
+    load()
+
     let resizeTimer = null
+    const onResize = () => {
+      if (docRef.current && !controller.signal.aborted) {
+        rerenderAt(zoomRef.current / 100)
+      }
+    }
     const onResizeDebounced = () => {
       clearTimeout(resizeTimer)
       resizeTimer = setTimeout(onResize, 250)
@@ -175,18 +380,31 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
       controller.abort()
       clearTimeout(resizeTimer)
       window.removeEventListener('resize', onResizeDebounced)
+      cancelScheduledRender()
+      clearRendered()
       docRef.current?.destroy?.()
       docRef.current = null
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fileUrl, renderAll])
+  }, [
+    fileUrl,
+    buildPlaceholders,
+    cancelScheduledRender,
+    clearRendered,
+    renderVisiblePages,
+    rerenderAt,
+    updateCurrentFromScroll,
+  ])
 
   useEffect(() => {
     const container = scrollRef.current
     if (!container) return
-    container.addEventListener('scroll', updateCurrentFromScroll, { passive: true })
-    return () => container.removeEventListener('scroll', updateCurrentFromScroll)
-  }, [updateCurrentFromScroll])
+    container.addEventListener('scroll', handleScroll, { passive: true })
+    return () => container.removeEventListener('scroll', handleScroll)
+  }, [handleScroll])
+
+  useEffect(() => () => {
+    cancelScheduledRender()
+  }, [cancelScheduledRender])
 
   useEffect(() => {
     const onFullscreenChange = () => {
@@ -199,6 +417,7 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
       if (!docRef.current) return
       const isCoarsePointer = window.matchMedia?.('(pointer: coarse)').matches ?? false
       const next = !isFullscreen ? 100 : isCoarsePointer ? 100 : 50
+      zoomRef.current = next
       setZoomPct(next)
       rerenderAt(next / 100)
     }
@@ -208,13 +427,16 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
 
   const goToPage = (pageNumber) => {
     const clamped = Math.min(Math.max(1, pageNumber), Math.max(1, numPages))
+    pageRef.current = clamped
     setCurrentPage(clamped)
     pagesRef.current[clamped - 1]?.scrollIntoView?.({ behavior: 'smooth', block: 'start' })
+    scheduleRenderVisible()
   }
 
   const changeZoom = (delta) => {
     const next = Math.min(ZOOM_MAX, Math.max(ZOOM_MIN, zoomPct + delta))
     if (next === zoomPct || !docRef.current) return
+    zoomRef.current = next
     setZoomPct(next)
     rerenderAt(next / 100)
   }

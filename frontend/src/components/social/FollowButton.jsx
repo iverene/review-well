@@ -7,17 +7,23 @@ import { useToast } from '../../contexts/ToastContext'
 import { getApiErrorMessage } from '../../utils/apiError'
 import useQueryCache from '../../stores/queryCache'
 
-const FollowButton = ({ userId, initialFollowing = false, initialFollowerCount = 0, onToggle }) => {
+const FollowButton = ({ userId, initialFollowing, initialFollowerCount = 0, onToggle }) => {
   const { user, isAuthenticated } = useAuth()
   const toast = useToast()
-  const [following, setFollowing] = useState(initialFollowing)
+  const [following, setFollowing] = useState(initialFollowing ?? false)
   const [, setFollowerCount] = useState(initialFollowerCount)
   const [loading, setLoading] = useState(false)
 
   const isOwnProfile = user?.id === userId
 
   useEffect(() => {
-    if (!isAuthenticated || isOwnProfile) return
+    if (initialFollowing !== undefined) setFollowing(initialFollowing)
+  }, [initialFollowing])
+
+  useEffect(() => {
+    // Parents that already know the relationship (list/detail payloads) can
+    // pass it in; fetching it again would repeat the same query per row.
+    if (!isAuthenticated || isOwnProfile || initialFollowing !== undefined) return
     let cancelled = false
     const load = async () => {
       try {
@@ -37,7 +43,7 @@ const FollowButton = ({ userId, initialFollowing = false, initialFollowerCount =
     return () => {
       cancelled = true
     }
-  }, [userId, isAuthenticated, isOwnProfile])
+  }, [userId, isAuthenticated, isOwnProfile, initialFollowing])
 
   const handleFollow = async () => {
     if (!isAuthenticated || loading || isOwnProfile) return

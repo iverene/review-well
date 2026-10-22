@@ -96,9 +96,13 @@ const NotificationItem = ({ notification, onMarkRead }) => {
       {/* Applicable action */}
       <div className="flex shrink-0 flex-col items-end gap-2" onClick={(e) => { e.preventDefault(); e.stopPropagation() }}>
         {actionType === 'follow' && actor?.id ? (
-          <FollowButton userId={actor.id} />
+          <FollowButton userId={actor.id} initialFollowing={notification.isFollowing} />
         ) : reviewer?.id ? (
-          <SaveButton reviewerId={reviewer.id} />
+          <SaveButton
+            reviewerId={reviewer.id}
+            initialSaved={notification.isSaved}
+            initialSaveCount={notification.saveCount ?? reviewer._count?.saves ?? 0}
+          />
         ) : null}
         {!isRead && (
           <span className="inline-flex items-center gap-1.5">

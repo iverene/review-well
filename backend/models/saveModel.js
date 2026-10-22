@@ -52,4 +52,13 @@ const hasUserSaved = async (userId, reviewerId) => {
   return !!save
 }
 
-export { findByUserAndReviewer, create, remove, countByReviewer, findByUser, hasUserSaved }
+const savedReviewerIdsFor = async (userId, reviewerIds = []) => {
+  if (!userId || reviewerIds.length === 0) return new Set()
+  const rows = await prisma.save.findMany({
+    where: { userId, reviewerId: { in: reviewerIds } },
+    select: { reviewerId: true },
+  })
+  return new Set(rows.map((row) => row.reviewerId))
+}
+
+export { findByUserAndReviewer, create, remove, countByReviewer, findByUser, hasUserSaved, savedReviewerIdsFor }

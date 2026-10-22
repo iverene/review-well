@@ -187,9 +187,39 @@ const getNotifications = async (req, res) => {
     const { skip, take } = parsePagination(req.query)
 
     const result = await notificationModel.findByRecipient(req.user.id, { skip, take })
+    const notifications = result.notifications || []
+
+    const reviewerIds = [...new Set(
+      notifications.map((notification) => notification.reviewerId).filter(Boolean)
+    )]
+    const followActorIds = [...new Set(
+      notifications
+        .filter((notification) => notification.actionType === 'follow')
+        .map((notification) => notification.actorId)
+        .filter(Boolean)
+    )]
+
+    const [savedIds, followedIds] = await Promise.all([
+      saveModel.savedReviewerIdsFor(req.user.id, reviewerIds),
+      followModel.followingIdsFor(req.user.id, followActorIds),
+    ])
+    const savedSet = savedIds || new Set()
+    const followedSet = followedIds || new Set()
+
+    const decorated = notifications.map((notification) => {
+      const next = { ...notification }
+      if (notification.reviewerId) {
+        next.isSaved = savedSet.has(notification.reviewerId)
+        next.saveCount = notification.reviewer?._count?.saves ?? 0
+      }
+      if (notification.actionType === 'follow' && notification.actorId) {
+        next.isFollowing = followedSet.has(notification.actorId)
+      }
+      return next
+    })
 
     res.json({
-      notifications: result.notifications,
+      notifications: decorated,
       total: result.total,
     })
   } catch (error) {
@@ -245,8 +275,16 @@ const getFollowers = async (req, res) => {
   try {
     const { userId } = req.params
     const rows = await followModel.getFollowers(userId)
+    const users = rows.map((row) => row.follower).filter(Boolean)
+    const followingIds = await followModel.followingIdsFor(
+      req.user?.id,
+      users.map((user) => user.id)
+    )
+    const followingSet = followingIds || new Set()
 
-    res.json({ users: rows.map((row) => row.follower).filter(Boolean) })
+    res.json({
+      users: users.map((user) => ({ ...user, isFollowing: followingSet.has(user.id) })),
+    })
   } catch (error) {
     console.error('Get followers error:', error)
     res.status(500).json({ error: 'Failed to get followers' })
@@ -257,8 +295,16 @@ const getFollowing = async (req, res) => {
   try {
     const { userId } = req.params
     const rows = await followModel.getFollowing(userId)
+    const users = rows.map((row) => row.following).filter(Boolean)
+    const followingIds = await followModel.followingIdsFor(
+      req.user?.id,
+      users.map((user) => user.id)
+    )
+    const followingSet = followingIds || new Set()
 
-    res.json({ users: rows.map((row) => row.following).filter(Boolean) })
+    res.json({
+      users: users.map((user) => ({ ...user, isFollowing: followingSet.has(user.id) })),
+    })
   } catch (error) {
     console.error('Get following error:', error)
     res.status(500).json({ error: 'Failed to get following' })

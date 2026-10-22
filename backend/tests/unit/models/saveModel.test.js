@@ -51,4 +51,23 @@ describe('Save Model', () => {
 
     await expect(saveModel.hasUserSaved('user-123', 'r1')).resolves.toBe(false)
   })
+
+  it('should batch-resolve which candidate reviewers are saved', async () => {
+    mockPrismaInstance.save.findMany.mockResolvedValue([{ reviewerId: 'r1' }])
+
+    const saved = await saveModel.savedReviewerIdsFor('user-123', ['r1', 'r2'])
+
+    expect(saved).toEqual(new Set(['r1']))
+    expect(mockPrismaInstance.save.findMany).toHaveBeenCalledWith({
+      where: { userId: 'user-123', reviewerId: { in: ['r1', 'r2'] } },
+      select: { reviewerId: true },
+    })
+  })
+
+  it('should skip the saved-status batch query when there are no candidates', async () => {
+    const saved = await saveModel.savedReviewerIdsFor('user-123', [])
+
+    expect(saved).toEqual(new Set())
+    expect(mockPrismaInstance.save.findMany).not.toHaveBeenCalled()
+  })
 })

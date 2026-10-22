@@ -7,15 +7,25 @@ import { useToast } from '../../contexts/ToastContext'
 import { getApiErrorMessage } from '../../utils/apiError'
 import useQueryCache from '../../stores/queryCache'
 
-const SaveButton = ({ reviewerId, initialSaved = false, initialSaveCount = 0 }) => {
+const SaveButton = ({ reviewerId, initialSaved, initialSaveCount = 0 }) => {
   const { isAuthenticated } = useAuth()
   const toast = useToast()
-  const [saved, setSaved] = useState(initialSaved)
+  const [saved, setSaved] = useState(initialSaved ?? false)
   const [saveCount, setSaveCount] = useState(initialSaveCount)
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    if (!isAuthenticated) return
+    if (initialSaved !== undefined) setSaved(initialSaved)
+  }, [initialSaved])
+
+  useEffect(() => {
+    if (initialSaveCount !== undefined) setSaveCount(initialSaveCount)
+  }, [initialSaveCount])
+
+  useEffect(() => {
+    // Callers with a decorated list/detail payload already have this state;
+    // only fetch when the parent genuinely does not know it.
+    if (!isAuthenticated || initialSaved !== undefined) return
     let cancelled = false
     const load = async () => {
       try {
@@ -35,7 +45,7 @@ const SaveButton = ({ reviewerId, initialSaved = false, initialSaveCount = 0 }) 
     return () => {
       cancelled = true
     }
-  }, [reviewerId, isAuthenticated])
+  }, [reviewerId, isAuthenticated, initialSaved])
 
   const handleSave = async () => {
     if (!isAuthenticated || loading) return

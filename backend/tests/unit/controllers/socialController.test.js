@@ -24,6 +24,7 @@ vi.mock('../../../models/followModel.js', () => ({
   countFollowers: vi.fn(),
   countFollowing: vi.fn(),
   isFollowing: vi.fn(),
+  followingIdsFor: vi.fn(),
 }))
 vi.mock('../../../models/saveModel.js', () => ({
   findByUserAndReviewer: vi.fn(),
@@ -32,6 +33,7 @@ vi.mock('../../../models/saveModel.js', () => ({
   countByReviewer: vi.fn(),
   findByUser: vi.fn(),
   hasUserSaved: vi.fn(),
+  savedReviewerIdsFor: vi.fn(),
 }))
 vi.mock('../../../models/notificationModel.js', () => ({
   create: vi.fn(),
@@ -203,30 +205,38 @@ describe('Social Controller', () => {
   })
 
   describe('getFollowers', () => {
-    it('should return mapped follower users', async () => {
-      const req = createMockRequest({ params: { userId: 'user-1' } })
+    it('should return mapped follower users with batch follow state', async () => {
+      const req = createMockRequest({ user: { id: 'user-123' }, params: { userId: 'user-1' } })
       const res = createMockResponse()
       const follower = { id: 'user-2', displayName: 'Friend' }
 
       followModel.getFollowers = vi.fn().mockResolvedValue([{ follower }, { follower: null }])
+      followModel.followingIdsFor.mockResolvedValue(new Set(['user-2']))
 
       await getFollowers(req, res)
 
-      expect(res.json).toHaveBeenCalledWith({ users: [follower] })
+      expect(followModel.followingIdsFor).toHaveBeenCalledWith('user-123', ['user-2'])
+      expect(res.json).toHaveBeenCalledWith({
+        users: [{ ...follower, isFollowing: true }],
+      })
     })
   })
 
   describe('getFollowing', () => {
-    it('should return mapped following users', async () => {
-      const req = createMockRequest({ params: { userId: 'user-1' } })
+    it('should return mapped following users with batch follow state', async () => {
+      const req = createMockRequest({ user: { id: 'user-123' }, params: { userId: 'user-1' } })
       const res = createMockResponse()
       const following = { id: 'user-3', displayName: 'Mentor' }
 
       followModel.getFollowing = vi.fn().mockResolvedValue([{ following }])
+      followModel.followingIdsFor.mockResolvedValue(new Set())
 
       await getFollowing(req, res)
 
-      expect(res.json).toHaveBeenCalledWith({ users: [following] })
+      expect(followModel.followingIdsFor).toHaveBeenCalledWith('user-123', ['user-3'])
+      expect(res.json).toHaveBeenCalledWith({
+        users: [{ ...following, isFollowing: false }],
+      })
     })
   })
 
@@ -333,6 +343,45 @@ describe('Social Controller', () => {
           total: 1,
         })
       )
+    })
+
+    it('decorates a page with batched save and follow state', async () => {
+      const req = createMockRequest({
+        user: { id: 'user-123' },
+        query: { page: '1', limit: '20' },
+      })
+      const res = createMockResponse()
+
+      notificationModel.findByRecipient.mockResolvedValue({
+        notifications: [
+          {
+            id: 'notif-save',
+            actionType: 'save',
+            actorId: 'user-2',
+            reviewerId: 'r1',
+            reviewer: { id: 'r1', title: 'Calculus', _count: { saves: 4 } },
+          },
+          {
+            id: 'notif-follow',
+            actionType: 'follow',
+            actorId: 'user-3',
+            reviewerId: null,
+            reviewer: null,
+          },
+        ],
+        total: 2,
+      })
+      saveModel.savedReviewerIdsFor.mockResolvedValue(new Set(['r1']))
+      followModel.followingIdsFor.mockResolvedValue(new Set(['user-3']))
+
+      await getNotifications(req, res)
+
+      expect(saveModel.savedReviewerIdsFor).toHaveBeenCalledWith('user-123', ['r1'])
+      expect(followModel.followingIdsFor).toHaveBeenCalledWith('user-123', ['user-3'])
+
+      const payload = res.json.mock.calls[0][0]
+      expect(payload.notifications[0]).toMatchObject({ isSaved: true, saveCount: 4 })
+      expect(payload.notifications[1]).toMatchObject({ isFollowing: true })
     })
   })
 

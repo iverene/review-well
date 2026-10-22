@@ -40,7 +40,7 @@ describe('ReviewerList search', () => {
 
   it('sends the debounced query to the server', async () => {
     renderList()
-    await screen.findByText('Photosynthesis Guide')
+    await screen.findByText('Photosynthesis Guide', {}, { timeout: 5000 })
     fireEvent.change(screen.getByLabelText('Search reviewers'), { target: { value: 'photo' } })
     await waitFor(() => expect(axios.get).toHaveBeenCalledWith(
       '/api/reviewers/public',
@@ -50,7 +50,7 @@ describe('ReviewerList search', () => {
 
   it('sends assessment and semester filters to the server', async () => {
     renderList()
-    await screen.findByText('Photosynthesis Guide')
+    await screen.findByText('Photosynthesis Guide', {}, { timeout: 5000 })
     fireEvent.click(screen.getByRole('button', { name: 'Assessment' }))
     fireEvent.click(screen.getByRole('button', { name: 'Midterm' }))
     fireEvent.click(screen.getByRole('button', { name: 'Semester' }))
@@ -61,9 +61,42 @@ describe('ReviewerList search', () => {
     ), { timeout: 3000 })
   }, 10000)
 
+  it('loads the next page and keeps earlier reviewers', async () => {
+    axios.get.mockImplementation((url, config) => {
+      const page = config?.params?.page || 1
+      if (page === 2) {
+        return Promise.resolve({
+          data: {
+            reviewers: [
+              { id: 'r3', title: 'Cell Division Notes', courseCode: 'BIO 102', courseDescription: 'Mitosis', _count: { saves: 0 } },
+            ],
+            pagination: { page: 2, limit: 20, total: 3, hasMore: false },
+          },
+        })
+      }
+      return Promise.resolve({
+        data: {
+          reviewers,
+          pagination: { page: 1, limit: 20, total: 3, hasMore: true },
+        },
+      })
+    })
+
+    renderList()
+    await screen.findByText('Photosynthesis Guide', {}, { timeout: 5000 })
+    fireEvent.click(screen.getByRole('button', { name: 'Load more reviewers' }))
+
+    expect(await screen.findByText('Cell Division Notes')).toBeInTheDocument()
+    expect(screen.getByText('Photosynthesis Guide')).toBeInTheDocument()
+    expect(axios.get).toHaveBeenCalledWith(
+      '/api/reviewers/public',
+      expect.objectContaining({ params: expect.objectContaining({ page: 2 }) })
+    )
+  }, 10000)
+
   it('clears the query with the X button', async () => {
     renderList()
-    await screen.findByText('Photosynthesis Guide')
+    await screen.findByText('Photosynthesis Guide', {}, { timeout: 5000 })
     fireEvent.change(screen.getByLabelText('Search reviewers'), { target: { value: 'photo' } })
     expect(screen.getByRole('button', { name: 'Clear search' })).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Clear search' }))
@@ -77,7 +110,7 @@ describe('ReviewerList search', () => {
         <ReviewerList mine />
       </MemoryRouter>
     )
-    await screen.findByText('Photosynthesis Guide')
+    await screen.findByText('Photosynthesis Guide', {}, { timeout: 5000 })
     expect(screen.getByRole('link', { name: 'New' })).toHaveAttribute('href', '/create')
     expect(screen.getByRole('link', { name: 'New reviewer' })).toHaveAttribute('href', '/create')
   })

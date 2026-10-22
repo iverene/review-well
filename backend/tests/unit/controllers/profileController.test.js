@@ -24,6 +24,7 @@ vi.mock('../../../models/followModel.js', () => ({
   countFollowers: vi.fn(),
   countFollowing: vi.fn(),
   isFollowing: vi.fn(),
+  followingIdsFor: vi.fn(),
 }))
 vi.mock('../../../models/saveModel.js', () => ({
   findByUserAndReviewer: vi.fn(),
@@ -136,11 +137,12 @@ describe('Profile Controller', () => {
       userModel.searchUsers = vi.fn().mockResolvedValue([
         { id: 'user-456', displayName: 'Ann Lee' },
       ])
-      followModel.isFollowing.mockResolvedValue(true)
+      followModel.followingIdsFor.mockResolvedValue(new Set(['user-456']))
 
       await searchUsers(req, res)
 
       expect(userModel.searchUsers).toHaveBeenCalledWith('ann', { take: 20, excludeId: 'user-123' })
+      expect(followModel.followingIdsFor).toHaveBeenCalledWith('user-123', ['user-456'])
       expect(res.json).toHaveBeenCalledWith({
         users: [{ id: 'user-456', displayName: 'Ann Lee', isFollowing: true }],
       })

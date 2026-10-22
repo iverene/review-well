@@ -53,10 +53,15 @@ describe('FindFriends', () => {
     ))
   })
 
-  it('shows a follow action per user', async () => {
+  it("shows each user's known follow state without re-fetching it", async () => {
     render(<MemoryRouter><FindFriends /></MemoryRouter>)
     await screen.findByText('Ann Lee')
-    expect(screen.getAllByRole('button', { name: 'Follow' })).toHaveLength(2)
+    expect(screen.getAllByRole('button', { name: 'Follow' })).toHaveLength(1)
+    expect(screen.getByRole('button', { name: 'Following' })).toHaveAttribute('aria-pressed', 'true')
+    expect(mockGet).not.toHaveBeenCalledWith(
+      expect.stringContaining('/api/social/users/'),
+      expect.anything()
+    )
   })
 
   it('clears the query and resets the list with the X button', async () => {
