@@ -1,4 +1,8 @@
 import { lazy, Suspense, useState } from 'react'
+import { FileUp } from 'lucide-react'
+
+import Button from './common/Button'
+import EmptyState from './common/EmptyState'
 
 // pdf.js is ~470 kB minified, so the viewer loads on demand instead of
 // riding in the Reviewer route chunk. The parked study modes stay out of the
@@ -98,12 +102,25 @@ const StudyTabs = ({
       {tab === 'source' && (
         <div role="tabpanel" aria-label="Source">
           {!hasFile && isOwner && (
-            <p data-testid="study-upload-banner">
-              Please upload the source file to enable study modes
-            </p>
+            <div data-testid="study-upload-banner">
+              <EmptyState
+                title="Add your source file"
+                action={(
+                  <Button to={`/create?edit=${reviewer?.id}`} variant="primary">
+                    <FileUp className="h-4 w-4" aria-hidden="true" /> Upload a PDF or PPTX
+                  </Button>
+                )}
+              >
+                Upload your slides so you and your classmates can study from them here.
+              </EmptyState>
+            </div>
           )}
           {!hasFile && !isOwner && (
-            <p data-testid="study-no-source">No source file yet.</p>
+            <div data-testid="study-no-source">
+              <EmptyState title="No source file yet">
+                The creator hasn’t uploaded slides for this reviewer. Check back soon.
+              </EmptyState>
+            </div>
           )}
           {fileType === 'pdf' && (
             <Suspense fallback={<PdfViewerFallback />}>
@@ -121,9 +138,9 @@ const StudyTabs = ({
             />
           )}
           {hasFile && !fileType && (
-            <a href={fileUrl} data-testid="study-source-link">
+            <Button href={fileUrl} data-testid="study-source-link" target="_blank" rel="noopener noreferrer">
               Open source file
-            </a>
+            </Button>
           )}
         </div>
       )}

@@ -105,9 +105,9 @@ describe('Reviewer', () => {
       return Promise.resolve({ data: { reviewer: { ...mockReviewer, fileUrl: null } } })
     })
     renderReviewer()
-    expect(await screen.findByTestId('study-upload-banner')).toHaveTextContent(
-      'Please upload the source file to enable study modes'
-    )
+    const banner = await screen.findByTestId('study-upload-banner')
+    expect(banner).toHaveTextContent('Add your source file')
+    expect(screen.getByRole('link', { name: /Upload a PDF or PPTX/ })).toHaveAttribute('href', '/create?edit=r1')
   })
 
   it('shows guests the source with no sign-in nudge and zero writes', async () => {
@@ -147,9 +147,8 @@ describe('Reviewer', () => {
     renderReviewer()
     await screen.findByLabelText('Study hub')
     fireEvent.click(screen.getByRole('button', { name: 'Share' }))
-    const dialog = await screen.findByRole('dialog', { name: 'Share This Reviewer' })
-    expect(dialog).toBeInTheDocument()
-    fireEvent.click(dialog.parentElement)
+    expect(await screen.findByRole('dialog', { name: 'Share This Reviewer' })).toBeInTheDocument()
+    fireEvent.mouseDown(screen.getByTestId('modal-backdrop'))
     expect(screen.queryByRole('dialog', { name: 'Share This Reviewer' })).toBeNull()
   })
 
@@ -195,16 +194,42 @@ describe('Reviewer', () => {
     expect(screen.queryByRole('heading', { name: 'Reviewer', level: 1 })).toBeNull()
   })
 
-  it('opens study details from the more menu and closes on backdrop click', async () => {
+  it('shows study details inline instead of behind a dialog', async () => {
     renderReviewer()
     await screen.findByLabelText('Study hub')
+    const details = screen.getByLabelText('Study details')
+    expect(details).toHaveTextContent('Iverene Grace Causapin')
+    expect(details).toHaveTextContent('Midterm')
+    expect(details).toHaveTextContent('Fall 2026')
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('gives owners an edit entry point, including in the mobile menu', async () => {
+    renderReviewer()
+    await screen.findByLabelText('Study hub')
+    expect(screen.getByRole('link', { name: 'Edit' })).toHaveAttribute('href', '/create?edit=r1')
     fireEvent.click(screen.getByRole('button', { name: 'More actions' }))
-    fireEvent.click(screen.getByRole('menuitem', { name: 'View Details' }))
-    const dialog = await screen.findByRole('dialog', { name: 'Study details' })
-    expect(dialog).toBeInTheDocument()
-    expect(dialog).toHaveTextContent('Iverene Grace Causapin')
-    fireEvent.click(document.querySelector('.fixed.inset-0.z-40'))
-    expect(screen.queryByRole('dialog', { name: 'Study details' })).toBeNull()
+    expect(screen.getByRole('menuitem', { name: 'Edit' })).toHaveAttribute('href', '/create?edit=r1')
+    expect(screen.getByRole('menuitem', { name: 'Delete' })).toBeInTheDocument()
+  })
+
+  it('closes the share dialog with Escape', async () => {
+    renderReviewer()
+    await screen.findByLabelText('Study hub')
+    fireEvent.click(screen.getByRole('button', { name: 'Share' }))
+    await screen.findByRole('dialog', { name: 'Share This Reviewer' })
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(screen.queryByRole('dialog', { name: 'Share This Reviewer' })).toBeNull()
+  })
+
+  it('sends guests to sign in, then back, when they try to save', async () => {
+    authState.user = null
+    authState.isAuthenticated = false
+    renderReviewer()
+    await screen.findByLabelText('Study hub')
+    const save = screen.getByRole('link', { name: 'Sign in to save this reviewer' })
+    expect(save.getAttribute('href')).toMatch(/^\/login\?returnTo=/)
+    expect(mockPost).not.toHaveBeenCalled()
   })
   it('purges ghost entries from Recently Viewed on 404', async () => {
     window.localStorage.setItem('review-well-recent-reviewers:user-1', JSON.stringify([{ id: 'r1' }]))

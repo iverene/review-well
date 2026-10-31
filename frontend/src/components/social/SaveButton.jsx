@@ -5,6 +5,7 @@ import { Bookmark } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { getApiErrorMessage } from '../../utils/apiError'
+import { buttonClasses } from '../common/Button'
 import useQueryCache from '../../stores/queryCache'
 
 const SaveButton = ({ reviewerId, initialSaved, initialSaveCount = 0 }) => {
@@ -79,28 +80,41 @@ const SaveButton = ({ reviewerId, initialSaved, initialSaveCount = 0 }) => {
     }
   }
 
-  return (
-    <div>
-      <button
-        onClick={handleSave}
-        disabled={!isAuthenticated || loading}
-        aria-pressed={saved}
-        aria-label={saved ? 'Remove bookmark' : 'Bookmark this reviewer'}
-        className={`group flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-medium tracking-wide shadow-sm transition-all duration-200 active:scale-95 ${
-          saved
-            ? 'border-accent/40 bg-blush/80 text-ink shadow-blush/20 hover:bg-blush'
-            : 'border-stone/60 bg-paper text-ink hover:border-stone hover:bg-stone/40'
-        } disabled:cursor-not-allowed disabled:opacity-40`}
+  const count = <span className="font-mono text-xs">{saveCount}</span>
+
+  // Guests can look but not save: send them to sign in and straight back.
+  if (!isAuthenticated) {
+    const returnTo = encodeURIComponent(`${window.location.pathname}${window.location.search}`)
+    return (
+      <a
+        href={`/login?returnTo=${returnTo}`}
+        aria-label="Sign in to save this reviewer"
+        title="Sign in to save this reviewer"
+        className={buttonClasses()}
       >
-        <Bookmark
-          className={`h-5 w-5 transition-transform duration-200 group-hover:scale-110 ${saved ? 'text-accent' : 'text-stone'}`}
-          aria-hidden="true"
-          fill={saved ? 'currentColor' : 'none'}
-          strokeWidth={2}
-        />
-        <span className="font-semibold">{saveCount}</span>
-      </button>
-    </div>
+        <Bookmark className="h-4 w-4" aria-hidden="true" strokeWidth={2.2} />
+        {count}
+      </a>
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleSave}
+      disabled={loading}
+      aria-pressed={saved}
+      aria-label={saved ? 'Remove bookmark' : 'Bookmark this reviewer'}
+      className={buttonClasses({ className: saved ? 'border-accent/50 bg-blush hover:bg-blush' : '' })}
+    >
+      <Bookmark
+        className={`h-4 w-4 transition-transform duration-150 ${saved ? 'scale-110 text-accent' : ''}`}
+        aria-hidden="true"
+        fill={saved ? 'currentColor' : 'none'}
+        strokeWidth={2.2}
+      />
+      {count}
+    </button>
   )
 }
 

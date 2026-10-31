@@ -5,6 +5,7 @@ import { UserCheck, UserPlus } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { getApiErrorMessage } from '../../utils/apiError'
+import { buttonClasses } from '../common/Button'
 import useQueryCache from '../../stores/queryCache'
 
 const FollowButton = ({ userId, initialFollowing, initialFollowerCount = 0, onToggle }) => {
@@ -77,25 +78,20 @@ const FollowButton = ({ userId, initialFollowing, initialFollowerCount = 0, onTo
   }
 
   return (
-    <div>
-      <button
-        onClick={handleFollow}
-        disabled={!isAuthenticated || loading}
-        aria-pressed={following}
-        className={`group inline-flex shrink-0 items-center gap-2 rounded-full border-2 px-4 py-2 text-sm font-extrabold transition-all duration-200 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 ${
-          following
-            ? 'border-stone bg-paper text-ink hover:border-blush hover:bg-blush/40'
-            : 'border-accent bg-accent text-paper shadow-sm hover:-translate-y-0.5'
-        }`}
-      >
-        {following ? (
-          <UserCheck className="h-4 w-4" aria-hidden="true" />
-        ) : (
-          <UserPlus className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" aria-hidden="true" />
-        )}
-        {loading ? 'Saving…' : following ? 'Following' : 'Follow'}
-      </button>
-    </div>
+    <button
+      type="button"
+      onClick={handleFollow}
+      disabled={!isAuthenticated || loading}
+      aria-pressed={following}
+      className={buttonClasses({ variant: following ? 'secondary' : 'primary' })}
+    >
+      {following ? (
+        <UserCheck className="h-4 w-4" aria-hidden="true" />
+      ) : (
+        <UserPlus className="h-4 w-4" aria-hidden="true" />
+      )}
+      {loading ? 'Saving…' : following ? 'Following' : 'Follow'}
+    </button>
   )
 }
 

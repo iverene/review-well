@@ -81,7 +81,7 @@ const Modal = ({
 
   return createPortal(
     <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center sm:p-4">
-      <div className="absolute inset-0 bg-ink/35" aria-hidden="true" onMouseDown={() => onCloseRef.current?.()} />
+      <div className="absolute inset-0 bg-ink/35" aria-hidden="true" data-testid="modal-backdrop" onMouseDown={() => onCloseRef.current?.()} />
       <div
         ref={panelRef}
         role={role}
