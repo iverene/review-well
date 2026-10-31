@@ -69,8 +69,21 @@ describe('NotificationItem', () => {
   it('marks an unread notification as read on row click', () => {
     const onMarkRead = vi.fn()
     renderItem({ actionType: 'follow', reviewer: null }, onMarkRead)
-    fireEvent.click(screen.getByRole('button', { name: /Ann Lee started following you/ }))
+    fireEvent.click(screen.getByRole('article', { name: /Ann Lee started following you, unread/ }))
     expect(onMarkRead).toHaveBeenCalledWith('n1')
+  })
+
+  it('marks it read when opened from the keyboard-reachable link', () => {
+    const onMarkRead = vi.fn()
+    renderItem({ actionType: 'save' }, onMarkRead)
+    fireEvent.click(screen.getByRole('link', { name: 'Calculus' }))
+    expect(onMarkRead).toHaveBeenCalledWith('n1')
+  })
+
+  it('does not nest its links and buttons inside a button', () => {
+    renderItem({ actionType: 'save' })
+    expect(screen.queryByRole('button', { name: /Ann Lee saved your reviewer/ })).toBeNull()
+    expect(screen.getByText('New')).toBeInTheDocument()
   })
 
   it('shows a follow button for follow notifications', () => {
