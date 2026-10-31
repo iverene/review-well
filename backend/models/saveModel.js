@@ -29,11 +29,25 @@ const countByReviewer = async (reviewerId) => {
   }))
 }
 
+// A save outlives the reviewer's visibility: once the author makes it
+// private (or it is a draft), it must drop out of other users' saved lists
+// so its title and course never leak. The saver's own reviewers always stay.
+const visibleSavesWhere = (userId) => ({
+  userId,
+  reviewer: {
+    OR: [
+      { visibility: { not: 'private' }, isDraft: false },
+      { authorId: userId },
+    ],
+  },
+})
+
 const findByUser = async (userId, { skip = 0, take = 20 } = {}) => {
   return remember(`social:saved:${userId}:${skip}:${take}`, TTL_60_SECONDS, async () => {
+    const where = visibleSavesWhere(userId)
     const [saves, total] = await Promise.all([
       prisma.save.findMany({
-        where: { userId },
+        where,
         include: {
           reviewer: {
             select: {
@@ -46,10 +60,13 @@ const findByUser = async (userId, { skip = 0, take = 20 } = {}) => {
             },
           },
         },
+        // Saves carry no timestamp; without an explicit order Postgres may
+        // return rows differently per page, duplicating or skipping items.
+        orderBy: [{ reviewer: { createdAt: 'desc' } }, { reviewerId: 'asc' }],
         skip,
         take,
       }),
-      prisma.save.count({ where: { userId } }),
+      prisma.save.count({ where }),
     ])
 
     return { saves, total }

@@ -30,7 +30,7 @@ describe('Save Model', () => {
 
     expect(mockPrismaInstance.save.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { userId: 'user-123' },
+        where: expect.objectContaining({ userId: 'user-123' }),
         include: expect.objectContaining({
           reviewer: expect.objectContaining({
             select: expect.objectContaining({
@@ -55,9 +55,9 @@ describe('Save Model', () => {
     })
 
     expect(mockPrismaInstance.save.findMany).toHaveBeenCalledWith(
-      expect.objectContaining({ where: { userId: 'user-123' }, skip: 20, take: 20 })
+      expect.objectContaining({ where: expect.objectContaining({ userId: 'user-123' }), skip: 20, take: 20 })
     )
-    expect(mockPrismaInstance.save.count).toHaveBeenCalledWith({ where: { userId: 'user-123' } })
+    expect(mockPrismaInstance.save.count).toHaveBeenCalledWith({ where: expect.objectContaining({ userId: 'user-123' }) })
   })
 
   it('should cache saved reviewers per page', async () => {
@@ -98,5 +98,39 @@ describe('Save Model', () => {
 
     expect(saved).toEqual(new Set())
     expect(mockPrismaInstance.save.findMany).not.toHaveBeenCalled()
+  })
+
+  it('hides saved reviewers that became private or draft, unless the saver owns them', async () => {
+    mockPrismaInstance.save.findMany.mockResolvedValue([])
+    mockPrismaInstance.save.count.mockResolvedValue(0)
+
+    await saveModel.findByUser('user-123')
+
+    const visibleWhere = {
+      userId: 'user-123',
+      reviewer: {
+        OR: [
+          { visibility: { not: 'private' }, isDraft: false },
+          { authorId: 'user-123' },
+        ],
+      },
+    }
+    expect(mockPrismaInstance.save.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: visibleWhere })
+    )
+    expect(mockPrismaInstance.save.count).toHaveBeenCalledWith({ where: visibleWhere })
+  })
+
+  it('pages saved reviewers in a stable order', async () => {
+    mockPrismaInstance.save.findMany.mockResolvedValue([])
+    mockPrismaInstance.save.count.mockResolvedValue(0)
+
+    await saveModel.findByUser('user-123', { skip: 20, take: 20 })
+
+    expect(mockPrismaInstance.save.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        orderBy: [{ reviewer: { createdAt: 'desc' } }, { reviewerId: 'asc' }],
+      })
+    )
   })
 })
