@@ -33,7 +33,15 @@ const saveReviewer = async (req, res) => {
       return res.status(400).json({ error: 'Already saved' })
     }
 
-    await saveModel.create(userId, reviewerId)
+    try {
+      await saveModel.create(userId, reviewerId)
+    } catch (createError) {
+      // Lost a race with another save request for the same pair.
+      if (createError?.code === 'P2002') {
+        return res.status(400).json({ error: 'Already saved' })
+      }
+      throw createError
+    }
     await notificationModel.createSaveNotification(reviewer.authorId, userId, reviewerId)
     notifyEvent({ actionType: 'save', actorId: userId, recipientIds: [reviewer.authorId], reviewerId })
     delPrefix('social:')

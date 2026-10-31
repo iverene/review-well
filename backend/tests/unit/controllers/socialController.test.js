@@ -25,6 +25,8 @@ vi.mock('../../../models/followModel.js', () => ({
   countFollowing: vi.fn(),
   isFollowing: vi.fn(),
   followingIdsFor: vi.fn(),
+  getFollowers: vi.fn(),
+  getFollowing: vi.fn(),
 }))
 vi.mock('../../../models/saveModel.js', () => ({
   findByUserAndReviewer: vi.fn(),
@@ -55,7 +57,6 @@ vi.mock('../../../models/aiQuotaModel.js', () => ({
 import {
   saveReviewer,
   unsaveReviewer,
-  getSaveStatus,
   getSavedReviewers,
   getFollowers,
   getFollowing,
@@ -213,13 +214,59 @@ describe('Social Controller', () => {
     })
   })
 
+  describe('saveReviewer race', () => {
+    it('answers a lost double-save race with 400, not 500', async () => {
+      const req = createMockRequest({ user: { id: 'user-123' }, params: { reviewerId: 'reviewer-1' } })
+      const res = createMockResponse()
+
+      reviewerModel.findById.mockResolvedValue({ id: 'reviewer-1', authorId: 'author-1', visibility: 'public', isDraft: false })
+      saveModel.findByUserAndReviewer.mockResolvedValue(null)
+      saveModel.create.mockRejectedValue(Object.assign(new Error('Unique constraint failed'), { code: 'P2002' }))
+
+      await saveReviewer(req, res)
+
+      expect(res.status).toHaveBeenCalledWith(400)
+      expect(res.json).toHaveBeenCalledWith({ error: 'Already saved' })
+      expect(notificationModel.createSaveNotification).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('getFollowStatus', () => {
+    it('returns counts and the viewer follow state', async () => {
+      const req = createMockRequest({ user: { id: 'user-123' }, params: { userId: 'user-456' } })
+      const res = createMockResponse()
+
+      followModel.countFollowers.mockResolvedValue(10)
+      followModel.countFollowing.mockResolvedValue(3)
+      followModel.isFollowing.mockResolvedValue(true)
+
+      await getFollowStatus(req, res)
+
+      expect(followModel.isFollowing).toHaveBeenCalledWith('user-123', 'user-456')
+      expect(res.json).toHaveBeenCalledWith({ following: true, followerCount: 10, followingCount: 3 })
+    })
+
+    it('skips the follow lookup for guests', async () => {
+      const req = createMockRequest({ user: null, params: { userId: 'user-456' } })
+      const res = createMockResponse()
+
+      followModel.countFollowers.mockResolvedValue(1)
+      followModel.countFollowing.mockResolvedValue(2)
+
+      await getFollowStatus(req, res)
+
+      expect(followModel.isFollowing).not.toHaveBeenCalled()
+      expect(res.json).toHaveBeenCalledWith({ following: false, followerCount: 1, followingCount: 2 })
+    })
+  })
+
   describe('getFollowers', () => {
     it('should return mapped follower users with batch follow state', async () => {
       const req = createMockRequest({ user: { id: 'user-123' }, params: { userId: 'user-1' } })
       const res = createMockResponse()
       const follower = { id: 'user-2', displayName: 'Friend' }
 
-      followModel.getFollowers = vi.fn().mockResolvedValue([{ follower }, { follower: null }])
+      followModel.getFollowers.mockResolvedValue([{ follower }, { follower: null }])
       followModel.followingIdsFor.mockResolvedValue(new Set(['user-2']))
 
       await getFollowers(req, res)
@@ -237,7 +284,7 @@ describe('Social Controller', () => {
       const res = createMockResponse()
       const following = { id: 'user-3', displayName: 'Mentor' }
 
-      followModel.getFollowing = vi.fn().mockResolvedValue([{ following }])
+      followModel.getFollowing.mockResolvedValue([{ following }])
       followModel.followingIdsFor.mockResolvedValue(new Set())
 
       await getFollowing(req, res)
