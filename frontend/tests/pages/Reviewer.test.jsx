@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { Link, MemoryRouter, Route, Routes } from 'react-router-dom'
 import axios from 'axios'
 
 import Reviewer from '../../src/pages/Reviewer'
@@ -284,5 +284,52 @@ describe('Reviewer', () => {
     expect(mockDelete).not.toHaveBeenCalled()
     expect(await screen.findByLabelText('Study hub')).toBeInTheDocument()
   })
-})
 
+  it('keeps the source viewer after a visibility change', async () => {
+    // The update endpoint returns the bare row: no fileUrl, cards, or quota.
+    const { fileUrl, cards, prompts, quota, _count, ...row } = mockReviewer
+    mockPut.mockResolvedValue({ data: { reviewer: { ...row, visibility: 'unlisted', isDraft: false } } })
+    renderReviewer()
+    await screen.findByTestId('study-source-pdf')
+    fireEvent.click(screen.getByRole('button', { name: 'Share' }))
+    fireEvent.click(await screen.findByRole('radio', { name: 'Unlisted' }))
+    expect(await screen.findByRole('radio', { name: 'Unlisted', checked: true })).toBeInTheDocument()
+    expect(screen.getByTestId('study-source-pdf')).toBeInTheDocument()
+  })
+
+  it('starts fresh when navigating straight to another reviewer', async () => {
+    mockGet.mockImplementation((url) => {
+      if (String(url).includes('/save')) return Promise.resolve({ data: { saved: false, saveCount: 0 } })
+      if (String(url).endsWith('/r2')) {
+        return Promise.resolve({ data: { reviewer: { ...mockReviewer, id: 'r2', title: 'Biology' } } })
+      }
+      return Promise.resolve({ data: { reviewer: mockReviewer } })
+    })
+    render(
+      <MemoryRouter initialEntries={['/reviewer/r1']}>
+        <Link to="/reviewer/r2">Next reviewer</Link>
+        <Routes>
+          <Route path="/reviewer/:id" element={<Reviewer />} />
+        </Routes>
+      </MemoryRouter>
+    )
+    await screen.findByRole('heading', { name: 'Calculus' })
+    fireEvent.click(screen.getByRole('button', { name: 'Share' }))
+    expect(await screen.findByRole('dialog', { name: 'Share This Reviewer' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('link', { name: 'Next reviewer' }))
+
+    expect(await screen.findByRole('heading', { name: 'Biology' })).toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: 'Share This Reviewer' })).toBeNull()
+  })
+
+  it('stores only a light preview in Recently Viewed', async () => {
+    renderReviewer()
+    await screen.findByLabelText('Study hub')
+    const [entry] = JSON.parse(window.localStorage.getItem('review-well-recent-reviewers:user-1'))
+    expect(entry).toMatchObject({ id: 'r1', title: 'Calculus', courseCode: 'MATH 101' })
+    expect(entry).not.toHaveProperty('fileUrl')
+    expect(entry).not.toHaveProperty('cards')
+    expect(entry).not.toHaveProperty('quota')
+  })
+})

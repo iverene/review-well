@@ -33,6 +33,18 @@ import { ReviewerSkeleton } from '../components/common/Skeleton'
 
 const recentReviewersKey = (userId) => `review-well-recent-reviewers:${userId}`
 
+// Recently Viewed cards need only these fields. Storing the whole detail
+// payload would persist cards, prompts, quota, and short-lived signed file
+// URLs in localStorage on every visit.
+const recentPreview = (reviewer) => ({
+  id: reviewer.id,
+  title: reviewer.title,
+  courseCode: reviewer.courseCode,
+  courseDescription: reviewer.courseDescription,
+  user: reviewer.user ? { displayName: reviewer.user.displayName } : undefined,
+  _count: { saves: reviewer._count?.saves || 0 },
+})
+
 const StudyDetailsList = ({ reviewer }) => (
   <dl className="space-y-4 text-sm">
     {reviewer.user?.displayName && <div><dt className="font-extrabold text-muted">Creator</dt><dd className="mt-1 text-ink">{reviewer.user.displayName}</dd></div>}
@@ -53,9 +65,6 @@ const Reviewer = () => {
   const navigate = useNavigate()
   const { user, isAuthenticated } = useAuth()
   const toast = useToast()
-  const [reviewer, setReviewer] = useState(null)
-  const [cards, setCards] = useState([])
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [visSaving, setVisSaving] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
@@ -65,8 +74,6 @@ const Reviewer = () => {
   const [moreOpen, setMoreOpen] = useState(false)
   const [detailsOpen, setDetailsOpen] = useState(false)
   const copiedTimerRef = useRef(null)
-
-  useEffect(() => () => clearTimeout(copiedTimerRef.current), [])
 
   const guest = !isAuthenticated
   const loginReturnTo = `/reviewer/${id}`
@@ -83,9 +90,11 @@ const Reviewer = () => {
     enabled: !!id,
   })
 
-  useEffect(() => {
-    setLoading(detailLoading)
-  }, [detailLoading])
+  // Seeded from the cache so a revisited reviewer renders immediately.
+  const [reviewer, setReviewer] = useState(() => detailData?.reviewer || null)
+  const [cards, setCards] = useState(() => (Array.isArray(detailData?.reviewer?.cards) ? detailData.reviewer.cards : []))
+
+  useEffect(() => () => clearTimeout(copiedTimerRef.current), [])
 
   useEffect(() => {
     const loadedReviewer = detailData?.reviewer
@@ -100,7 +109,7 @@ const Reviewer = () => {
         const parsed = JSON.parse(window.localStorage.getItem(key) || '[]')
         const recent = Array.isArray(parsed) ? parsed : []
         const withoutCurrent = recent.filter((item) => item?.id !== loadedReviewer.id)
-        window.localStorage.setItem(key, JSON.stringify([loadedReviewer, ...withoutCurrent].slice(0, 5)))
+        window.localStorage.setItem(key, JSON.stringify([recentPreview(loadedReviewer), ...withoutCurrent].slice(0, 5)))
       } catch {
         // Corrupt rail — leave storage alone and keep the loaded reviewer.
       }
@@ -118,7 +127,7 @@ const Reviewer = () => {
     setError(getApiErrorMessage(detailError, 'Unable to load this reviewer.'))
   }, [detailError, id])
 
-  if (loading) return <ReviewerSkeleton />
+  if (!reviewer && !error && (detailLoading || detailData?.reviewer)) return <ReviewerSkeleton />
 
   if (error || !reviewer) {
     return <div className="mx-auto max-w-xl py-16"><ErrorAlert>{error || 'Reviewer not found'}</ErrorAlert><Link to="/" className="mt-5 inline-flex items-center gap-2 font-extrabold text-muted hover:text-ink"><ArrowLeft className="h-4 w-4" /> Back home</Link></div>
@@ -134,7 +143,9 @@ const Reviewer = () => {
       // Sharing publishes the reviewer so it can actually appear publicly
       const payload = visibility === 'private' ? { visibility } : { visibility, isDraft: false }
       const response = await axios.put(`/api/reviewers/${id}`, payload, { withCredentials: true })
-      setReviewer(response.data?.reviewer || { ...reviewer, ...payload })
+      // The update returns the bare row; keep the hub enrichment (fileUrl,
+      // cards, quota, save count) the detail endpoint added.
+      setReviewer((previous) => ({ ...previous, ...payload, ...(response.data?.reviewer || {}) }))
       useQueryCache.getState().invalidate('GET /api/reviewers')
       toast.success('Visibility Updated')
     } catch (saveError) {
@@ -525,4 +536,11 @@ const Reviewer = () => {
   )
 }
 
-export default Reviewer
+// Remount per reviewer id so dialogs, cards, and loading state never carry
+// over when navigating straight from one reviewer to another.
+const ReviewerRoute = () => {
+  const { id } = useParams()
+  return <Reviewer key={id} />
+}
+
+export default ReviewerRoute
