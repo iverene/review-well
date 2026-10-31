@@ -1,8 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import * as pdfjsLib from 'pdfjs-dist'
 
 import PdfViewer, { currentPageFromTops } from '../../src/components/PdfViewer'
-import * as pdfjsLib from 'pdfjs-dist'
 import useQueryCache from '../../src/stores/queryCache'
 
 vi.mock('pdfjs-dist', () => ({

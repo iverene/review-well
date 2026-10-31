@@ -83,7 +83,7 @@ const updateProfile = async (req, res) => {
     if (major !== undefined) updates.major = major
     if (yearLevel !== undefined) updates.yearLevel = yearLevel
 
-    const user = await userModel.update(userId, updates)
+    await userModel.update(userId, updates)
     delPrefix('profile:')
     del(`users:row:${userId}`)
     const profile = await userModel.getProfile(userId)

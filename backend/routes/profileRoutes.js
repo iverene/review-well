@@ -1,4 +1,5 @@
 import express from 'express'
+
 import { getProfile, updateProfile, updateAvatar, getMyProfile, searchUsers, getAnnouncement, dismissAnnouncement } from '../controllers/profileController.js'
 import { requireAuth, optionalAuth } from '../middleware/auth.js'
 import { uploadAvatar, handleUploadError } from '../middleware/upload.js'

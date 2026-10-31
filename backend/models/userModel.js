@@ -1,5 +1,6 @@
-import { prisma } from '../config/database.js'
 import { Prisma } from '@prisma/client'
+
+import { prisma } from '../config/database.js'
 import { TTL_30_SECONDS, TTL_60_SECONDS, del, delPrefix, remember } from '../utils/cache.js'
 
 const findById = async (id) => {

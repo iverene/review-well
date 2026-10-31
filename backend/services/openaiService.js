@@ -1,4 +1,5 @@
 import OpenAI from 'openai'
+
 import { buildExtractionPrompt, buildDeckPrompt, buildGradePrompt } from './promptService.js'
 
 const MAX_DECK_CARDS = 40

@@ -7,6 +7,9 @@ vi.mock('../../../models/userModel.js', () => ({
   findByEmail: vi.fn(),
   create: vi.fn(),
   update: vi.fn(),
+  searchUsers: vi.fn(),
+  getAnnouncementSeenId: vi.fn(),
+  setAnnouncementSeenId: vi.fn(),
 }))
 vi.mock('../../../models/reviewerModel.js', () => ({
   findPublic: vi.fn(),
@@ -134,7 +137,7 @@ describe('Profile Controller', () => {
       const req = createMockRequest({ user: { id: 'user-123' }, query: { q: 'ann' } })
       const res = createMockResponse()
 
-      userModel.searchUsers = vi.fn().mockResolvedValue([
+      userModel.searchUsers.mockResolvedValue([
         { id: 'user-456', displayName: 'Ann Lee' },
       ])
       followModel.followingIdsFor.mockResolvedValue(new Set(['user-456']))
@@ -152,7 +155,7 @@ describe('Profile Controller', () => {
       const req = createMockRequest({ user: { id: 'user-123' }, query: {} })
       const res = createMockResponse()
 
-      userModel.searchUsers = vi.fn().mockResolvedValue([])
+      userModel.searchUsers.mockResolvedValue([])
 
       await searchUsers(req, res)
 
@@ -164,7 +167,7 @@ describe('Profile Controller', () => {
       const req = createMockRequest({ user: { id: 'user-123' }, query: { q: ['ann', 'x'] } })
       const res = createMockResponse()
 
-      userModel.searchUsers = vi.fn().mockResolvedValue([])
+      userModel.searchUsers.mockResolvedValue([])
 
       await searchUsers(req, res)
 
@@ -309,7 +312,7 @@ describe('Profile Controller', () => {
       const req = createMockRequest({ user: { id: 'user-123' } })
       const res = createMockResponse()
 
-      userModel.getAnnouncementSeenId = vi.fn().mockResolvedValue('v1')
+      userModel.getAnnouncementSeenId.mockResolvedValue('v1')
 
       await getAnnouncement(req, res)
 
@@ -323,7 +326,7 @@ describe('Profile Controller', () => {
       })
       const res = createMockResponse()
 
-      userModel.setAnnouncementSeenId = vi.fn().mockResolvedValue({ announcementSeenId: 'v2' })
+      userModel.setAnnouncementSeenId.mockResolvedValue({ announcementSeenId: 'v2' })
 
       await dismissAnnouncement(req, res)
 

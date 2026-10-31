@@ -41,7 +41,7 @@ const notifyFollowersOfNewReviewer = async (authorId, reviewerId) => {
 
 const getPublicReviewers = async (req, res) => {
   try {
-    const { page, limit, skip, take } = parsePagination(req.query)
+    const { page, skip, take } = parsePagination(req.query)
     const { search = '', examType = '', semester = '' } = req.query
 
     const result = await reviewerModel.findPublic({ skip, take, search, examType, semester })
@@ -64,7 +64,7 @@ const getPublicReviewers = async (req, res) => {
 const getAuthorReviewers = async (req, res) => {
   try {
     const { userId } = req.params
-    const { page, limit, skip, take } = parsePagination(req.query, { defaultLimit: 50 })
+    const { page, skip, take } = parsePagination(req.query, { defaultLimit: 50 })
 
     const result = await reviewerModel.findPublicByAuthor(userId, { skip, take })
 
@@ -115,7 +115,7 @@ const getReadableIds = async (req, res) => {
 
 const getMyReviewers = async (req, res) => {
   try {
-    const { page, limit, skip, take } = parsePagination(req.query, { defaultLimit: 50 })
+    const { page, skip, take } = parsePagination(req.query, { defaultLimit: 50 })
 
     const result = await reviewerModel.findByAuthor(req.user.id, { skip, take })
 
@@ -152,10 +152,6 @@ const getReviewerById = async (req, res) => {
     // owner-only too (404, not 403, to avoid confirming existence).
     if (reviewer.isDraft && reviewer.authorId !== req.user?.id) {
       return res.status(404).json({ error: 'Reviewer not found' })
-    }
-
-    if (reviewer.visibility === 'unlisted' && reviewer.authorId !== req.user?.id) {
-      // Unlisted reviewers are accessible via direct link but not listed
     }
 
     // Study-hub enrichment (strictly additive — existing fields untouched):

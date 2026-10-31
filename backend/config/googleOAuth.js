@@ -1,6 +1,8 @@
 import passport from 'passport'
 import GoogleStrategy from 'passport-google-oauth20'
+
 import * as userModel from '../models/userModel.js'
+
 import { getGoogleCallbackUrl } from './urls.js'
 
 const verifyGoogleUser = async (accessToken, refreshToken, profile, done) => {
