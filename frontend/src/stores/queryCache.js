@@ -15,29 +15,36 @@ const cacheKey = (method, url, params = {}) => {
 // sessionStorage survives reloads in the same tab but dies with it — no
 // cross-day staleness, no shared-device leakage. Entries older than the TTL
 // are dropped on restore; the hooks revalidate whatever survives.
+// The payload records its owner (user id, 'guest', or null) so a reboot can
+// tell whether the restored entries belong to whoever the session resolves to.
 const PERSIST_KEY = 'review-well-query-cache'
-const PERSIST_VERSION = 1
+const PERSIST_VERSION = 2
 const PERSIST_TTL_MS = 30 * 60 * 1000
 const PERSIST_MAX_BYTES = 2 * 1024 * 1024
 
-const loadPersistedEntries = () => {
+const loadPersisted = () => {
   try {
     const raw = window.sessionStorage.getItem(PERSIST_KEY)
-    if (!raw) return {}
+    if (!raw) return { owner: null, entries: {} }
     const parsed = JSON.parse(raw)
-    if (parsed?.version !== PERSIST_VERSION || !parsed?.entries) return {}
+    if (parsed?.version !== PERSIST_VERSION || !parsed?.entries) return { owner: null, entries: {} }
     const now = Date.now()
-    return Object.fromEntries(
-      Object.entries(parsed.entries).filter(([, entry]) => entry && now - entry.fetchedAt < PERSIST_TTL_MS)
-    )
+    return {
+      owner: typeof parsed.owner === 'string' ? parsed.owner : null,
+      entries: Object.fromEntries(
+        Object.entries(parsed.entries).filter(([, entry]) => entry && now - entry.fetchedAt < PERSIST_TTL_MS)
+      ),
+    }
   } catch {
-    return {}
+    return { owner: null, entries: {} }
   }
 }
 
-const persistEntries = (entries) => {
+const loadPersistedEntries = () => loadPersisted().entries
+
+const persistEntries = (entries, owner) => {
   try {
-    const payload = JSON.stringify({ version: PERSIST_VERSION, entries })
+    const payload = JSON.stringify({ version: PERSIST_VERSION, owner, entries })
     if (payload.length > PERSIST_MAX_BYTES) return
     window.sessionStorage.setItem(PERSIST_KEY, payload)
   } catch {
@@ -52,8 +59,11 @@ const persistEntries = (entries) => {
 const inflight = new Map()
 let generation = 0
 
+const restored = loadPersisted()
+
 const useQueryCache = create((set, get) => ({
-  entries: loadPersistedEntries(),
+  entries: restored.entries,
+  owner: restored.owner,
 
   getEntry: (key) => get().entries[key] || null,
 
@@ -61,7 +71,7 @@ const useQueryCache = create((set, get) => ({
     set((state) => ({
       entries: { ...state.entries, [key]: { data, fetchedAt: Date.now() } },
     }))
-    persistEntries(get().entries)
+    persistEntries(get().entries, get().owner)
   },
 
   invalidate: (prefix) => {
@@ -70,7 +80,16 @@ const useQueryCache = create((set, get) => ({
         Object.entries(state.entries).filter(([key]) => !key.startsWith(prefix))
       ),
     }))
-    persistEntries(get().entries)
+    persistEntries(get().entries, get().owner)
+  },
+
+  // Hand the cache to an identity (user id, 'guest', or null). Entries are
+  // kept only when they already belong to it — e.g. the same user after a
+  // tab reload — and cleared for anyone else, so data never crosses users.
+  claim: (owner) => {
+    if (get().owner === owner) return
+    get().reset()
+    set({ owner })
   },
 
   reset: () => {
@@ -81,7 +100,7 @@ const useQueryCache = create((set, get) => ({
     } catch {
       // Storage already unavailable — memory entries clear below regardless.
     }
-    set({ entries: {} })
+    set({ entries: {}, owner: null })
   },
 }))
 

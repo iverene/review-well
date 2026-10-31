@@ -31,10 +31,8 @@ const useAuthStore = create((set) => ({
   isGuest: hasGuestSession(),
   login: (user) => {
     writeGuestSession(false)
-    const previous = useAuthStore.getState()
-    if (!previous.isAuthenticated || previous.user?.id !== user?.id) {
-      useQueryCache.getState().reset()
-    }
+    // Keeps entries restored after a tab reload when they are this user's.
+    useQueryCache.getState().claim(user?.id ?? null)
     set({ user, isAuthenticated: true, isGuest: false })
   },
   updateUser: (patch) => {
@@ -42,16 +40,18 @@ const useAuthStore = create((set) => ({
   },
   enterGuest: () => {
     writeGuestSession(true)
-    const previous = useAuthStore.getState()
-    if (!previous.isGuest) {
-      useQueryCache.getState().reset()
-    }
+    useQueryCache.getState().claim('guest')
     set({ user: null, isAuthenticated: false, isGuest: true })
   },
   logout: () => {
     writeGuestSession(false)
     useQueryCache.getState().reset()
     set({ user: null, isAuthenticated: false, isGuest: false })
+  },
+  // The session check found no signed-in user (e.g. an expired cookie):
+  // drop anything a previous user cached, but keep a guest's own entries.
+  resolveAnonymous: () => {
+    useQueryCache.getState().claim(useAuthStore.getState().isGuest ? 'guest' : null)
   },
 }))
 

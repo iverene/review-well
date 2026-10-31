@@ -5,7 +5,7 @@ import useQueryCache, { cacheKey, fetchShared, loadPersistedEntries, PERSIST_KEY
 describe('Query Cache', () => {
   beforeEach(() => {
     window.sessionStorage.clear()
-    useQueryCache.setState({ entries: {} })
+    useQueryCache.setState({ entries: {}, owner: null })
   })
 
   it('builds stable keys regardless of param order', () => {
@@ -90,6 +90,14 @@ describe('Query Cache persistence', () => {
     const refetch = vi.fn().mockResolvedValue({ data: { reviewers: [2] } })
     await expect(fetchShared('GET /api/persist', refetch)).resolves.toEqual({ reviewers: [1] })
     expect(refetch).not.toHaveBeenCalled()
+  })
+
+  it('records which identity owns the persisted entries', async () => {
+    useQueryCache.setState({ owner: 'user-123' })
+    await fetchShared('GET /api/owned', vi.fn().mockResolvedValue({ data: 'mine' }))
+    const stored = JSON.parse(window.sessionStorage.getItem(PERSIST_KEY))
+    expect(stored.owner).toBe('user-123')
+    expect(stored.entries['GET /api/owned']).toMatchObject({ data: 'mine' })
   })
 
   it('drops entries older than the TTL on restore', async () => {
