@@ -226,7 +226,7 @@ const Home = () => {
             empty={<EmptyState compact title="Nothing here yet">Reviewers you open will show up here.</EmptyState>}
           >
             {recentReviewers.length > 0 && (
-              <div className="-mx-1 flex gap-4 overflow-x-auto show-scroll px-1 pb-3 pt-1">
+              <div className="-mx-1 flex gap-4 overflow-x-auto px-1 pb-3 pt-1">
                 {recentReviewers.slice(0, 5).map((reviewer) => <ReviewerCard key={reviewer.id} reviewer={reviewer} compact saves="icon" />)}
               </div>
             )}

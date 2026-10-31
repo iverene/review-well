@@ -147,7 +147,7 @@ describe('Home desk saves display', () => {
     const rail = card.parentElement
 
     expect(rail).toHaveClass('overflow-x-auto')
-    expect(rail).toHaveClass('show-scroll')
+    expect(rail).not.toHaveClass('show-scroll')
     expect(card).toHaveClass('min-w-[250px]')
     expect(card).toHaveClass('shrink-0')
     expect(card).not.toHaveClass('md:min-w-0')
