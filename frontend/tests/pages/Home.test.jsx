@@ -45,6 +45,13 @@ describe('Home landing copy', () => {
     expect(screen.getByText('Bookmark the guides you love and follow creators to see their new reviewers.')).toBeTruthy()
   })
 
+  it('gives the landing page a single top-level heading', () => {
+    render(<MemoryRouter><Home /></MemoryRouter>)
+    expect(screen.getAllByRole('heading', { level: 1 })).toHaveLength(1)
+    expect(screen.getByRole('heading', { level: 1, name: 'Turn lecture slides into study sessions.' })).toBeTruthy()
+    expect(screen.getAllByRole('heading', { level: 2 })).toHaveLength(3)
+  })
+
   it('contains no workspace-era wording', () => {
     render(<MemoryRouter><Home /></MemoryRouter>)
     expect(screen.queryByText('Make studying feel a little more like you.')).toBeNull()

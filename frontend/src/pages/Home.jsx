@@ -56,7 +56,7 @@ const Landing = () => (
       <div className="absolute right-6 top-5 text-2xl text-accent" aria-hidden="true">*</div>
       <div className="relative max-w-2xl club-rise">
         <p className="mb-3 font-mono text-xs font-bold uppercase tracking-widest text-accent">Upload your slides. Study them well.</p>
-        <h2 className="max-w-xl text-2xl font-bold leading-tight text-ink sm:text-3xl md:text-6xl">Turn lecture slides into study sessions.</h2>
+        <h1 className="max-w-xl text-2xl font-bold leading-tight text-ink sm:text-3xl md:text-6xl">Turn lecture slides into study sessions.</h1>
         <p className="mt-4 max-w-xl text-base leading-relaxed text-muted md:text-lg">Upload a PDF or PPTX, browse public study guides, and keep everything in one cozy study club.</p>
         <div className="mt-7 flex flex-wrap gap-3">
           <Link to="/login" className="club-shadow rounded-soft border-2 border-accent bg-accent px-5 py-3 font-extrabold text-paper transition-transform hover:-translate-y-1">Join the study club</Link>
@@ -66,9 +66,9 @@ const Landing = () => (
       <img src="/logo.png" alt="A student studying with a laptop" className="pointer-events-none absolute -bottom-10 -right-8 hidden h-64 w-64 object-contain opacity-95 md:block lg:h-72 lg:w-72" />
     </section>
     <section className="grid gap-4 md:grid-cols-3" aria-label="Study club features">
-      <article className="club-surface bg-blush/50 p-5 md:p-6"><div className="mb-4 text-xl text-accent md:mb-5 md:text-2xl" aria-hidden="true">*</div><h3 className="text-xl font-bold text-ink md:text-2xl">Upload your slides</h3><p className="mt-2 leading-relaxed text-muted">Drop in a PDF or PPTX and keep every reviewer in one personal library.</p></article>
-      <article className="club-surface bg-mint/60 p-5 md:p-6"><div className="mb-4 text-xl text-accent md:mb-5 md:text-2xl" aria-hidden="true">+</div><h3 className="text-xl font-bold text-ink md:text-2xl">Discover Study Guides</h3><p className="mt-2 leading-relaxed text-muted">Browse public reviewers made by fellow students and start with the topics you need most.</p></article>
-      <article className="club-surface bg-butter/70 p-5 md:p-6"><div className="mb-4 text-xl text-accent md:mb-5 md:text-2xl" aria-hidden="true">~</div><h3 className="text-xl font-bold text-ink md:text-2xl">Save What Matters</h3><p className="mt-2 leading-relaxed text-muted">Bookmark the guides you love and follow creators to see their new reviewers.</p></article>
+      <article className="club-surface bg-blush/50 p-5 md:p-6"><div className="mb-4 text-xl text-accent md:mb-5 md:text-2xl" aria-hidden="true">*</div><h2 className="text-xl font-bold text-ink md:text-2xl">Upload your slides</h2><p className="mt-2 leading-relaxed text-muted">Drop in a PDF or PPTX and keep every reviewer in one personal library.</p></article>
+      <article className="club-surface bg-mint/60 p-5 md:p-6"><div className="mb-4 text-xl text-accent md:mb-5 md:text-2xl" aria-hidden="true">+</div><h2 className="text-xl font-bold text-ink md:text-2xl">Discover Study Guides</h2><p className="mt-2 leading-relaxed text-muted">Browse public reviewers made by fellow students and start with the topics you need most.</p></article>
+      <article className="club-surface bg-butter/70 p-5 md:p-6"><div className="mb-4 text-xl text-accent md:mb-5 md:text-2xl" aria-hidden="true">~</div><h2 className="text-xl font-bold text-ink md:text-2xl">Save What Matters</h2><p className="mt-2 leading-relaxed text-muted">Bookmark the guides you love and follow creators to see their new reviewers.</p></article>
     </section>
   </div>
 )
