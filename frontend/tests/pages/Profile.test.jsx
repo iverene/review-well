@@ -260,4 +260,20 @@ describe('Profile', () => {
     expect(screen.queryByRole('heading', { name: 'Slow Sam' })).toBeNull()
     expect(screen.getByRole('heading', { name: 'Ann Lee' })).toBeInTheDocument()
   })
+
+  it('requests the lists alongside the profile instead of after it', async () => {
+    let resolveProfile
+    const fallback = mockGet.getMockImplementation()
+    mockGet.mockImplementation((url, config) => {
+      if (url === '/api/profile/me') return new Promise((resolve) => { resolveProfile = resolve })
+      return fallback(url, config)
+    })
+    renderProfile('/profile', '/profile')
+
+    await waitFor(() => expect(mockGet).toHaveBeenCalledWith('/api/reviewers/my', expect.anything()))
+    expect(resolveProfile).toBeTypeOf('function')
+
+    resolveProfile({ data: { user: ownProfile } })
+    expect(await screen.findByText('My Guide')).toBeInTheDocument()
+  })
 })

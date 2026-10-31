@@ -232,9 +232,10 @@ const Profile = () => {
     setSavedPage(1)
     setSavedHasMore(false)
     setLoadingMore(null)
-    fetchProfile().then((loaded) => {
-      if (loaded) fetchLists(loaded, false)
-    })
+    // The profile id is already known (URL or session), so the lists load
+    // alongside the profile instead of waiting for it.
+    fetchProfile()
+    fetchLists(null, false)
   }, [userId, fetchProfile, fetchLists])
 
   const loadMore = async (tab) => {
