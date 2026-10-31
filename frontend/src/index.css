@@ -3,52 +3,66 @@
 @tailwind utilities;
 
 /* Theme tokens (RGB triplets so Tailwind opacity modifiers keep working).
-   :root is the default light theme; Settings switches data-theme. */
+   :root is the default light theme; Settings switches data-theme.
+   page   = the canvas behind everything (Cream in light)
+   paper  = sheets that sit on the page: cards, dialogs, nav
+   cream  = inset areas inside a sheet (toolbars, dropzones)
+   line   = form-field borders (>= 3:1 against page and paper)
+   stone  = decorative borders and dividers
+   Every text pairing below meets WCAG AA (4.5:1): ink and muted on page,
+   paper, cream, and each pastel; accent as text on page/paper; paper text
+   on accent. Re-run the contrast check in DESIGN.md when changing values. */
 :root {
   color-scheme: light;
+  --page: 255 247 232;
+  --paper: 255 252 246;
+  --cream: 255 247 232;
   --ink: 96 74 58;
-  --paper: 248 249 250;
-  --stone: 230 224 210;
-  --accent: 201 106 131;
-  --muted: 139 119 104;
+  --muted: 106 86 70;
+  --accent: 176 79 105;
+  --stone: 222 211 190;
+  --line: 150 130 110;
   --blush: 246 198 210;
   --powder: 201 230 242;
   --mint: 205 232 210;
   --butter: 249 228 168;
-  --cream: 255 247 232;
 }
 
 [data-theme='dark'] {
   color-scheme: dark;
-  --ink: 228 228 230;
-  --paper: 18 18 20;
-  --stone: 44 44 48;
-  --accent: 224 138 160;
-  --muted: 160 160 168;
-  --blush: 146 96 112;
-  --powder: 110 150 175;
-  --mint: 110 155 125;
-  --butter: 190 155 95;
-  --cream: 24 24 28;
+  --page: 20 19 22;
+  --paper: 31 29 34;
+  --cream: 25 24 28;
+  --ink: 232 230 228;
+  --muted: 184 180 186;
+  --accent: 230 145 168;
+  --stone: 58 55 62;
+  --line: 120 116 124;
+  --blush: 74 47 56;
+  --powder: 43 63 74;
+  --mint: 47 74 55;
+  --butter: 74 63 37;
 }
 
 [data-theme='reading'] {
   color-scheme: light;
+  --page: 240 231 208;
+  --paper: 250 244 230;
+  --cream: 244 236 216;
   --ink: 67 52 34;
-  --paper: 244 236 216;
-  --stone: 221 211 186;
-  --accent: 180 86 110;
-  --muted: 125 107 84;
+  --muted: 98 82 62;
+  --accent: 158 70 95;
+  --stone: 214 202 174;
+  --line: 138 120 94;
   --blush: 236 195 205;
   --powder: 196 221 230;
   --mint: 196 220 200;
   --butter: 242 221 158;
-  --cream: 250 243 226;
 }
 
 body {
   font-family: 'Nunito', sans-serif;
-  background-color: rgb(var(--paper));
+  background-color: rgb(var(--page));
   background-image: radial-gradient(rgb(var(--stone)) 1px, transparent 1px);
   background-size: 18px 18px;
   color: rgb(var(--ink));
@@ -68,15 +82,16 @@ button, a, input, textarea, select {
   border-radius: 12px;
 }
 
-button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
-  outline: 3px solid rgb(var(--powder));
-  outline-offset: 3px;
+/* One visible focus ring everywhere (Berry, >= 3:1 on every surface). */
+:where(button, a, input, textarea, select, summary, [tabindex]):focus-visible {
+  outline: 2px solid rgb(var(--accent));
+  outline-offset: 2px;
 }
 
 .club-surface {
   border: 2px solid rgb(var(--stone));
   border-radius: 16px;
-  background: rgb(var(--cream) / 0.9);
+  background: rgb(var(--paper));
   box-shadow: 4px 5px 0 rgb(var(--ink) / 0.08);
 }
 
@@ -90,11 +105,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
 }
 
 .club-rise {
-  animation: club-rise 500ms ease-out both;
+  animation: club-rise 220ms cubic-bezier(0.2, 0, 0, 1) both;
 }
 
-.club-rise-delay-1 { animation-delay: 100ms; }
-.club-rise-delay-2 { animation-delay: 180ms; }
+.club-rise-delay-1 { animation-delay: 40ms; }
+.club-rise-delay-2 { animation-delay: 80ms; }
 
 @media (prefers-reduced-motion: reduce) {
   .club-rise { animation: none; }
@@ -215,7 +230,7 @@ button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visib
   box-shadow: 4px 5px 0 rgb(var(--ink) / 0.12);
 }
 .auth-fade {
-  animation: desk-fade 600ms ease-out both;
+  animation: desk-fade 240ms cubic-bezier(0.2, 0, 0, 1) both;
 }
 .auth-bar {
   display: block;

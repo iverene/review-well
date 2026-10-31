@@ -9,7 +9,6 @@ import { useAuth } from '../contexts/AuthContext'
 import { useToast } from '../contexts/ToastContext'
 import useQueryCache, { fetchShared } from '../stores/queryCache'
 
-// Kawaii tokens (spec): Cream #FFF7E8 Cocoa #604A3A Blush #F6C6D2 Powder #C9E6F2 Mint #CDE8D2 Butter #F9E4A8 Berry #C96A83
 const MAX_FILE_BYTES = 25 * 1024 * 1024
 const ACCEPTED_EXTENSIONS = ['.pdf', '.pptx']
 
