@@ -44,6 +44,38 @@ describe('PdfViewer', () => {
     expect(await screen.findByTestId('study-doc-count')).toHaveTextContent('1 / 2')
   })
 
+  it('keeps the open document when only the signed URL token rotates', async () => {
+    const { rerender } = render(<PdfViewer fileUrl="https://storage.example.com/u/r1/v1.pdf?token=a" title="Guide" />)
+    await waitForLoaded()
+    fireEvent.click(screen.getByRole('button', { name: 'Next page' }))
+    expect(await screen.findByTestId('study-doc-count')).toHaveTextContent('2 / 2')
+
+    rerender(<PdfViewer fileUrl="https://storage.example.com/u/r1/v1.pdf?token=b" title="Guide" />)
+
+    expect(pdfjsLib.getDocument).toHaveBeenCalledTimes(1)
+    expect(screen.getByTestId('study-doc-count')).toHaveTextContent('2 / 2')
+  })
+
+  it('loads the new file when the file itself changes', async () => {
+    const { rerender } = render(<PdfViewer fileUrl="https://storage.example.com/u/r1/v1.pdf?token=a" title="Guide" />)
+    await waitForLoaded()
+    rerender(<PdfViewer fileUrl="https://storage.example.com/u/r1/v2.pdf?token=b" title="Guide" />)
+    await waitFor(() => expect(pdfjsLib.getDocument).toHaveBeenCalledTimes(2))
+    expect(pdfjsLib.getDocument).toHaveBeenLastCalledWith({ url: 'https://storage.example.com/u/r1/v2.pdf?token=b' })
+  })
+
+  it('retries with a refreshed URL after an expired one failed to load', async () => {
+    pdfjsLib.getDocument.mockReturnValueOnce({ promise: Promise.reject(new Error('expired')) })
+    const { rerender } = render(<PdfViewer fileUrl="https://storage.example.com/u/r1/v1.pdf?token=old" title="Guide" />)
+    expect(await screen.findByRole('alert')).toBeInTheDocument()
+
+    rerender(<PdfViewer fileUrl="https://storage.example.com/u/r1/v1.pdf?token=new" title="Guide" />)
+
+    await waitForLoaded()
+    expect(pdfjsLib.getDocument).toHaveBeenLastCalledWith({ url: 'https://storage.example.com/u/r1/v1.pdf?token=new' })
+    expect(screen.queryByRole('alert')).toBeNull()
+  })
+
   it('navigates pages and clamps at the ends', async () => {
     render(<PdfViewer fileUrl="https://storage.example.com/v1.pdf" title="Guide" />)
     await waitForLoaded()

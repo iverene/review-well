@@ -61,6 +61,19 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
   const [error, setError] = useState(null)
   const [fullscreen, setFullscreen] = useState(false)
   const [tipIndex, setTipIndex] = useState(0)
+  // Signed URLs get a fresh token on every detail fetch, so a background
+  // refresh would otherwise re-download the file and jump back to page 1.
+  // Load per file (URL without its query); a new token only matters when
+  // the last attempt failed, e.g. because the cached URL had expired.
+  const filePath = fileUrl ? String(fileUrl).split('?')[0] : fileUrl
+  const fileUrlRef = useRef(fileUrl)
+  fileUrlRef.current = fileUrl
+  const loadFailedRef = useRef(false)
+  const [retryToken, setRetryToken] = useState(0)
+
+  useEffect(() => {
+    if (loadFailedRef.current) setRetryToken((token) => token + 1)
+  }, [fileUrl])
 
   useEffect(() => {
     if (!loading) return
@@ -331,8 +344,9 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
 
     const load = async () => {
       let pdf = null
+      loadFailedRef.current = false
       try {
-        pdf = await pdfjsLib.getDocument({ url: fileUrl }).promise
+        pdf = await pdfjsLib.getDocument({ url: fileUrlRef.current }).promise
         if (controller.signal.aborted) {
           pdf.destroy?.()
           return
@@ -358,6 +372,7 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
         }
       } catch (loadError) {
         if (controller.signal.aborted) return
+        loadFailedRef.current = true
         console.error('Failed to load PDF:', loadError)
         setError('Unable to display this PDF. Try downloading it instead.')
         setLoading(false)
@@ -386,7 +401,8 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
       docRef.current = null
     }
   }, [
-    fileUrl,
+    filePath,
+    retryToken,
     buildPlaceholders,
     cancelScheduledRender,
     clearRendered,
