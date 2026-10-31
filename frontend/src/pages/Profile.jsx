@@ -462,4 +462,11 @@ const Profile = () => {
   )
 }
 
-export default Profile
+// Remount per profile so a slow response for the previous profile can never
+// land on the next one (its setState calls go to the unmounted instance).
+const ProfileRoute = () => {
+  const { userId } = useParams()
+  return <Profile key={userId || 'me'} />
+}
+
+export default ProfileRoute

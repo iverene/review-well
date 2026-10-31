@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { Link, MemoryRouter, Route, Routes } from 'react-router-dom'
 
 import Profile from '../../src/pages/Profile'
 import useQueryCache from '../../src/stores/queryCache'
@@ -230,5 +230,34 @@ describe('Profile', () => {
     renderProfile('/profile', '/profile')
     await screen.findByText('Me User')
     expect(screen.queryByText('I love soil science.')).toBeNull()
+  })
+
+  it('ignores a slow profile response after navigating to another profile', async () => {
+    let resolveSlow
+    const fallback = mockGet.getMockImplementation()
+    mockGet.mockImplementation((url, config) => {
+      if (url === '/api/profile/slow') {
+        return new Promise((resolve) => { resolveSlow = resolve })
+      }
+      if (url === '/api/reviewers/author/slow') return Promise.resolve({ data: { reviewers: [] } })
+      return fallback(url, config)
+    })
+    render(
+      <MemoryRouter initialEntries={['/profile/slow']}>
+        <Link to="/profile/user-9">Ann</Link>
+        <Routes>
+          <Route path="/profile/:userId" element={<Profile />} />
+        </Routes>
+      </MemoryRouter>
+    )
+    await waitFor(() => expect(resolveSlow).toBeTypeOf('function'))
+    fireEvent.click(screen.getByRole('link', { name: 'Ann' }))
+    expect(await screen.findByRole('heading', { name: 'Ann Lee' })).toBeInTheDocument()
+
+    resolveSlow({ data: { user: { ...otherProfile, id: 'slow', displayName: 'Slow Sam' } } })
+
+    await new Promise((resolve) => setTimeout(resolve, 50))
+    expect(screen.queryByRole('heading', { name: 'Slow Sam' })).toBeNull()
+    expect(screen.getByRole('heading', { name: 'Ann Lee' })).toBeInTheDocument()
   })
 })
