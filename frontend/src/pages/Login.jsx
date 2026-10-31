@@ -64,7 +64,7 @@ const Login = () => {
     <div className="flex min-h-[calc(100vh-120px)] items-center justify-center py-6">
       <div className="club-surface w-full max-w-lg p-6 sm:p-10">
         <div className="mb-8 text-center">
-          <img src="/logo.png" alt="" className="mx-auto mb-4 h-16 w-16 object-contain md:h-24 md:w-24" />
+          <img src="/logo.webp" alt="" className="mx-auto mb-4 h-16 w-16 object-contain md:h-24 md:w-24" />
           <p className="mb-2 font-mono text-xs font-bold uppercase tracking-widest text-accent">Welcome to the study club</p>
           <h1 className="text-2xl font-bold text-ink sm:text-3xl md:text-4xl">Pick Your Study Mode</h1>
           <p className="mx-auto mt-3 max-w-sm leading-relaxed text-muted">Make an account for the full toolkit, or browse public guides as a guest.</p>

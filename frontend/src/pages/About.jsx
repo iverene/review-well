@@ -15,7 +15,7 @@ const About = () => (
   <div className="mx-auto max-w-3xl pb-10">
     <section className="club-surface relative overflow-hidden px-4 py-6 md:px-10 md:py-12">
       <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
-        <img src="/logo.png" alt="" className="h-14 w-14 shrink-0 rounded-soft object-contain md:h-20 md:w-20" />
+        <img src="/logo.webp" alt="" className="h-14 w-14 shrink-0 rounded-soft object-contain md:h-20 md:w-20" />
         <div>
           <p className="font-mono text-xs font-bold uppercase tracking-widest text-accent">The study club</p>
           <h1 className="mt-1 font-display text-3xl font-bold text-ink md:text-4xl">About Review Well</h1>

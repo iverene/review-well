@@ -8,8 +8,8 @@ describe('AuthLoading', () => {
     render(<AuthLoading />)
     expect(screen.getByRole('status', { name: 'Signing you in...' })).toBeInTheDocument()
     const logos = screen.getAllByAltText('Review Well')
-    expect(logos.some((img) => img.getAttribute('src') === '/logo.png')).toBe(true)
-    expect(logos.some((img) => img.getAttribute('src') === '/word-logo.png')).toBe(true)
+    expect(logos.some((img) => img.getAttribute('src') === '/logo.webp')).toBe(true)
+    expect(logos.some((img) => img.getAttribute('src') === '/word-logo.webp')).toBe(true)
     expect(screen.getByText('Please wait while we complete your authentication.')).toBeInTheDocument()
   })
 

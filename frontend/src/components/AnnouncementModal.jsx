@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import axios from 'axios'
 import { Megaphone, Sparkles } from 'lucide-react'
 
-import characterWaving from '../assets/character-waving.png'
+import characterWaving from '../assets/character-waving.webp'
 import { useAuth } from '../contexts/AuthContext'
 import useAuthStore from '../stores/authStore'
 

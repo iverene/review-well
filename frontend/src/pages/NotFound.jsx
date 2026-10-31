@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ArrowLeft, LibraryBig } from 'lucide-react'
 
-import characterWaving from '../assets/character-waving.png'
+import characterWaving from '../assets/character-waving.webp'
 
 // Catch-all for unknown URLs, which previously rendered an empty page.
 const NotFound = () => (

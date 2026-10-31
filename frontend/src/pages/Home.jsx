@@ -10,7 +10,7 @@ import { cacheKey } from '../stores/queryCache'
 import { getApiErrorMessage } from '../utils/apiError'
 import { isSameCourse } from '../utils/courseMatching'
 import { ReviewerGridSkeleton, Skeleton } from '../components/common/Skeleton'
-import characterWaving from '../assets/character-waving.png'
+import characterWaving from '../assets/character-waving.webp'
 
 const recentReviewersKey = (userId) => `review-well-recent-reviewers:${userId}`
 
@@ -63,7 +63,7 @@ const Landing = () => (
           <Link to="/reviewer/public" className="rounded-soft border-2 border-stone bg-paper px-5 py-3 font-extrabold text-ink transition-colors hover:bg-butter">Try public reviewers</Link>
         </div>
       </div>
-      <img src="/logo.png" alt="A student studying with a laptop" className="pointer-events-none absolute -bottom-10 -right-8 hidden h-64 w-64 object-contain opacity-95 md:block lg:h-72 lg:w-72" />
+      <img src="/logo.webp" alt="A student studying with a laptop" className="pointer-events-none absolute -bottom-10 -right-8 hidden h-64 w-64 object-contain opacity-95 md:block lg:h-72 lg:w-72" />
     </section>
     <section className="grid gap-4 md:grid-cols-3" aria-label="Study club features">
       <article className="club-surface bg-blush/50 p-5 md:p-6"><div className="mb-4 text-xl text-accent md:mb-5 md:text-2xl" aria-hidden="true">*</div><h2 className="text-xl font-bold text-ink md:text-2xl">Upload your slides</h2><p className="mt-2 leading-relaxed text-muted">Drop in a PDF or PPTX and keep every reviewer in one personal library.</p></article>
@@ -162,7 +162,7 @@ const Home = () => {
   // skip the gate and land immediately.
   if (authLoading && !isGuest) {
     return (
-      <div className="mx-auto min-h-screen max-w-md space-y-5 px-4 py-20" role="status" aria-label="Loading your study desk"><img src="/logo.png" alt="" className="mx-auto h-16 w-16 object-contain" /><Skeleton className="h-10 w-3/4 mx-auto" /><Skeleton className="h-40 w-full" /></div>
+      <div className="mx-auto min-h-screen max-w-md space-y-5 px-4 py-20" role="status" aria-label="Loading your study desk"><img src="/logo.webp" alt="" className="mx-auto h-16 w-16 object-contain" /><Skeleton className="h-10 w-3/4 mx-auto" /><Skeleton className="h-40 w-full" /></div>
     )
   }
 

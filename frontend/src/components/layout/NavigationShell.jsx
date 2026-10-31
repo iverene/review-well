@@ -28,8 +28,8 @@ const NavigationShell = ({ children }) => {
         <header className="absolute inset-x-0 top-0 z-50 flex items-center justify-between border-b-0 bg-transparent px-4 py-3 md:px-6">
           <div className="flex items-center gap-4">
             <Link to="/" className={`flex min-w-0 items-center text-xl font-bold text-ink ${isAuthenticated ? 'md:hidden' : ''}`} aria-label="Review Well home">
-              <img src="/logo.png" alt="" className="h-8 w-8 object-contain" />
-              <img src="/word-logo.png" alt="Review Well" className="ml-2 h-6 w-auto max-w-[130px] object-contain sm:max-w-none" />
+              <img src="/logo.webp" alt="" className="h-8 w-8 object-contain" />
+              <img src="/word-logo.webp" alt="Review Well" width="430" height="112" className="ml-2 h-6 w-auto max-w-[130px] object-contain sm:max-w-none" />
             </Link>
           </div>
           <nav className="flex items-center gap-4">

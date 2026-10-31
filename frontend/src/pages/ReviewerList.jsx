@@ -166,7 +166,7 @@ const ReviewerList = ({ mine = false }) => {
       {loading ? <ReviewerGridSkeleton /> : reviewers.length === 0 ? (
         mine ? (
           <div className="rounded-soft border-2 border-dashed border-stone bg-paper px-5 py-12 text-center">
-            <img src="/logo.png" alt="" className="mx-auto h-20 w-20 object-contain" />
+            <img src="/logo.webp" alt="" className="mx-auto h-20 w-20 object-contain" />
             <p className="mt-3 font-display text-xl font-bold text-ink">No Reviewers Yet</p>
             <p className="mx-auto mt-2 max-w-sm text-sm text-muted">Upload your first reviewer to start your personal library.</p>
             <Link

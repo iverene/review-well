@@ -533,7 +533,7 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
       <div ref={scrollRef} data-testid="study-doc-scroll" className="study-doc-scroll relative h-[62vh] overflow-auto bg-cream/50 p-3 md:h-[72vh] md:p-4">
         {loading && (
           <div data-testid="study-doc-loading" className="flex flex-col items-center px-6 py-14 text-center" aria-label="Loading document">
-            <img src="/logo.png" alt="" aria-hidden="true" className="auth-logo h-20 w-20 object-contain" />
+            <img src="/logo.webp" alt="" aria-hidden="true" className="auth-logo h-20 w-20 object-contain" />
             <p className="mt-4 font-display text-xl font-bold text-ink">Opening Your Document…</p>
             <p className="mt-1 text-sm font-semibold text-muted" aria-live="polite">{LOADING_TIPS[tipIndex]}</p>
             <span className="auth-bar mt-4" aria-hidden="true" />
