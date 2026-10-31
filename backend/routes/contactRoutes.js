@@ -1,4 +1,5 @@
 import express from 'express'
+
 import { sendMessage } from '../controllers/contactController.js'
 import { requireAuth } from '../middleware/auth.js'
 

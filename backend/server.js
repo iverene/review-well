@@ -1,11 +1,13 @@
+import { pathToFileURL } from 'url'
+
 import dotenv from 'dotenv'
 dotenv.config()
 import express from 'express'
 import helmet from 'helmet'
 import cors from 'cors'
 import hpp from 'hpp'
-import { pathToFileURL } from 'url'
 import passport from 'passport'
+
 import { sessionConfig, ensureSessionCompat, enforceAbsoluteSessionExpiry } from './config/session.js'
 import { configurePassport } from './config/googleOAuth.js'
 import { getFrontendUrl } from './config/urls.js'
@@ -68,6 +70,8 @@ app.use('/api', (req, res) => {
 })
 
 // Error handler
+// Express recognizes error handlers by arity, so `next` must stay in the signature.
+// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   console.error(err.stack || err)
   const status = Number.isInteger(err.status) && err.status >= 400 && err.status < 500 ? err.status : 500

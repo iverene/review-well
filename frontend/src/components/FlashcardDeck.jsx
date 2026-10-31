@@ -1,13 +1,14 @@
 import { useState } from 'react'
 
+// Mapped onto the theme tokens so the deck follows light, dark, and reading.
 const TOKENS = {
-  '--deck-cream': '#FFF7E8',
-  '--deck-cocoa': '#604A3A',
-  '--deck-blush': '#F6C6D2',
-  '--deck-powder': '#C9E6F2',
-  '--deck-mint': '#CDE8D2',
-  '--deck-butter': '#F9E4A8',
-  '--deck-berry': '#C96A83',
+  '--deck-cream': 'rgb(var(--cream))',
+  '--deck-cocoa': 'rgb(var(--ink))',
+  '--deck-blush': 'rgb(var(--blush))',
+  '--deck-powder': 'rgb(var(--powder))',
+  '--deck-mint': 'rgb(var(--mint))',
+  '--deck-butter': 'rgb(var(--butter))',
+  '--deck-berry': 'rgb(var(--accent))',
 }
 
 const shuffleIndices = (indices) => {

@@ -3,25 +3,26 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import axios from 'axios'
 import {
   ArrowLeft,
-  BookOpenText,
   Check,
-  Clock3,
   Copy,
   Download,
   EllipsisVertical,
   Globe2,
   Link2,
   LockKeyhole,
+  Pencil,
   Share2,
   Trash2,
   UsersRound,
-  X,
 } from 'lucide-react'
 
 import { useAuth } from '../contexts/AuthContext'
 import SaveButton from '../components/social/SaveButton'
-import StudyTabs from '../components/StudyTabs'
-import ErrorAlert from '../components/common/ErrorAlert'
+import StudyTabs, { preloadPdfViewer } from '../components/StudyTabs'
+import Button from '../components/common/Button'
+import EmptyState from '../components/common/EmptyState'
+import Modal from '../components/common/Modal'
+import Tag from '../components/common/Tag'
 import PageContainer from '../components/common/PageContainer'
 import useCachedGet from '../hooks/useCachedGet'
 import useQueryCache from '../stores/queryCache'
@@ -33,19 +34,43 @@ import { ReviewerSkeleton } from '../components/common/Skeleton'
 
 const recentReviewersKey = (userId) => `review-well-recent-reviewers:${userId}`
 
-const StudyDetailsList = ({ reviewer }) => (
-  <dl className="space-y-4 text-sm">
-    {reviewer.user?.displayName && <div><dt className="font-extrabold text-muted">Creator</dt><dd className="mt-1 text-ink">{reviewer.user.displayName}</dd></div>}
-    <div><dt className="font-extrabold text-muted">Assessment</dt><dd className="mt-1 text-ink">{formatExamType(reviewer.examType)}</dd></div>
-    <div><dt className="font-extrabold text-muted">Semester</dt><dd className="mt-1 text-ink">{reviewer.semester}</dd></div>
-    <div><dt className="font-extrabold text-muted">Uploaded</dt><dd className="mt-1 flex items-center gap-1 text-ink"><Clock3 className="h-4 w-4" /> {reviewer.createdAt ? new Date(reviewer.createdAt).toLocaleDateString() : '—'}</dd></div>
-  </dl>
-)
+// Recently Viewed cards need only these fields. Storing the whole detail
+// payload would persist cards, prompts, quota, and short-lived signed file
+// URLs in localStorage on every visit.
+const recentPreview = (reviewer) => ({
+  id: reviewer.id,
+  title: reviewer.title,
+  courseCode: reviewer.courseCode,
+  courseDescription: reviewer.courseDescription,
+  user: reviewer.user ? { displayName: reviewer.user.displayName } : undefined,
+  _count: { saves: reviewer._count?.saves || 0 },
+})
+
+// Study details sit inline under the title on every screen size, so phones
+// no longer need a separate dialog to see who made it and for which exam.
+const StudyDetails = ({ reviewer }) => {
+  const items = [
+    reviewer.user?.displayName && ['Creator', reviewer.user.displayName],
+    ['Assessment', formatExamType(reviewer.examType)],
+    reviewer.semester && ['Semester', reviewer.semester],
+    ['Uploaded', reviewer.createdAt ? new Date(reviewer.createdAt).toLocaleDateString() : '—'],
+  ].filter(Boolean)
+  return (
+    <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 sm:flex sm:flex-wrap" aria-label="Study details">
+      {items.map(([label, value]) => (
+        <div key={label} className="min-w-0">
+          <dt className="text-xs font-extrabold uppercase tracking-wider text-muted">{label}</dt>
+          <dd className="mt-0.5 truncate text-sm font-bold text-ink">{value}</dd>
+        </div>
+      ))}
+    </dl>
+  )
+}
 
 const VISIBILITY_OPTIONS = [
-  { value: 'private', label: 'Private', icon: LockKeyhole },
-  { value: 'unlisted', label: 'Unlisted', icon: UsersRound },
-  { value: 'public', label: 'Public', icon: Globe2 },
+  { value: 'private', label: 'Private', icon: LockKeyhole, tone: 'neutral' },
+  { value: 'unlisted', label: 'Unlisted', icon: UsersRound, tone: 'powder' },
+  { value: 'public', label: 'Public', icon: Globe2, tone: 'mint' },
 ]
 
 const Reviewer = () => {
@@ -53,9 +78,6 @@ const Reviewer = () => {
   const navigate = useNavigate()
   const { user, isAuthenticated } = useAuth()
   const toast = useToast()
-  const [reviewer, setReviewer] = useState(null)
-  const [cards, setCards] = useState([])
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [visSaving, setVisSaving] = useState(false)
   const [shareOpen, setShareOpen] = useState(false)
@@ -63,10 +85,8 @@ const Reviewer = () => {
   const [deleting, setDeleting] = useState(false)
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [moreOpen, setMoreOpen] = useState(false)
-  const [detailsOpen, setDetailsOpen] = useState(false)
+  const keepButtonRef = useRef(null)
   const copiedTimerRef = useRef(null)
-
-  useEffect(() => () => clearTimeout(copiedTimerRef.current), [])
 
   const guest = !isAuthenticated
   const loginReturnTo = `/reviewer/${id}`
@@ -83,9 +103,15 @@ const Reviewer = () => {
     enabled: !!id,
   })
 
+  // Seeded from the cache so a revisited reviewer renders immediately.
+  const [reviewer, setReviewer] = useState(() => detailData?.reviewer || null)
+  const [cards, setCards] = useState(() => (Array.isArray(detailData?.reviewer?.cards) ? detailData.reviewer.cards : []))
+
+  useEffect(() => () => clearTimeout(copiedTimerRef.current), [])
+
   useEffect(() => {
-    setLoading(detailLoading)
-  }, [detailLoading])
+    preloadPdfViewer()
+  }, [])
 
   useEffect(() => {
     const loadedReviewer = detailData?.reviewer
@@ -100,7 +126,7 @@ const Reviewer = () => {
         const parsed = JSON.parse(window.localStorage.getItem(key) || '[]')
         const recent = Array.isArray(parsed) ? parsed : []
         const withoutCurrent = recent.filter((item) => item?.id !== loadedReviewer.id)
-        window.localStorage.setItem(key, JSON.stringify([loadedReviewer, ...withoutCurrent].slice(0, 5)))
+        window.localStorage.setItem(key, JSON.stringify([recentPreview(loadedReviewer), ...withoutCurrent].slice(0, 5)))
       } catch {
         // Corrupt rail — leave storage alone and keep the loaded reviewer.
       }
@@ -118,10 +144,24 @@ const Reviewer = () => {
     setError(getApiErrorMessage(detailError, 'Unable to load this reviewer.'))
   }, [detailError, id])
 
-  if (loading) return <ReviewerSkeleton />
+  if (!reviewer && !error && (detailLoading || detailData?.reviewer)) return <ReviewerSkeleton />
 
   if (error || !reviewer) {
-    return <div className="mx-auto max-w-xl py-16"><ErrorAlert>{error || 'Reviewer not found'}</ErrorAlert><Link to="/" className="mt-5 inline-flex items-center gap-2 font-extrabold text-muted hover:text-ink"><ArrowLeft className="h-4 w-4" /> Back home</Link></div>
+    return (
+      <div className="mx-auto max-w-xl py-10">
+        <EmptyState
+          title="We couldn’t open this reviewer"
+          action={(
+            <>
+              <Button to="/"><ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back home</Button>
+              <Button to="/reviewer/public" variant="primary">Browse public reviewers</Button>
+            </>
+          )}
+        >
+          <p role="alert">{error || 'Reviewer not found'}</p>
+        </EmptyState>
+      </div>
+    )
   }
 
   const isOwner = !!user?.id && user.id === reviewer.authorId
@@ -134,7 +174,9 @@ const Reviewer = () => {
       // Sharing publishes the reviewer so it can actually appear publicly
       const payload = visibility === 'private' ? { visibility } : { visibility, isDraft: false }
       const response = await axios.put(`/api/reviewers/${id}`, payload, { withCredentials: true })
-      setReviewer(response.data?.reviewer || { ...reviewer, ...payload })
+      // The update returns the bare row; keep the hub enrichment (fileUrl,
+      // cards, quota, save count) the detail endpoint added.
+      setReviewer((previous) => ({ ...previous, ...payload, ...(response.data?.reviewer || {}) }))
       useQueryCache.getState().invalidate('GET /api/reviewers')
       toast.success('Visibility Updated')
     } catch (saveError) {
@@ -296,134 +338,125 @@ const Reviewer = () => {
     }
   }
 
+  const visibilityOption = VISIBILITY_OPTIONS.find(({ value }) => value === reviewer.visibility)
+  const VisibilityIcon = visibilityOption?.icon
+
   return (
     <PageContainer>
-      <header className="py-2">
-        <div className="min-w-0"><h1 className="break-words font-display text-2xl font-bold text-ink sm:text-3xl md:text-4xl">{reviewer.title}</h1><p className="mt-3 text-muted">{reviewer.courseDescription}</p></div>
-        <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
-          <SaveButton reviewerId={reviewer.id} initialSaveCount={reviewer._count?.saves || 0} />
+      <header>
+        <div className="flex flex-wrap items-center gap-2">
+          {reviewer.courseCode && <Tag mono>{reviewer.courseCode}</Tag>}
+          {isOwner && visibilityOption && (
+            <Tag tone={visibilityOption.tone}>
+              <VisibilityIcon className="h-3 w-3" aria-hidden="true" /> {visibilityOption.label}
+            </Tag>
+          )}
+        </div>
+        <h1 className="mt-3 break-words font-display text-2xl font-bold leading-tight text-ink sm:text-3xl md:text-4xl">{reviewer.title}</h1>
+        {reviewer.courseDescription && <p className="mt-2 text-muted">{reviewer.courseDescription}</p>}
+        <StudyDetails reviewer={reviewer} />
+
+        <div className="mt-5 flex flex-wrap items-center gap-2 border-t-2 border-dashed border-stone pt-4">
+          <SaveButton
+            reviewerId={reviewer.id}
+            initialSaved={typeof reviewer.isSaved === 'boolean' ? reviewer.isSaved : undefined}
+            initialSaveCount={reviewer._count?.saves || 0}
+          />
           {reviewer.fileUrl && (
-            <a
+            <Button
               href={`/api/reviewer-files/${reviewer.id}/download`}
               aria-label="Download this reviewer file"
               title="Download this reviewer file"
-              className="inline-flex items-center gap-2 rounded-soft border-2 border-stone bg-paper px-4 py-2 text-sm font-extrabold text-ink hover:bg-powder"
             >
               <Download className="h-4 w-4" aria-hidden="true" /> <span className="hidden sm:inline">Download</span>
-            </a>
+            </Button>
           )}
+          <Button
+            onClick={() => { setShareOpen(true); setCopied(false) }}
+            aria-haspopup="dialog"
+          >
+            <Share2 className="h-4 w-4" aria-hidden="true" /> Share
+          </Button>
           {isOwner && (
-            <button
-              type="button"
-              onClick={() => setConfirmingDelete(true)}
-              disabled={deleting}
-              className="hidden items-center gap-2 rounded-soft border-2 border-blush bg-blush/40 px-4 py-2 text-sm font-extrabold text-accent hover:bg-blush disabled:opacity-60 sm:inline-flex"
-            >
-              <Trash2 className="h-4 w-4" aria-hidden="true" /> {deleting ? 'Deleting…' : 'Delete'}
-            </button>
+            <div className="ml-auto flex items-center gap-2">
+              <Button to={`/create?edit=${reviewer.id}`} variant="quiet" className="hidden sm:inline-flex">
+                <Pencil className="h-4 w-4" aria-hidden="true" /> Edit
+              </Button>
+              <Button
+                variant="danger"
+                onClick={() => setConfirmingDelete(true)}
+                disabled={deleting}
+                className="hidden sm:inline-flex"
+              >
+                <Trash2 className="h-4 w-4" aria-hidden="true" /> {deleting ? 'Deleting…' : 'Delete'}
+              </Button>
+              <div className="relative sm:hidden">
+                <Button
+                  size="icon"
+                  onClick={() => setMoreOpen((open) => !open)}
+                  aria-haspopup="menu"
+                  aria-expanded={moreOpen}
+                  aria-label="More actions"
+                >
+                  <EllipsisVertical className="h-4 w-4" aria-hidden="true" />
+                </Button>
+                {moreOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40" aria-hidden="true" onClick={() => setMoreOpen(false)} />
+                    <div className="absolute right-0 z-50 mt-2 w-44 rounded-club border-2 border-stone bg-paper p-1.5 shadow-sticker" role="menu" aria-label="More actions">
+                      <Link
+                        to={`/create?edit=${reviewer.id}`}
+                        role="menuitem"
+                        className="flex w-full items-center gap-2 rounded-soft px-3 py-2.5 text-sm font-extrabold text-ink hover:bg-cream"
+                      >
+                        <Pencil className="h-4 w-4" aria-hidden="true" /> Edit
+                      </Link>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => { setMoreOpen(false); setConfirmingDelete(true) }}
+                        className="flex w-full items-center gap-2 rounded-soft px-3 py-2.5 text-sm font-extrabold text-accent hover:bg-blush/50"
+                      >
+                        <Trash2 className="h-4 w-4" aria-hidden="true" /> Delete
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
           )}
-          <div className="relative hidden sm:block">
-            <button
-              type="button"
-              onClick={() => { setShareOpen((v) => !v); setCopied(false) }}
-              aria-haspopup="dialog"
-              aria-expanded={shareOpen}
-              className="inline-flex items-center gap-2 rounded-soft border-2 border-stone bg-paper px-4 py-2 text-sm font-extrabold text-ink hover:bg-powder"
-            >
-              <Share2 className="h-4 w-4" aria-hidden="true" /> Share
-            </button>
-          </div>
-          <div className="relative sm:hidden">
-            <button
-              type="button"
-              onClick={() => setMoreOpen((v) => !v)}
-              aria-haspopup="menu"
-              aria-expanded={moreOpen}
-              aria-label="More actions"
-              className="inline-flex items-center rounded-soft border-2 border-stone bg-paper px-3 py-2 text-ink hover:bg-powder"
-            >
-              <EllipsisVertical className="h-4 w-4" aria-hidden="true" />
-            </button>
-            {moreOpen && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setMoreOpen(false)} />
-                <div className="absolute right-0 z-50 mt-2 w-48 rounded-2xl border-2 border-stone bg-paper p-2 shadow-xl" role="menu" aria-label="More actions">
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => { setMoreOpen(false); setDetailsOpen(true) }}
-                    className="flex w-full items-center gap-2 rounded-soft px-3 py-2 text-sm font-extrabold text-ink hover:bg-powder"
-                  >
-                    <BookOpenText className="h-4 w-4" aria-hidden="true" /> View Details
-                  </button>
-                  {isOwner && (
-                    <button
-                      type="button"
-                      role="menuitem"
-                      onClick={() => { setMoreOpen(false); setConfirmingDelete(true) }}
-                      className="flex w-full items-center gap-2 rounded-soft px-3 py-2 text-sm font-extrabold text-accent hover:bg-blush/40"
-                    >
-                      <Trash2 className="h-4 w-4" aria-hidden="true" /> Delete
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => { setMoreOpen(false); setShareOpen(true); setCopied(false) }}
-                    className="flex w-full items-center gap-2 rounded-soft px-3 py-2 text-sm font-extrabold text-ink hover:bg-powder"
-                  >
-                    <Share2 className="h-4 w-4" aria-hidden="true" /> Share
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
         </div>
       </header>
 
-      {shareOpen && (
-        <>
-          <div className="fixed inset-0 z-40 bg-ink/30" aria-hidden="true" onClick={() => setShareOpen(false)} />
-          <div className="fixed inset-0 z-50 flex items-end justify-center p-0 pb-[env(safe-area-inset-bottom)] sm:items-center sm:p-4" onClick={() => setShareOpen(false)} onKeyDown={(event) => { if (event.key === 'Escape') setShareOpen(false) }}>
-            <div className="w-full rounded-t-2xl border-2 border-b-0 border-stone bg-paper p-4 shadow-xl club-rise sm:mx-auto sm:max-w-sm sm:rounded-soft sm:border-b-2" role="dialog" aria-modal="true" aria-label="Share This Reviewer" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between gap-2">
-                <p className="text-sm font-extrabold text-ink">Share This Reviewer</p>
-                <button
-                  type="button"
-                  onClick={() => setShareOpen(false)}
-                  aria-label="Close share dialog"
-                  className="rounded-soft border-2 border-transparent p-1.5 text-ink hover:bg-stone/40"
-                >
-                  <X className="h-4 w-4" aria-hidden="true" />
-                </button>
-              </div>
-        <div className="mt-2 flex items-center gap-2">
+      <Modal open={shareOpen} onClose={() => setShareOpen(false)} title="Share This Reviewer" closeLabel="Close share dialog">
+        <div className="mt-3 flex items-center gap-2">
           <input
             readOnly
             value={shareUrl}
             aria-label="Share link"
             onFocus={(e) => e.target.select()}
-            className="min-w-0 flex-1 rounded-soft border-2 border-stone bg-paper px-3 py-2 text-xs text-muted focus:border-accent focus:outline-none"
+            className="min-w-0 flex-1 rounded-soft border-2 border-line bg-cream px-3 py-2 text-xs text-ink focus:border-accent focus:outline-none"
           />
-          <button
-            type="button"
+          <Button
+            size="sm"
+            variant={copied ? 'secondary' : 'primary'}
             onClick={handleCopyLink}
-            className={`inline-flex shrink-0 items-center gap-1.5 rounded-soft border-2 px-3 py-2 text-xs font-extrabold ${copied ? 'border-mint bg-mint text-ink' : 'border-ink bg-ink text-paper hover:opacity-90'}`}
+            className={copied ? 'border-mint bg-mint' : ''}
           >
             {copied ? <Check className="h-3.5 w-3.5" aria-hidden="true" /> : <Copy className="h-3.5 w-3.5" aria-hidden="true" />}
             {copied ? 'Copied' : 'Copy'}
-          </button>
+          </Button>
         </div>
         {isOwner && (reviewer.visibility === 'private' || reviewer.isDraft) && (
-          <p className="mt-3 flex items-start gap-2 rounded-soft border-2 border-butter bg-butter/30 px-3 py-2 text-xs font-bold text-ink">
-            <LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent" aria-hidden="true" />
-            <span>Only you can open this link — switch to Unlisted above so recipients can view it.</span>
+          <p className="mt-3 flex items-start gap-2 rounded-soft border-2 border-butter bg-butter/40 px-3 py-2 text-xs font-bold text-ink">
+            <LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+            <span>Only you can open this link — switch to Unlisted below so recipients can view it.</span>
           </p>
         )}
         {isOwner && (
-          <div className="mt-3 border-t-2 border-stone pt-3">
-            <p className="text-xs font-extrabold uppercase tracking-widest text-muted">Visibility</p>
-            <div className="mt-2 flex flex-col items-stretch gap-1 rounded-soft border-2 border-stone bg-paper p-1" role="radiogroup" aria-label="Visibility">
+          <div className="mt-4">
+            <p className="text-xs font-extrabold uppercase tracking-wider text-muted">Visibility</p>
+            <div className="mt-2 grid grid-cols-3 gap-1 rounded-soft border-2 border-stone bg-cream p-1" role="radiogroup" aria-label="Visibility">
               {VISIBILITY_OPTIONS.map(({ value, label, icon: Icon }) => (
                 <button
                   key={value}
@@ -432,8 +465,7 @@ const Reviewer = () => {
                   aria-checked={reviewer.visibility === value}
                   onClick={() => handleVisibilityChange(value)}
                   disabled={visSaving}
-                  title={label}
-                  className={`flex w-full items-center gap-1.5 rounded-soft px-3 py-1.5 text-xs font-extrabold transition-colors disabled:opacity-60 ${reviewer.visibility === value ? 'bg-ink text-paper' : 'text-muted hover:bg-stone/60 hover:text-ink'}`}
+                  className={`flex items-center justify-center gap-1.5 rounded-soft px-2 py-2 text-xs font-extrabold transition-colors duration-150 disabled:opacity-60 ${reviewer.visibility === value ? 'bg-ink text-paper' : 'text-muted hover:bg-paper hover:text-ink'}`}
                 >
                   <Icon className="h-3.5 w-3.5" aria-hidden="true" /> {label}
                 </button>
@@ -441,88 +473,54 @@ const Reviewer = () => {
             </div>
           </div>
         )}
-        <ul className="mt-3 space-y-1.5 text-xs text-muted">
+        <ul className="mt-4 space-y-1.5 text-xs text-muted">
           <li className="flex items-start gap-2"><Globe2 className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" /><span><b className="text-ink">Public</b> — anyone can view it, including the public library.</span></li>
           <li className="flex items-start gap-2"><Link2 className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" /><span><b className="text-ink">Unlisted</b> — only people with the shared link can view it.</span></li>
           <li className="flex items-start gap-2"><LockKeyhole className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" /><span><b className="text-ink">Private</b> — only you can view it.</span></li>
         </ul>
-            </div>
-          </div>
-        </>
-      )}
+      </Modal>
 
-      {confirmingDelete && (
-        <>
-          <div className="fixed inset-0 z-40 bg-ink/30" onClick={() => setConfirmingDelete(false)} />
-          <div className="fixed inset-0 z-50 flex items-end justify-center p-0 pb-[env(safe-area-inset-bottom)] sm:items-center sm:p-4" onClick={() => setConfirmingDelete(false)}>
-            <div className="w-full rounded-t-2xl border-2 border-b-0 border-stone bg-paper p-5 club-shadow club-rise sm:mx-auto sm:max-w-sm sm:rounded-soft sm:border-b-2" role="alertdialog" aria-modal="true" aria-labelledby="delete-reviewer-title" aria-describedby="delete-reviewer-copy" onClick={(e) => e.stopPropagation()}>
-              <h2 id="delete-reviewer-title" className="font-display text-xl font-bold text-ink">Delete This Reviewer?</h2>
-              <p id="delete-reviewer-copy" className="mt-2 text-sm leading-relaxed text-muted">Its file, flashcards, blurting history, and focus sessions will be removed and can’t be recovered.</p>
-              <div className="mt-5 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setConfirmingDelete(false)}
-                  className="rounded-soft border-2 border-stone bg-paper px-4 py-2 text-sm font-extrabold text-ink hover:bg-powder"
-                >
-                  Keep It
-                </button>
-                <button
-                  type="button"
-                  onClick={handleDeleteReviewer}
-                  className="rounded-soft border-2 border-accent bg-accent px-4 py-2 text-sm font-extrabold text-paper hover:opacity-90"
-                >
-                  Yes, Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+      <Modal
+        open={confirmingDelete}
+        onClose={() => setConfirmingDelete(false)}
+        title="Delete This Reviewer?"
+        role="alertdialog"
+        describedBy="delete-reviewer-copy"
+        initialFocusRef={keepButtonRef}
+      >
+        <p id="delete-reviewer-copy" className="mt-2 text-sm leading-relaxed text-muted">Its file, flashcards, blurting history, and focus sessions will be removed and can’t be recovered.</p>
+        <div className="mt-5 flex justify-end gap-2">
+          <Button ref={keepButtonRef} onClick={() => setConfirmingDelete(false)}>Keep It</Button>
+          <Button variant="primary" onClick={handleDeleteReviewer}>Yes, Delete</Button>
+        </div>
+      </Modal>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_220px]">
-        <main className="min-w-0" aria-label="Study hub section">
-          <StudyTabs
-            reviewer={reviewer}
-            cards={cards}
-            guest={guest}
-            gradesLeft={reviewer.quota?.gradesLeft}
-            decksLeft={reviewer.quota?.decksLeft}
-            isOwner={isOwner}
-            onToggleKnown={handleToggleKnown}
-            onAdd={handleAddCard}
-            onEdit={handleEditCard}
-            onDelete={handleDeleteCard}
-            onGenerate={handleGenerateDeck}
-            onBlurtingSubmit={handleBlurtingSubmit}
-            onBlurtingRate={handleBlurtingRate}
-          />
-        </main>
-        <aside className="hidden h-fit rounded-soft border-2 border-stone bg-mint/40 p-5 lg:block"><h2 className="font-display text-xl font-bold text-ink">Study Details</h2><div className="mt-4"><StudyDetailsList reviewer={reviewer} /></div></aside>
-      </div>
-
-      {detailsOpen && (
-        <>
-          <div className="fixed inset-0 z-40 bg-ink/30" onClick={() => setDetailsOpen(false)} />
-          <div className="fixed inset-0 z-50 flex items-end justify-center p-0 pb-[env(safe-area-inset-bottom)] sm:items-center sm:p-4" onClick={() => setDetailsOpen(false)}>
-            <div className="w-full rounded-t-2xl border-2 border-b-0 border-stone bg-mint p-5 club-shadow club-rise sm:mx-auto sm:max-w-sm sm:rounded-soft sm:border-b-2" role="dialog" aria-modal="true" aria-label="Study details" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-center justify-between gap-2">
-                <h2 className="font-display text-xl font-bold text-ink">Study Details</h2>
-                <button
-                  type="button"
-                  onClick={() => setDetailsOpen(false)}
-                  aria-label="Close study details"
-                  className="rounded-soft border-2 border-transparent p-1.5 text-ink hover:bg-stone/40"
-                >
-                  <X className="h-4 w-4" aria-hidden="true" />
-                </button>
-              </div>
-              <div className="mt-4"><StudyDetailsList reviewer={reviewer} /></div>
-            </div>
-          </div>
-        </>
-      )}
+      <section className="mt-6 min-w-0" aria-label="Study hub section">
+        <StudyTabs
+          reviewer={reviewer}
+          cards={cards}
+          guest={guest}
+          gradesLeft={reviewer.quota?.gradesLeft}
+          decksLeft={reviewer.quota?.decksLeft}
+          isOwner={isOwner}
+          onToggleKnown={handleToggleKnown}
+          onAdd={handleAddCard}
+          onEdit={handleEditCard}
+          onDelete={handleDeleteCard}
+          onGenerate={handleGenerateDeck}
+          onBlurtingSubmit={handleBlurtingSubmit}
+          onBlurtingRate={handleBlurtingRate}
+        />
+      </section>
     </PageContainer>
   )
 }
 
-export default Reviewer
+// Remount per reviewer id so dialogs, cards, and loading state never carry
+// over when navigating straight from one reviewer to another.
+const ReviewerRoute = () => {
+  const { id } = useParams()
+  return <Reviewer key={id} />
+}
+
+export default ReviewerRoute

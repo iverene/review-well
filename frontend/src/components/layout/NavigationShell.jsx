@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 import { useAuth } from '../../contexts/AuthContext'
 import NotificationBadge from '../notifications/NotificationBadge'
@@ -10,16 +10,9 @@ import Sidebar from './Sidebar'
 
 const NavigationShell = ({ children }) => {
   const { isAuthenticated } = useAuth()
-  const location = useLocation()
-  // Reviewer reading view keeps a visible scrollbar; everything else hides it.
-  const reviewerSegment = location.pathname.split('/')[2]
-  const isReviewerDetail = location.pathname.startsWith('/reviewer/')
-    && !!reviewerSegment
-    && reviewerSegment !== 'my'
-    && reviewerSegment !== 'public'
 
   return (
-    <div className="relative flex h-screen bg-paper">
+    <div className="relative flex h-screen bg-page">
       {/* Desktop Sidebar */}
       {isAuthenticated && (
         <div className="hidden md:flex">
@@ -29,14 +22,14 @@ const NavigationShell = ({ children }) => {
 
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        <div className="pointer-events-none absolute inset-x-0 top-0 z-40 h-32 bg-gradient-to-b from-paper/90 via-paper/45 to-transparent md:hidden" aria-hidden="true" />
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-40 h-32 bg-gradient-to-b from-page/90 via-page/45 to-transparent md:hidden" aria-hidden="true" />
 
         {/* Header Bar */}
         <header className="absolute inset-x-0 top-0 z-50 flex items-center justify-between border-b-0 bg-transparent px-4 py-3 md:px-6">
           <div className="flex items-center gap-4">
             <Link to="/" className={`flex min-w-0 items-center text-xl font-bold text-ink ${isAuthenticated ? 'md:hidden' : ''}`} aria-label="Review Well home">
-              <img src="/logo.png" alt="" className="h-8 w-8 object-contain" />
-              <img src="/word-logo.png" alt="Review Well" className="ml-2 h-6 w-auto max-w-[130px] object-contain sm:max-w-none" />
+              <img src="/logo.webp" alt="" className="h-8 w-8 object-contain" />
+              <img src="/word-logo.webp" alt="Review Well" width="430" height="112" className="wordmark ml-2 h-6 w-auto max-w-[130px] object-contain sm:max-w-none" />
             </Link>
           </div>
           <nav className="flex items-center gap-4">
@@ -52,7 +45,7 @@ const NavigationShell = ({ children }) => {
         </header>
 
         {/* Page Content */}
-        <main className={`relative flex-1 overflow-y-auto pb-24 pt-10 md:pb-0 md:pt-16${isReviewerDetail ? ' show-scroll' : ''}`}>{children}</main>
+        <main id="main-content" className="relative flex-1 overflow-y-auto show-scroll pb-24 pt-16 md:pb-0">{children}</main>
       </div>
 
       {/* Mobile Bottom Dock */}

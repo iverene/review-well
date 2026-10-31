@@ -4,7 +4,7 @@ const ErrorAlert = ({ children, className = '' }) => {
   return (
     <div
       role="alert"
-      className={`rounded-soft border-2 border-berry bg-blush px-4 py-3 text-sm font-semibold text-ink ${className}`}
+      className={`rounded-soft border-2 border-accent bg-blush px-4 py-3 text-sm font-semibold text-ink ${className}`}
     >
       {children}
     </div>

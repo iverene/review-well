@@ -1,13 +1,21 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
+import { CheckCheck } from 'lucide-react'
 
 import NotificationItem from '../components/notifications/NotificationItem'
 import PageHeader from '../components/common/PageHeader'
 import PageContainer from '../components/common/PageContainer'
+import Button from '../components/common/Button'
+import EmptyState from '../components/common/EmptyState'
 import { getApiErrorMessage } from '../utils/apiError'
 import { useToast } from '../contexts/ToastContext'
 import useNotificationStore from '../stores/notificationStore'
 import { NotificationsSkeleton } from '../components/common/Skeleton'
+
+const appendUnique = (previous, incoming) => {
+  const known = new Set(previous.map((notification) => notification.id))
+  return [...previous, ...incoming.filter((notification) => !known.has(notification.id))]
+}
 
 const Notifications = () => {
   const [notifications, setNotifications] = useState([])
@@ -15,10 +23,12 @@ const Notifications = () => {
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
   const toast = useToast()
-  const setUnreadCount = useNotificationStore((state) => state.setUnreadCount)
   const bumpUnread = useNotificationStore((state) => state.bumpUnread)
   const markOneRead = useNotificationStore((state) => state.markOneRead)
   const markAllRead = useNotificationStore((state) => state.markAllRead)
+  // Refreshes compare against the loaded list, so they wait for page 1;
+  // before that every notification would look new and be counted twice.
+  const loadedRef = useRef(false)
 
   useEffect(() => {
     fetchNotifications()
@@ -28,23 +38,14 @@ const Notifications = () => {
   // notifications to the top of the list, on an interval and on focus —
   // and toast once per batch so arrivals surface above the fold.
   useEffect(() => {
-    let firstRun = true
     const fetchLatest = async () => {
+      if (!loadedRef.current) return
       try {
         const response = await axios.get('/api/social/notifications', {
           params: { page: 1, limit: 20 },
           withCredentials: true,
         })
         const fresh = response.data.notifications || []
-        if (firstRun) {
-          firstRun = false
-          setNotifications((prev) => {
-            const known = new Set(prev.map((n) => n.id))
-            const unseen = fresh.filter((n) => !known.has(n.id))
-            return unseen.length > 0 ? [...unseen, ...prev] : prev
-          })
-          return
-        }
         setNotifications((prev) => {
           const known = new Set(prev.map((n) => n.id))
           const unseen = fresh.filter((n) => !known.has(n.id))
@@ -59,7 +60,10 @@ const Notifications = () => {
         // Keep the stale list; the badge poll still surfaces the count
       }
     }
-    const interval = setInterval(fetchLatest, 20000)
+    // Background tabs skip polls; the focus listener catches up on return.
+    const interval = setInterval(() => {
+      if (!document.hidden) fetchLatest()
+    }, 20000)
     window.addEventListener('focus', fetchLatest)
     return () => {
       clearInterval(interval)
@@ -75,10 +79,15 @@ const Notifications = () => {
       })
       const fresh = response.data.notifications || []
       setNotifications((prev) =>
-        page === 1 ? fresh : [...prev, ...fresh]
+        page === 1 ? fresh : appendUnique(prev, fresh)
       )
-      setUnreadCount(fresh.filter((n) => !n.isRead).length)
-      setHasMore(fresh.length === 20)
+      loadedRef.current = true
+      const total = Number(response.data.total)
+      setHasMore(
+        Number.isFinite(total)
+          ? page * 20 < total
+          : fresh.length === 20
+      )
     } catch (error) {
       console.error('Failed to fetch notifications:', error)
       toast.error(getApiErrorMessage(error, 'Unable to load notifications.'))
@@ -121,69 +130,43 @@ const Notifications = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-paper"><NotificationsSkeleton /></div>
+      <NotificationsSkeleton />
     )
   }
 
   return (
-    <div className="min-h-screen bg-paper">
-      <PageContainer>
-        {/* Header */}
-        <div className="mb-6 flex items-center justify-between gap-4">
-          <PageHeader title="Notifications" />
-          {notifications.some((n) => !n.isRead) && (
-            <button
-              onClick={handleMarkAllRead}
-              className="shrink-0 text-sm text-muted hover:text-ink"
-            >
-              Mark All as Read
-            </button>
-          )}
+    <PageContainer className="max-w-3xl">
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <PageHeader title="Notifications" />
+        {notifications.some((n) => !n.isRead) && (
+          <Button variant="quiet" size="sm" onClick={handleMarkAllRead}>
+            <CheckCheck className="h-4 w-4" aria-hidden="true" /> Mark All as Read
+          </Button>
+        )}
+      </div>
+
+      {notifications.length === 0 ? (
+        <EmptyState title="No Notifications Yet">
+          Follows, saves, and new reviewers from people you follow will show up here.
+        </EmptyState>
+      ) : (
+        <div className="space-y-2">
+          {notifications.map((notification) => (
+            <NotificationItem
+              key={notification.id}
+              notification={notification}
+              onMarkRead={handleMarkRead}
+            />
+          ))}
         </div>
+      )}
 
-        {/* Notifications List */}
-        {notifications.length === 0 ? (
-          <div className="py-12 text-center text-muted">
-            <svg
-              className="mx-auto h-12 w-12 text-stone"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-              />
-            </svg>
-            <p className="mt-4">No Notifications Yet</p>
-          </div>
-        ) : (
-          <div>
-            {notifications.map((notification) => (
-              <NotificationItem
-                key={notification.id}
-                notification={notification}
-                onMarkRead={handleMarkRead}
-              />
-            ))}
-          </div>
-        )}
-
-        {/* Load More */}
-        {hasMore && notifications.length > 0 && (
-          <div className="mt-6 text-center">
-            <button
-              onClick={() => setPage((p) => p + 1)}
-              className="rounded border border-stone px-4 py-2 text-sm text-ink hover:bg-stone"
-            >
-              Load More
-            </button>
-          </div>
-        )}
-      </PageContainer>
-    </div>
+      {hasMore && notifications.length > 0 && (
+        <div className="mt-6 flex justify-center">
+          <Button onClick={() => setPage((p) => p + 1)}>Load More</Button>
+        </div>
+      )}
+    </PageContainer>
   )
 }
 

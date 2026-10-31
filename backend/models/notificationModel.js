@@ -13,7 +13,7 @@ const findByRecipient = async (recipientId, { skip = 0, take = 20 } = {}) => {
           select: { id: true, displayName: true, avatarUrl: true },
         },
         reviewer: {
-          select: { id: true, title: true },
+          select: { id: true, title: true, _count: { select: { saves: true } } },
         },
       },
       orderBy: { createdAt: 'desc' },

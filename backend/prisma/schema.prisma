@@ -63,6 +63,8 @@ model Reviewer {
   deckGeneratedAt DateTime? @map("deck_generated_at")
   deckStale Boolean @default(false) @map("deck_stale")
 
+  @@index([visibility, isDraft, updatedAt(sort: Desc)])
+  @@index([authorId, updatedAt(sort: Desc)])
   @@map("reviewers")
 }
 
@@ -148,6 +150,7 @@ model Save {
   reviewer Reviewer @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
 
   @@id([userId, reviewerId])
+  @@index([reviewerId])
   @@map("likes")
 }
 
@@ -159,6 +162,7 @@ model Follow {
   following User @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
 
   @@id([followerId, followingId])
+  @@index([followingId])
   @@map("follows")
 }
 
@@ -176,6 +180,7 @@ model Notification {
   reviewer  Reviewer? @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
 
   @@index([recipientId, isRead, createdAt(sort: Desc)])
+  @@index([recipientId, createdAt(sort: Desc)])
   @@map("notifications")
 }
 

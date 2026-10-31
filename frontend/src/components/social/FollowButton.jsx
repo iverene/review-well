@@ -5,19 +5,26 @@ import { UserCheck, UserPlus } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { useToast } from '../../contexts/ToastContext'
 import { getApiErrorMessage } from '../../utils/apiError'
+import { buttonClasses } from '../common/Button'
 import useQueryCache from '../../stores/queryCache'
 
-const FollowButton = ({ userId, initialFollowing = false, initialFollowerCount = 0, onToggle }) => {
+const FollowButton = ({ userId, initialFollowing, initialFollowerCount = 0, onToggle }) => {
   const { user, isAuthenticated } = useAuth()
   const toast = useToast()
-  const [following, setFollowing] = useState(initialFollowing)
+  const [following, setFollowing] = useState(initialFollowing ?? false)
   const [, setFollowerCount] = useState(initialFollowerCount)
   const [loading, setLoading] = useState(false)
 
   const isOwnProfile = user?.id === userId
 
   useEffect(() => {
-    if (!isAuthenticated || isOwnProfile) return
+    if (initialFollowing !== undefined) setFollowing(initialFollowing)
+  }, [initialFollowing])
+
+  useEffect(() => {
+    // Parents that already know the relationship (list/detail payloads) can
+    // pass it in; fetching it again would repeat the same query per row.
+    if (!isAuthenticated || isOwnProfile || initialFollowing !== undefined) return
     let cancelled = false
     const load = async () => {
       try {
@@ -37,7 +44,7 @@ const FollowButton = ({ userId, initialFollowing = false, initialFollowerCount =
     return () => {
       cancelled = true
     }
-  }, [userId, isAuthenticated, isOwnProfile])
+  }, [userId, isAuthenticated, isOwnProfile, initialFollowing])
 
   const handleFollow = async () => {
     if (!isAuthenticated || loading || isOwnProfile) return
@@ -71,25 +78,20 @@ const FollowButton = ({ userId, initialFollowing = false, initialFollowerCount =
   }
 
   return (
-    <div>
-      <button
-        onClick={handleFollow}
-        disabled={!isAuthenticated || loading}
-        aria-pressed={following}
-        className={`group inline-flex shrink-0 items-center gap-2 rounded-full border-2 px-4 py-2 text-sm font-extrabold transition-all duration-200 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 ${
-          following
-            ? 'border-stone bg-paper text-ink hover:border-blush hover:bg-blush/40'
-            : 'border-accent bg-accent text-paper shadow-sm hover:-translate-y-0.5'
-        }`}
-      >
-        {following ? (
-          <UserCheck className="h-4 w-4" aria-hidden="true" />
-        ) : (
-          <UserPlus className="h-4 w-4 transition-transform duration-200 group-hover:scale-110" aria-hidden="true" />
-        )}
-        {loading ? 'Saving…' : following ? 'Following' : 'Follow'}
-      </button>
-    </div>
+    <button
+      type="button"
+      onClick={handleFollow}
+      disabled={!isAuthenticated || loading}
+      aria-pressed={following}
+      className={buttonClasses({ variant: following ? 'secondary' : 'primary' })}
+    >
+      {following ? (
+        <UserCheck className="h-4 w-4" aria-hidden="true" />
+      ) : (
+        <UserPlus className="h-4 w-4" aria-hidden="true" />
+      )}
+      {loading ? 'Saving…' : following ? 'Following' : 'Follow'}
+    </button>
   )
 }
 

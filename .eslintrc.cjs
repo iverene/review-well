@@ -1,4 +1,13 @@
 module.exports = {
+  root: true,
+  // Build output and test reports are generated — never lint them.
+  ignorePatterns: [
+    'node_modules/',
+    '**/dist/',
+    '**/coverage/',
+    '**/playwright-report/',
+    '**/test-results/',
+  ],
   env: {
     browser: true,
     es2021: true,
@@ -29,4 +38,25 @@ module.exports = {
       version: 'detect',
     },
   },
+  overrides: [
+    {
+      // Both Vitest configs set `globals: true`.
+      files: ['**/tests/**/*.{js,jsx}', '**/*.test.{js,jsx}'],
+      globals: {
+        vi: 'readonly',
+        describe: 'readonly',
+        it: 'readonly',
+        test: 'readonly',
+        expect: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+      },
+      rules: {
+        // vi.mock() calls are hoisted, so tests interleave them with imports.
+        'import/order': 'off',
+      },
+    },
+  ],
 }

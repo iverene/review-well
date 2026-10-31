@@ -3,6 +3,7 @@ import axios from 'axios'
 
 import useAuthStore from '../stores/authStore'
 import { getApiErrorMessage } from '../utils/apiError'
+import { rememberReturnTo } from '../utils/returnTo'
 
 const AuthContext = createContext(null)
 
@@ -17,7 +18,7 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const { user, isAuthenticated, isGuest, login, enterGuest, logout } = useAuthStore()
+  const { user, isAuthenticated, isGuest, login, enterGuest, logout, resolveAnonymous } = useAuthStore()
 
   // Stable identity so consumers' effects (AuthCallback, Login) fire once,
   // not on every provider re-render (which doubled /api/auth/me calls)
@@ -29,9 +30,12 @@ export const AuthProvider = ({ children }) => {
         login(response.data.user)
         return response.data.user
       }
+      resolveAnonymous()
       return false
     } catch (error) {
-      if (error.response?.status !== 401) {
+      if (error.response?.status === 401) {
+        resolveAnonymous()
+      } else {
         console.error('Failed to check authentication:', error)
         setError(getApiErrorMessage(error, 'Unable to check your session.'))
       }
@@ -39,13 +43,14 @@ export const AuthProvider = ({ children }) => {
     } finally {
       setLoading(false)
     }
-  }, [login])
+  }, [login, resolveAnonymous])
 
   useEffect(() => {
     checkAuth()
   }, [checkAuth])
 
-  const signInWithGoogle = () => {
+  const signInWithGoogle = (returnTo) => {
+    rememberReturnTo(returnTo)
     window.location.href = '/api/auth/google'
   }
 

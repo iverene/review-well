@@ -17,10 +17,13 @@ const ReviewerGridSkeleton = ({ count = 6 }) => (
 )
 
 const ProfileSkeleton = () => (
-  <div className="mx-auto max-w-4xl space-y-8" role="status" aria-label="Loading profile">
-    <div className="flex items-center gap-6"><Skeleton className="h-24 w-24 rounded-full" /><div className="space-y-3"><Skeleton className="h-7 w-48" /><Skeleton className="h-4 w-64" /><Skeleton className="h-4 w-80" /></div></div>
-    <div className="flex gap-8 border-b-2 border-stone pb-4"><Skeleton className="h-10 w-16" /><Skeleton className="h-10 w-16" /><Skeleton className="h-10 w-16" /></div>
-    <Skeleton className="h-32 w-full" />
+  <div className="mx-auto w-full max-w-5xl space-y-6" role="status" aria-label="Loading profile">
+    <div className="rounded-club border-2 border-stone bg-paper p-5 sm:p-6">
+      <div className="flex items-start gap-4"><Skeleton className="h-16 w-16 rounded-full md:h-20 md:w-20" /><div className="flex-1 space-y-2"><Skeleton className="h-7 w-48" /><Skeleton className="h-4 w-56" /><Skeleton className="h-4 w-40" /></div></div>
+      <div className="mt-5 flex gap-4 border-t-2 border-dashed border-stone pt-4"><Skeleton className="h-12 flex-1" /><Skeleton className="h-12 flex-1" /><Skeleton className="h-12 flex-1" /></div>
+    </div>
+    <Skeleton className="h-12 w-full" />
+    <ReviewerGridSkeleton count={2} />
   </div>
 )
 
@@ -30,20 +33,15 @@ const NotificationsSkeleton = () => (
   </div>
 )
 
+// Mirrors the hub: tags, title, inline details, action row, source viewer.
 const ReviewerSkeleton = () => (
-  <div className="space-y-6" role="status" aria-label="Loading reviewer">
-    <div className="flex flex-wrap items-center justify-between gap-4">
-      <Skeleton className="h-8 w-40" />
-      <div className="flex gap-2"><Skeleton className="h-9 w-20 rounded-full" /><Skeleton className="h-9 w-20 rounded-soft" /><Skeleton className="h-9 w-24 rounded-soft" /></div>
-    </div>
-    <div className="space-y-3"><Skeleton className="h-10 w-2/3" /><Skeleton className="h-4 w-1/2" /></div>
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_220px]">
-      <div className="space-y-3">
-        <div className="flex items-center justify-between rounded-soft border-2 border-stone bg-paper px-3 py-2"><Skeleton className="h-6 w-32" /><Skeleton className="h-6 w-6" /></div>
-        <Skeleton className="h-[62vh] w-full md:h-[72vh]" />
-      </div>
-      <div className="space-y-4 rounded-soft border-2 border-stone bg-mint/40 p-5"><Skeleton className="h-6 w-28" /><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-5/6" /><Skeleton className="h-4 w-2/3" /></div>
-    </div>
+  <div className="mx-auto w-full max-w-5xl" role="status" aria-label="Loading reviewer">
+    <Skeleton className="h-6 w-24 rounded-full" />
+    <Skeleton className="mt-4 h-9 w-3/4" />
+    <Skeleton className="mt-3 h-4 w-1/3" />
+    <div className="mt-6 flex flex-wrap gap-6">{[0, 1, 2, 3].map((i) => <div key={i} className="space-y-1.5"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-24" /></div>)}</div>
+    <div className="mt-5 flex gap-2 border-t-2 border-dashed border-stone pt-4"><Skeleton className="h-11 w-16" /><Skeleton className="h-11 w-28" /><Skeleton className="h-11 w-24" /></div>
+    <div className="mt-6 overflow-hidden rounded-soft border-2 border-stone bg-paper"><div className="h-12 border-b-2 border-stone bg-cream" /><Skeleton className="h-[62vh] w-full rounded-none md:h-[72vh]" /></div>
   </div>
 )
 

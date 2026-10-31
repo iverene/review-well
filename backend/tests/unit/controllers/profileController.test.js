@@ -7,6 +7,9 @@ vi.mock('../../../models/userModel.js', () => ({
   findByEmail: vi.fn(),
   create: vi.fn(),
   update: vi.fn(),
+  searchUsers: vi.fn(),
+  getAnnouncementSeenId: vi.fn(),
+  setAnnouncementSeenId: vi.fn(),
 }))
 vi.mock('../../../models/reviewerModel.js', () => ({
   findPublic: vi.fn(),
@@ -24,6 +27,7 @@ vi.mock('../../../models/followModel.js', () => ({
   countFollowers: vi.fn(),
   countFollowing: vi.fn(),
   isFollowing: vi.fn(),
+  followingIdsFor: vi.fn(),
 }))
 vi.mock('../../../models/saveModel.js', () => ({
   findByUserAndReviewer: vi.fn(),
@@ -133,14 +137,15 @@ describe('Profile Controller', () => {
       const req = createMockRequest({ user: { id: 'user-123' }, query: { q: 'ann' } })
       const res = createMockResponse()
 
-      userModel.searchUsers = vi.fn().mockResolvedValue([
+      userModel.searchUsers.mockResolvedValue([
         { id: 'user-456', displayName: 'Ann Lee' },
       ])
-      followModel.isFollowing.mockResolvedValue(true)
+      followModel.followingIdsFor.mockResolvedValue(new Set(['user-456']))
 
       await searchUsers(req, res)
 
       expect(userModel.searchUsers).toHaveBeenCalledWith('ann', { take: 20, excludeId: 'user-123' })
+      expect(followModel.followingIdsFor).toHaveBeenCalledWith('user-123', ['user-456'])
       expect(res.json).toHaveBeenCalledWith({
         users: [{ id: 'user-456', displayName: 'Ann Lee', isFollowing: true }],
       })
@@ -150,7 +155,7 @@ describe('Profile Controller', () => {
       const req = createMockRequest({ user: { id: 'user-123' }, query: {} })
       const res = createMockResponse()
 
-      userModel.searchUsers = vi.fn().mockResolvedValue([])
+      userModel.searchUsers.mockResolvedValue([])
 
       await searchUsers(req, res)
 
@@ -162,7 +167,7 @@ describe('Profile Controller', () => {
       const req = createMockRequest({ user: { id: 'user-123' }, query: { q: ['ann', 'x'] } })
       const res = createMockResponse()
 
-      userModel.searchUsers = vi.fn().mockResolvedValue([])
+      userModel.searchUsers.mockResolvedValue([])
 
       await searchUsers(req, res)
 
@@ -307,7 +312,7 @@ describe('Profile Controller', () => {
       const req = createMockRequest({ user: { id: 'user-123' } })
       const res = createMockResponse()
 
-      userModel.getAnnouncementSeenId = vi.fn().mockResolvedValue('v1')
+      userModel.getAnnouncementSeenId.mockResolvedValue('v1')
 
       await getAnnouncement(req, res)
 
@@ -321,7 +326,7 @@ describe('Profile Controller', () => {
       })
       const res = createMockResponse()
 
-      userModel.setAnnouncementSeenId = vi.fn().mockResolvedValue({ announcementSeenId: 'v2' })
+      userModel.setAnnouncementSeenId.mockResolvedValue({ announcementSeenId: 'v2' })
 
       await dismissAnnouncement(req, res)
 

@@ -4,6 +4,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { Skeleton } from '../components/common/Skeleton'
 import LoginButton from '../components/auth/LoginButton'
+import { safeInternalPath } from '../utils/returnTo'
 
 // Protected routes (mirrors App.jsx guards) that a guest must never be sent
 // to — bouncing there re-triggers ProtectedRoute and loops the browser into
@@ -38,9 +39,7 @@ const Login = () => {
   // hash); older entries may hold a location object — accept both.
   const stateFrom = location.state?.from
   const statePath = typeof stateFrom === 'string' ? stateFrom : stateFrom?.pathname
-  const from = (returnTo?.startsWith('/') && !returnTo.startsWith('//'))
-    ? returnTo
-    : statePath || '/'
+  const from = safeInternalPath(returnTo) || safeInternalPath(statePath) || '/'
 
   useEffect(() => {
     // Authenticated users bounce straight through. Guests always see this
@@ -65,7 +64,7 @@ const Login = () => {
     <div className="flex min-h-[calc(100vh-120px)] items-center justify-center py-6">
       <div className="club-surface w-full max-w-lg p-6 sm:p-10">
         <div className="mb-8 text-center">
-          <img src="/logo.png" alt="" className="mx-auto mb-4 h-16 w-16 object-contain md:h-24 md:w-24" />
+          <img src="/logo.webp" alt="" className="mx-auto mb-4 h-16 w-16 object-contain md:h-24 md:w-24" />
           <p className="mb-2 font-mono text-xs font-bold uppercase tracking-widest text-accent">Welcome to the study club</p>
           <h1 className="text-2xl font-bold text-ink sm:text-3xl md:text-4xl">Pick Your Study Mode</h1>
           <p className="mx-auto mt-3 max-w-sm leading-relaxed text-muted">Make an account for the full toolkit, or browse public guides as a guest.</p>
@@ -74,7 +73,7 @@ const Login = () => {
           <div className="rounded-soft border-2 border-stone bg-paper p-4 text-center">
             <p className="font-extrabold text-ink">Full Access</p>
             <p className="mt-1 text-sm text-muted">Create, edit, save, and use AI study tools.</p>
-            <div className="mt-3 flex justify-center"><LoginButton /></div>
+            <div className="mt-3 flex justify-center"><LoginButton returnTo={from} /></div>
           </div>
           <button
             onClick={() => {
@@ -83,7 +82,7 @@ const Login = () => {
               // there re-triggers ProtectedRoute and loops navigation.
               navigate(isGuestSafePath(from) ? from : '/', { replace: true })
             }}
-            className="rounded-soft border-2 border-stone bg-powder px-4 py-3 text-sm font-extrabold text-ink transition-transform hover:-translate-y-0.5 hover:bg-powder"
+            className="rounded-soft border-2 border-stone bg-powder px-4 py-3 text-sm font-extrabold text-ink transition-transform hover:-translate-y-0.5 hover:bg-cream"
           >
             Browse as Guest
           </button>

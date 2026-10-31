@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 
 import PushToggle, { urlBase64ToUint8Array } from '../../src/components/PushToggle'
 import useQueryCache from '../../src/stores/queryCache'

@@ -44,4 +44,23 @@ describe('Follow Model', () => {
     const query = mockPrismaInstance.follow.findMany.mock.calls[0][0]
     expect(query.orderBy).toBeUndefined()
   })
+
+  it('should batch-resolve which candidate users are followed', async () => {
+    mockPrismaInstance.follow.findMany.mockResolvedValue([{ followingId: 'user-2' }])
+
+    const followed = await followModel.followingIdsFor('user-1', ['user-2', 'user-3'])
+
+    expect(followed).toEqual(new Set(['user-2']))
+    expect(mockPrismaInstance.follow.findMany).toHaveBeenCalledWith({
+      where: { followerId: 'user-1', followingId: { in: ['user-2', 'user-3'] } },
+      select: { followingId: true },
+    })
+  })
+
+  it('should skip the batch query when there are no candidates', async () => {
+    const followed = await followModel.followingIdsFor('user-1', [])
+
+    expect(followed).toEqual(new Set())
+    expect(mockPrismaInstance.follow.findMany).not.toHaveBeenCalled()
+  })
 })

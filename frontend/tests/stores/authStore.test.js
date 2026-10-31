@@ -7,7 +7,7 @@ describe('Auth Store', () => {
   beforeEach(() => {
     window.localStorage.clear()
     useAuthStore.setState({ user: null, isAuthenticated: false, isGuest: false })
-    useQueryCache.setState({ entries: {} })
+    useQueryCache.setState({ entries: {}, owner: null })
   })
 
   it('enters guest mode without authenticating', () => {
@@ -84,5 +84,40 @@ describe('Auth Store', () => {
     useQueryCache.getState().setEntry('GET /api/reviewers/my', [])
     useAuthStore.getState().enterGuest()
     expect(useQueryCache.getState().getEntry('GET /api/reviewers/my')).toBeNull()
+  })
+
+  describe('after a tab reload restores the cache', () => {
+    const restore = (owner) => {
+      useQueryCache.setState({
+        owner,
+        entries: { 'GET /api/reviewers/my': { data: { reviewers: [1] }, fetchedAt: Date.now() } },
+      })
+    }
+
+    it('keeps the entries when the same user signs back in', () => {
+      restore('user-123')
+      useAuthStore.getState().login({ id: 'user-123' })
+      expect(useQueryCache.getState().getEntry('GET /api/reviewers/my')).not.toBeNull()
+    })
+
+    it('drops the entries when a different user signs in', () => {
+      restore('user-123')
+      useAuthStore.getState().login({ id: 'user-999' })
+      expect(useQueryCache.getState().getEntry('GET /api/reviewers/my')).toBeNull()
+      expect(useQueryCache.getState().owner).toBe('user-999')
+    })
+
+    it("drops a signed-in user's entries when the session has expired", () => {
+      restore('user-123')
+      useAuthStore.getState().resolveAnonymous()
+      expect(useQueryCache.getState().getEntry('GET /api/reviewers/my')).toBeNull()
+    })
+
+    it("keeps a guest's own entries when the session check finds no user", () => {
+      useAuthStore.setState({ isGuest: true })
+      restore('guest')
+      useAuthStore.getState().resolveAnonymous()
+      expect(useQueryCache.getState().getEntry('GET /api/reviewers/my')).not.toBeNull()
+    })
   })
 })

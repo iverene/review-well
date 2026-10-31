@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import axios from 'axios'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 
 import Create from '../../src/pages/Create'
@@ -55,5 +56,44 @@ describe('Create file dropzone', () => {
     const input = document.getElementById('sourceFile')
     fireEvent.drop(input, { dataTransfer: { files: [new File(['x'], 'evil.exe', { type: 'application/octet-stream' })] } })
     expect(screen.getByRole('alert')).toHaveTextContent('Only PDF or PPTX')
+  })
+})
+
+describe('Create edit mode', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    useQueryCache.getState().reset()
+    useAuth.mockReturnValue({ isGuest: false })
+    vi.spyOn(window, 'confirm').mockReturnValue(true)
+  })
+
+  it('uploads a first file when the reviewer has none to replace', async () => {
+    axios.get.mockResolvedValue({ data: { reviewer: {
+      id: 'r1', title: 'Calculus', courseCode: 'MATH 101', courseDescription: 'Calculus I',
+      semester: 'First Semester', examType: 'midterm', visibility: 'private', fileUrl: null,
+    } } })
+    axios.put.mockImplementation((url) => (
+      url === '/api/reviewer-files/r1'
+        ? Promise.reject(Object.assign(new Error('Not found'), { response: { status: 404, data: { error: 'No file to replace for this reviewer' } } }))
+        : Promise.resolve({ data: { reviewer: { id: 'r1' } } })
+    ))
+    axios.post.mockResolvedValue({ data: { file: { id: 'f1' } } })
+
+    render(
+      <MemoryRouter initialEntries={['/create?edit=r1']}>
+        <Routes>
+          <Route path="/create" element={<Create />} />
+          <Route path="/reviewer/:id" element={<div>Study hub</div>} />
+        </Routes>
+      </MemoryRouter>
+    )
+    expect(await screen.findByDisplayValue('Calculus')).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText(/Replace File/), { target: { files: [pdfFile()] } })
+    fireEvent.click(screen.getByRole('button', { name: 'Save Changes' }))
+
+    await waitFor(() => expect(axios.post).toHaveBeenCalledWith('/api/reviewer-files', expect.any(FormData), { withCredentials: true }))
+    const form = axios.post.mock.calls[0][1]
+    expect(form.get('reviewerId')).toBe('r1')
+    expect(await screen.findByText('Study hub')).toBeInTheDocument()
   })
 })

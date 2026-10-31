@@ -7,7 +7,10 @@ describe('PageContainer', () => {
   it('wraps children in the shared page container', () => {
     render(<PageContainer><p>child content</p></PageContainer>)
     const child = screen.getByText('child content')
-    expect(child.parentElement).toHaveClass('mx-auto', 'w-full', 'max-w-5xl', 'px-4', 'pb-10', 'md:px-6')
+    const container = child.parentElement
+    expect(container).toHaveClass('mx-auto', 'w-full', 'max-w-5xl', 'pb-10')
+    expect(container).not.toHaveClass('px-4')
+    expect(container).not.toHaveClass('md:px-6')
   })
 
   it('merges an extra className without dropping the shared classes', () => {

@@ -3,6 +3,7 @@ import * as followModel from '../models/followModel.js'
 import * as notificationModel from '../models/notificationModel.js'
 import * as reviewerFileModel from '../models/reviewerFileModel.js'
 import * as flashcardModel from '../models/flashcardModel.js'
+import * as saveModel from '../models/saveModel.js'
 import { getRemainingQuota, getRemainingGrades, GRADE_LIMIT } from '../models/aiQuotaModel.js'
 import { DECK_QUOTA_LIMIT } from '../constants/quotas.js'
 import { createStorageAdapter } from '../services/adapters/storage.js'
@@ -41,7 +42,7 @@ const notifyFollowersOfNewReviewer = async (authorId, reviewerId) => {
 
 const getPublicReviewers = async (req, res) => {
   try {
-    const { page, limit, skip, take } = parsePagination(req.query)
+    const { page, skip, take } = parsePagination(req.query)
     const { search = '', examType = '', semester = '' } = req.query
 
     const result = await reviewerModel.findPublic({ skip, take, search, examType, semester })
@@ -64,7 +65,7 @@ const getPublicReviewers = async (req, res) => {
 const getAuthorReviewers = async (req, res) => {
   try {
     const { userId } = req.params
-    const { page, limit, skip, take } = parsePagination(req.query, { defaultLimit: 50 })
+    const { page, skip, take } = parsePagination(req.query, { defaultLimit: 50 })
 
     const result = await reviewerModel.findPublicByAuthor(userId, { skip, take })
 
@@ -115,7 +116,7 @@ const getReadableIds = async (req, res) => {
 
 const getMyReviewers = async (req, res) => {
   try {
-    const { page, limit, skip, take } = parsePagination(req.query, { defaultLimit: 50 })
+    const { page, skip, take } = parsePagination(req.query, { defaultLimit: 50 })
 
     const result = await reviewerModel.findByAuthor(req.user.id, { skip, take })
 
@@ -154,10 +155,6 @@ const getReviewerById = async (req, res) => {
       return res.status(404).json({ error: 'Reviewer not found' })
     }
 
-    if (reviewer.visibility === 'unlisted' && reviewer.authorId !== req.user?.id) {
-      // Unlisted reviewers are accessible via direct link but not listed
-    }
-
     // Study-hub enrichment (strictly additive — existing fields untouched):
     // fileUrl honors visibility. The bucket is private, so every visibility
     // level is served via signed URLs: public reviewers get a long-lived
@@ -168,7 +165,8 @@ const getReviewerById = async (req, res) => {
     // file stays unserved (fileUrl: null, which the hub already handles).
     // Independent enrichment fetches run concurrently so detail loads in
     // a single round of parallel queries instead of a sequential chain.
-    const [file, cards, quota] = await Promise.all([
+    // isSaved spares the hub a separate save-status request per visit.
+    const [file, cards, quota, isSaved] = await Promise.all([
       reviewerFileModel.findByReviewerId(id),
       flashcardModel.findByReviewer(id),
       req.user
@@ -177,6 +175,7 @@ const getReviewerById = async (req, res) => {
             getRemainingGrades(req.user.id, GRADE_LIMIT),
           ]).then(([decksLeft, gradesLeft]) => ({ decksLeft, gradesLeft }))
         : Promise.resolve({ decksLeft: 0, gradesLeft: 0 }),
+      req.user ? saveModel.hasUserSaved(req.user.id, id) : Promise.resolve(false),
     ])
 
     let fileUrl = null
@@ -191,7 +190,7 @@ const getReviewerById = async (req, res) => {
 
     const prompts = Array.isArray(reviewer.aiPrompts) ? reviewer.aiPrompts : []
 
-    res.json({ reviewer: { ...reviewer, fileUrl, cards, prompts, quota } })
+    res.json({ reviewer: { ...reviewer, fileUrl, cards, prompts, quota, isSaved } })
   } catch (error) {
     console.error('Get reviewer error:', error)
     res.status(500).json({ error: 'Failed to fetch reviewer' })

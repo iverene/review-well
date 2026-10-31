@@ -10,6 +10,8 @@ export default {
         // Theme-aware tokens backed by RGB triplets in index.css
         // (:root = light, [data-theme='dark'], [data-theme='reading']).
         // The triplet form keeps Tailwind opacity modifiers working.
+        'page': 'rgb(var(--page) / <alpha-value>)',
+        'line': 'rgb(var(--line) / <alpha-value>)',
         'ink': 'rgb(var(--ink) / <alpha-value>)',
         'paper': 'rgb(var(--paper) / <alpha-value>)',
         'stone': 'rgb(var(--stone) / <alpha-value>)',
@@ -30,6 +32,14 @@ export default {
       borderRadius: {
         'club': '16px',
         'soft': '12px',
+      },
+      boxShadow: {
+        // Offset "sticker" shadows from DESIGN.md (cocoa, no blur).
+        'sticker': '4px 5px 0 rgb(var(--ink) / 0.10)',
+        'sticker-sm': '2px 3px 0 rgb(var(--ink) / 0.10)',
+      },
+      transitionTimingFunction: {
+        'out-soft': 'cubic-bezier(0.2, 0, 0, 1)',
       },
     },
   },

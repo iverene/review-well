@@ -51,7 +51,7 @@ const Settings = () => {
           <UserRound className="h-5 w-5 text-accent" aria-hidden="true" /> Account
         </h2>
         <div className="mt-3 flex flex-col gap-1 text-sm font-bold">
-          <Link to="/settings/account" className="flex items-center gap-2 rounded-soft px-2 py-2 text-ink hover:bg-powder">
+          <Link to="/settings/account" className="flex items-center gap-2 rounded-soft px-2 py-2 text-ink hover:bg-cream">
             <span className="flex-1">Account Information</span>
             <ChevronRight className="h-4 w-4 text-muted" aria-hidden="true" />
           </Link>
@@ -60,7 +60,7 @@ const Settings = () => {
               type="button"
               onClick={handleInstall}
               disabled={installing}
-              className="flex items-center gap-2 rounded-soft px-2 py-2 text-left text-ink hover:bg-powder disabled:opacity-60"
+              className="flex items-center gap-2 rounded-soft px-2 py-2 text-left text-ink hover:bg-cream disabled:opacity-60"
             >
               <Download className="h-4 w-4 text-accent" aria-hidden="true" />
               <span className="flex-1">{installing ? 'Installing…' : 'Install app'}</span>
@@ -110,8 +110,8 @@ const Settings = () => {
           <ShieldCheck className="h-5 w-5 text-accent" aria-hidden="true" /> Legal
         </h2>
         <div className="mt-3 flex flex-col gap-1 text-sm font-bold">
-          <Link to="/privacy" className="rounded-soft px-2 py-2 text-ink hover:bg-powder">Privacy Policy</Link>
-          <Link to="/terms" className="rounded-soft px-2 py-2 text-ink hover:bg-powder">Terms and Conditions</Link>
+          <Link to="/privacy" className="rounded-soft px-2 py-2 text-ink hover:bg-cream">Privacy Policy</Link>
+          <Link to="/terms" className="rounded-soft px-2 py-2 text-ink hover:bg-cream">Terms and Conditions</Link>
         </div>
       </section>
 

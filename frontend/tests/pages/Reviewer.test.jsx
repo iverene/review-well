@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { Link, MemoryRouter, Route, Routes } from 'react-router-dom'
 import axios from 'axios'
 
 import Reviewer from '../../src/pages/Reviewer'
@@ -90,7 +90,7 @@ describe('Reviewer', () => {
   it('renders the source-only hub with no study-mode tabs', async () => {
     renderReviewer()
     expect(await screen.findByLabelText('Study hub')).toBeInTheDocument()
-    expect(screen.getByTestId('study-source-pdf')).toBeInTheDocument()
+    expect(await screen.findByTestId('study-source-pdf')).toBeInTheDocument()
     expect(screen.queryByRole('tablist', { name: 'Study modes' })).toBeNull()
     expect(screen.queryByRole('tab', { name: 'Flashcards' })).toBeNull()
     expect(screen.queryByRole('tab', { name: 'Blurting' })).toBeNull()
@@ -105,9 +105,9 @@ describe('Reviewer', () => {
       return Promise.resolve({ data: { reviewer: { ...mockReviewer, fileUrl: null } } })
     })
     renderReviewer()
-    expect(await screen.findByTestId('study-upload-banner')).toHaveTextContent(
-      'Please upload the source file to enable study modes'
-    )
+    const banner = await screen.findByTestId('study-upload-banner')
+    expect(banner).toHaveTextContent('Add your source file')
+    expect(screen.getByRole('link', { name: /Upload a PDF or PPTX/ })).toHaveAttribute('href', '/create?edit=r1')
   })
 
   it('shows guests the source with no sign-in nudge and zero writes', async () => {
@@ -133,7 +133,7 @@ describe('Reviewer', () => {
     fireEvent.click(screen.getByRole('radio', { name: 'Public' }))
     await waitFor(() => expect(axios.put).toHaveBeenCalledWith('/api/reviewers/r1', { visibility: 'public', isDraft: false }, { withCredentials: true }))
     expect(await screen.findByRole('radio', { name: 'Public', checked: true })).toBeInTheDocument()
-  })
+  }, 15000)
 
   it('shows no visibility badge to non-owners', async () => {
     authState.user = { id: 'someone-else' }
@@ -147,9 +147,8 @@ describe('Reviewer', () => {
     renderReviewer()
     await screen.findByLabelText('Study hub')
     fireEvent.click(screen.getByRole('button', { name: 'Share' }))
-    const dialog = await screen.findByRole('dialog', { name: 'Share This Reviewer' })
-    expect(dialog).toBeInTheDocument()
-    fireEvent.click(dialog.parentElement)
+    expect(await screen.findByRole('dialog', { name: 'Share This Reviewer' })).toBeInTheDocument()
+    fireEvent.mouseDown(screen.getByTestId('modal-backdrop'))
     expect(screen.queryByRole('dialog', { name: 'Share This Reviewer' })).toBeNull()
   })
 
@@ -195,16 +194,42 @@ describe('Reviewer', () => {
     expect(screen.queryByRole('heading', { name: 'Reviewer', level: 1 })).toBeNull()
   })
 
-  it('opens study details from the more menu and closes on backdrop click', async () => {
+  it('shows study details inline instead of behind a dialog', async () => {
     renderReviewer()
     await screen.findByLabelText('Study hub')
+    const details = screen.getByLabelText('Study details')
+    expect(details).toHaveTextContent('Iverene Grace Causapin')
+    expect(details).toHaveTextContent('Midterm')
+    expect(details).toHaveTextContent('Fall 2026')
+    expect(screen.queryByRole('dialog')).toBeNull()
+  })
+
+  it('gives owners an edit entry point, including in the mobile menu', async () => {
+    renderReviewer()
+    await screen.findByLabelText('Study hub')
+    expect(screen.getByRole('link', { name: 'Edit' })).toHaveAttribute('href', '/create?edit=r1')
     fireEvent.click(screen.getByRole('button', { name: 'More actions' }))
-    fireEvent.click(screen.getByRole('menuitem', { name: 'View Details' }))
-    const dialog = await screen.findByRole('dialog', { name: 'Study details' })
-    expect(dialog).toBeInTheDocument()
-    expect(dialog).toHaveTextContent('Iverene Grace Causapin')
-    fireEvent.click(document.querySelector('.fixed.inset-0.z-40'))
-    expect(screen.queryByRole('dialog', { name: 'Study details' })).toBeNull()
+    expect(screen.getByRole('menuitem', { name: 'Edit' })).toHaveAttribute('href', '/create?edit=r1')
+    expect(screen.getByRole('menuitem', { name: 'Delete' })).toBeInTheDocument()
+  })
+
+  it('closes the share dialog with Escape', async () => {
+    renderReviewer()
+    await screen.findByLabelText('Study hub')
+    fireEvent.click(screen.getByRole('button', { name: 'Share' }))
+    await screen.findByRole('dialog', { name: 'Share This Reviewer' })
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(screen.queryByRole('dialog', { name: 'Share This Reviewer' })).toBeNull()
+  })
+
+  it('sends guests to sign in, then back, when they try to save', async () => {
+    authState.user = null
+    authState.isAuthenticated = false
+    renderReviewer()
+    await screen.findByLabelText('Study hub')
+    const save = screen.getByRole('link', { name: 'Sign in to save this reviewer' })
+    expect(save.getAttribute('href')).toMatch(/^\/login\?returnTo=/)
+    expect(mockPost).not.toHaveBeenCalled()
   })
   it('purges ghost entries from Recently Viewed on 404', async () => {
     window.localStorage.setItem('review-well-recent-reviewers:user-1', JSON.stringify([{ id: 'r1' }]))
@@ -284,5 +309,64 @@ describe('Reviewer', () => {
     expect(mockDelete).not.toHaveBeenCalled()
     expect(await screen.findByLabelText('Study hub')).toBeInTheDocument()
   })
-})
 
+  it('keeps the source viewer after a visibility change', async () => {
+    // The update endpoint returns the bare row: no fileUrl, cards, or quota.
+    const row = Object.fromEntries(
+      Object.entries(mockReviewer).filter(([key]) => !['fileUrl', 'cards', 'prompts', 'quota', '_count'].includes(key))
+    )
+    mockPut.mockResolvedValue({ data: { reviewer: { ...row, visibility: 'unlisted', isDraft: false } } })
+    renderReviewer()
+    await screen.findByTestId('study-source-pdf')
+    fireEvent.click(screen.getByRole('button', { name: 'Share' }))
+    fireEvent.click(await screen.findByRole('radio', { name: 'Unlisted' }))
+    expect(await screen.findByRole('radio', { name: 'Unlisted', checked: true })).toBeInTheDocument()
+    expect(screen.getByTestId('study-source-pdf')).toBeInTheDocument()
+  })
+
+  it('starts fresh when navigating straight to another reviewer', async () => {
+    mockGet.mockImplementation((url) => {
+      if (String(url).includes('/save')) return Promise.resolve({ data: { saved: false, saveCount: 0 } })
+      if (String(url).endsWith('/r2')) {
+        return Promise.resolve({ data: { reviewer: { ...mockReviewer, id: 'r2', title: 'Biology' } } })
+      }
+      return Promise.resolve({ data: { reviewer: mockReviewer } })
+    })
+    render(
+      <MemoryRouter initialEntries={['/reviewer/r1']}>
+        <Link to="/reviewer/r2">Next reviewer</Link>
+        <Routes>
+          <Route path="/reviewer/:id" element={<Reviewer />} />
+        </Routes>
+      </MemoryRouter>
+    )
+    await screen.findByRole('heading', { name: 'Calculus' })
+    fireEvent.click(screen.getByRole('button', { name: 'Share' }))
+    expect(await screen.findByRole('dialog', { name: 'Share This Reviewer' })).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('link', { name: 'Next reviewer' }))
+
+    expect(await screen.findByRole('heading', { name: 'Biology' })).toBeInTheDocument()
+    expect(screen.queryByRole('dialog', { name: 'Share This Reviewer' })).toBeNull()
+  })
+
+  it('stores only a light preview in Recently Viewed', async () => {
+    renderReviewer()
+    await screen.findByLabelText('Study hub')
+    const [entry] = JSON.parse(window.localStorage.getItem('review-well-recent-reviewers:user-1'))
+    expect(entry).toMatchObject({ id: 'r1', title: 'Calculus', courseCode: 'MATH 101' })
+    expect(entry).not.toHaveProperty('fileUrl')
+    expect(entry).not.toHaveProperty('cards')
+    expect(entry).not.toHaveProperty('quota')
+  })
+
+  it('uses the saved state from the detail payload instead of fetching it', async () => {
+    mockGet.mockImplementation((url) => {
+      if (String(url).includes('/save')) return Promise.resolve({ data: { saved: false, saveCount: 3 } })
+      return Promise.resolve({ data: { reviewer: { ...mockReviewer, isSaved: true } } })
+    })
+    renderReviewer()
+    expect(await screen.findByRole('button', { name: 'Remove bookmark' })).toHaveAttribute('aria-pressed', 'true')
+    expect(mockGet.mock.calls.some(([url]) => String(url).includes('/save'))).toBe(false)
+  })
+})

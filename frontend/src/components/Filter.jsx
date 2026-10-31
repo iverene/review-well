@@ -48,7 +48,7 @@ const FilterSelect = ({ id, label, allLabel, value, options, onPick, openName, s
         title={label}
         onClick={() => setOpenName(open ? null : id)}
         className={`inline-flex max-w-40 items-center gap-1.5 rounded-soft border-2 px-3 py-2 text-sm font-bold transition-colors sm:max-w-none ${
-          value ? 'border-accent bg-blush/40 text-ink' : 'border-stone bg-paper text-muted hover:bg-powder hover:text-ink'
+          value ? 'border-accent bg-blush/40 text-ink' : 'border-stone bg-paper text-muted hover:bg-cream hover:text-ink'
         }`}
       >
         <span className="truncate">{selected ? selected.label : allLabel}</span>
@@ -113,13 +113,13 @@ const Filter = ({ examType = '', semester = '', onChange, onClear }) => {
           aria-expanded={open}
           aria-label="Toggle filters"
           title="Filters"
-          className={`relative inline-flex items-center rounded-soft border-2 px-3 py-2 text-ink ${open || activeCount > 0 ? 'border-accent bg-blush/40' : 'border-stone bg-paper hover:bg-powder'}`}
+          className={`relative inline-flex items-center rounded-soft border-2 px-3 py-2 text-ink ${open || activeCount > 0 ? 'border-accent bg-blush/40' : 'border-stone bg-paper hover:bg-cream'}`}
         >
           <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
           {activeCount > 0 && (
             <span
               data-testid="filter-active-count-mobile"
-              className="absolute -right-1.5 -top-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-[11px] font-extrabold text-paper"
+              className="absolute -right-1.5 -top-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-xs font-extrabold text-paper"
             >
               {activeCount}
             </span>
@@ -133,7 +133,7 @@ const Filter = ({ examType = '', semester = '', onChange, onClear }) => {
         {activeCount > 0 && (
           <span
             data-testid="filter-active-count"
-            className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[11px] font-extrabold text-paper"
+            className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-xs font-extrabold text-paper"
           >
             {activeCount}
           </span>

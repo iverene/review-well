@@ -1,18 +1,36 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import axios from 'axios'
-import { Bookmark, LibraryBig, Pencil } from 'lucide-react'
+import { ArrowLeft, Bookmark, LibraryBig, Pencil, Plus } from 'lucide-react'
 
 import { useAuth } from '../contexts/AuthContext'
+import { useToast } from '../contexts/ToastContext'
 import FollowButton from '../components/social/FollowButton'
-import ErrorAlert from '../components/common/ErrorAlert'
+import Button from '../components/common/Button'
+import Card from '../components/common/Card'
+import EmptyState from '../components/common/EmptyState'
+import Tabs, { tabIds } from '../components/common/Tabs'
+import Tag from '../components/common/Tag'
 import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
 import { formatYearLevel } from '../utils/profile'
-import { ProfileSkeleton } from '../components/common/Skeleton'
-import { fetchShared } from '../stores/queryCache'
+import { ProfileSkeleton, ReviewerGridSkeleton } from '../components/common/Skeleton'
+import { cacheKey, fetchShared } from '../stores/queryCache'
 
 const WEEKDAY_LABELS = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+const PAGE_SIZE = 20
+
+const appendUnique = (previous, incoming) => {
+  const next = [...previous]
+  const seen = new Set(previous.map((item) => item.id))
+  for (const item of incoming) {
+    if (item && !seen.has(item.id)) {
+      seen.add(item.id)
+      next.push(item)
+    }
+  }
+  return next
+}
 
 // Pomodoro-linked focus section is parked with the study modes — flip back
 // on to re-enable (API and tests are intact).
@@ -111,28 +129,41 @@ const FocusStats = () => {
   )
 }
 
+const VISIBILITY_TONES = { public: 'mint', unlisted: 'powder', private: 'neutral' }
+
 const ReviewerTile = ({ reviewer, showVisibility }) => (
-  <Link
-    to={`/reviewer/${reviewer.id}`}
-    className="group rounded-soft border-2 border-stone bg-paper p-4 club-shadow transition-transform hover:-translate-y-1"
-  >
-    <p className="line-clamp-2 font-display text-lg font-bold text-ink">{reviewer.title}</p>
-    <p className="mt-1 font-mono text-xs font-bold uppercase tracking-widest text-muted">{reviewer.courseCode}</p>
-    <div className="mt-4 flex items-center justify-between gap-2 text-xs text-muted">
-      <span className="inline-flex items-center gap-1 font-semibold">
-        <Bookmark className="h-3.5 w-3.5" aria-hidden="true" />
-        {reviewer._count?.saves || 0} saves
-      </span>
+  <Card to={`/reviewer/${reviewer.id}`} className="flex flex-col">
+    <div className="flex flex-wrap items-center gap-2">
+      {reviewer.courseCode && <Tag mono>{reviewer.courseCode}</Tag>}
       {showVisibility && reviewer.visibility && (
-        <span className="rounded-full bg-powder px-2 py-0.5 font-extrabold text-ink">{reviewer.visibility}</span>
+        <Tag tone={VISIBILITY_TONES[reviewer.visibility] || 'neutral'} className="capitalize">{reviewer.visibility}</Tag>
       )}
     </div>
-  </Link>
+    <p className="mt-3 line-clamp-2 break-words font-display text-lg font-bold leading-snug text-ink">{reviewer.title}</p>
+    <span className="mt-auto inline-flex items-center gap-1 pt-4 text-xs font-semibold text-muted">
+      <Bookmark className="h-3.5 w-3.5" aria-hidden="true" />
+      {reviewer._count?.saves || 0} saves
+    </span>
+  </Card>
 )
+
+const Stat = ({ value, label, to, ariaLabel }) => {
+  const body = (
+    <>
+      <span className="block font-display text-xl font-bold text-ink">{value}</span>
+      <span className="text-xs font-extrabold uppercase tracking-wider text-muted">{label}</span>
+    </>
+  )
+  const classes = 'flex-1 rounded-soft px-2 py-2 text-center'
+  return to
+    ? <Link to={to} className={`${classes} transition-colors duration-150 hover:bg-cream`} aria-label={ariaLabel}>{body}</Link>
+    : <div className={classes} aria-label={ariaLabel}>{body}</div>
+}
 
 const Profile = () => {
   const { userId } = useParams()
   const { user: currentUser } = useAuth()
+  const { error: toastError } = useToast()
   const [profile, setProfile] = useState(null)
   const [reviewers, setReviewers] = useState([])
   const [savedReviewers, setSavedReviewers] = useState([])
@@ -142,6 +173,11 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState('reviewers')
   const [following, setFollowing] = useState(false)
   const [followerCount, setFollowerCount] = useState(0)
+  const [reviewerPage, setReviewerPage] = useState(1)
+  const [reviewerHasMore, setReviewerHasMore] = useState(false)
+  const [savedPage, setSavedPage] = useState(1)
+  const [savedHasMore, setSavedHasMore] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(null)
 
   const isOwnProfile = currentUser?.id === userId || !userId
   const profileId = userId || currentUser?.id
@@ -173,14 +209,28 @@ const Profile = () => {
     try {
       const own = !userId || userId === currentUser?.id
       const reviewersUrl = own ? '/api/reviewers/my' : `/api/reviewers/author/${targetId}`
+      const reviewersParams = { page: 1, limit: PAGE_SIZE }
+      const savedParams = { page: 1, limit: PAGE_SIZE }
       const [reviewersRes, savedRes] = await Promise.all([
-        fetchShared(`GET ${reviewersUrl}`, () => axios.get(reviewersUrl, { withCredentials: true }), { force: silent }),
+        fetchShared(
+          cacheKey('GET', reviewersUrl, reviewersParams),
+          () => axios.get(reviewersUrl, { params: reviewersParams, withCredentials: true }),
+          { force: silent }
+        ),
         own
-          ? fetchShared('GET /api/social/saved', () => axios.get('/api/social/saved', { withCredentials: true }), { force: silent })
-          : Promise.resolve({ data: { reviewers: [] } }),
+          ? fetchShared(
+            cacheKey('GET', '/api/social/saved', savedParams),
+            () => axios.get('/api/social/saved', { params: savedParams, withCredentials: true }),
+            { force: silent }
+          )
+          : Promise.resolve({ reviewers: [], pagination: { hasMore: false } }),
       ])
       setReviewers(reviewersRes.reviewers || [])
+      setReviewerPage(1)
+      setReviewerHasMore(!!reviewersRes.pagination?.hasMore)
       setSavedReviewers(savedRes.reviewers || [])
+      setSavedPage(1)
+      setSavedHasMore(!!savedRes.pagination?.hasMore)
     } catch (err) {
       console.error('Failed to fetch profile lists:', err)
       setError(getApiErrorMessage(err, 'Unable to load reviewers.'))
@@ -191,10 +241,57 @@ const Profile = () => {
 
   useEffect(() => {
     setActiveTab('reviewers')
-    fetchProfile().then((loaded) => {
-      if (loaded) fetchLists(loaded, false)
-    })
+    setReviewers([])
+    setSavedReviewers([])
+    setReviewerPage(1)
+    setReviewerHasMore(false)
+    setSavedPage(1)
+    setSavedHasMore(false)
+    setLoadingMore(null)
+    // The profile id is already known (URL or session), so the lists load
+    // alongside the profile instead of waiting for it.
+    fetchProfile()
+    fetchLists(null, false)
   }, [userId, fetchProfile, fetchLists])
+
+  const loadMore = async (tab) => {
+    const own = !userId || userId === currentUser?.id
+    const isSaved = tab === 'saved'
+    if (loadingMore || (isSaved && !own)) return
+
+    const targetId = profile?.id || profileId
+    if (!targetId) return
+
+    const nextPage = (isSaved ? savedPage : reviewerPage) + 1
+    const url = isSaved
+      ? '/api/social/saved'
+      : own ? '/api/reviewers/my' : `/api/reviewers/author/${targetId}`
+    const params = { page: nextPage, limit: PAGE_SIZE }
+
+    setLoadingMore(tab)
+    try {
+      const response = await fetchShared(
+        cacheKey('GET', url, params),
+        () => axios.get(url, { params, withCredentials: true })
+      )
+      const incoming = response.reviewers || []
+      const hasMore = !!response.pagination?.hasMore
+
+      if (isSaved) {
+        setSavedReviewers((previous) => appendUnique(previous, incoming))
+        setSavedPage(nextPage)
+        setSavedHasMore(hasMore)
+      } else {
+        setReviewers((previous) => appendUnique(previous, incoming))
+        setReviewerPage(nextPage)
+        setReviewerHasMore(hasMore)
+      }
+    } catch (err) {
+      toastError(getApiErrorMessage(err, 'Unable to load more reviewers.'))
+    } finally {
+      setLoadingMore(null)
+    }
+  }
 
   const handleFollowToggle = (isFollowing, count) => {
     setFollowing(isFollowing)
@@ -202,21 +299,17 @@ const Profile = () => {
     fetchProfile(true)
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-paper"><ProfileSkeleton /></div>
-    )
-  }
+  if (loading) return <ProfileSkeleton />
 
   if (error || !profile) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-paper">
-        <div className="text-center">
-          <ErrorAlert className="mb-4">{error || 'Profile not found'}</ErrorAlert>
-          <Link to="/" className="mt-4 inline-block text-ink hover:underline">
-            Go back home
-          </Link>
-        </div>
+      <div className="mx-auto max-w-xl py-10">
+        <EmptyState
+          title="We couldn’t open this profile"
+          action={<Button to="/"><ArrowLeft className="h-4 w-4" aria-hidden="true" /> Go back home</Button>}
+        >
+          <p role="alert">{error || 'Profile not found'}</p>
+        </EmptyState>
       </div>
     )
   }
@@ -229,129 +322,88 @@ const Profile = () => {
     : [{ value: 'reviewers', label: 'Reviewers', icon: LibraryBig }]
 
   const visibleReviewers = activeTab === 'saved' ? savedReviewers : reviewers
+  const visibleHasMore = activeTab === 'saved' ? savedHasMore : reviewerHasMore
+  const panelIds = tabIds('profile', activeTab)
+  const details = [profile.program, profile.major, formatYearLevel(profile.yearLevel)].filter(Boolean).join(' · ')
 
   return (
     <PageContainer>
-      {/* Profile header (cardless) */}
-      <div aria-label="Profile">
-        <h1 className="break-words font-display text-3xl font-bold text-ink md:text-4xl">{profile.displayName}</h1>
-        <div className="mt-3 flex items-center gap-4">
+      <Card className="p-5 sm:p-6" role="region" aria-label="Profile">
+        <div className="flex items-start gap-4">
           {profile.avatarUrl ? (
             <img
               src={profile.avatarUrl}
               alt={profile.displayName}
-              className="h-16 w-16 rounded-full border-2 border-stone object-cover md:h-24 md:w-24"
+              className="h-16 w-16 shrink-0 rounded-full border-2 border-stone object-cover md:h-20 md:w-20"
             />
           ) : (
-            <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-stone bg-blush font-display text-2xl font-bold text-ink md:h-24 md:w-24 md:text-3xl" aria-hidden="true">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 border-stone bg-blush font-display text-2xl font-bold text-ink md:h-20 md:w-20" aria-hidden="true">
               {profile.displayName?.charAt(0).toUpperCase() || 'U'}
             </div>
           )}
           <div className="min-w-0 flex-1">
-            {(profile.school || profile.program || profile.major || profile.yearLevel) && (
-              <div className="space-y-0.5" aria-label="School information">
-                {profile.school && (
-                  <p className="text-sm font-bold text-ink">{profile.school}</p>
-                )}
-                {(profile.program || profile.major || profile.yearLevel) && (
-                  <p className="mt-0.5 text-xs text-muted">
-                    {[profile.program, profile.major, formatYearLevel(profile.yearLevel)].filter(Boolean).join(' • ')}
-                  </p>
-                )}
+            <h1 className="break-words font-display text-2xl font-bold leading-tight text-ink md:text-3xl">{profile.displayName}</h1>
+            {(profile.school || details) && (
+              <div className="mt-1 space-y-0.5" aria-label="School information">
+                {profile.school && <p className="text-sm font-bold text-ink">{profile.school}</p>}
+                {details && <p className="text-sm text-muted">{details}</p>}
               </div>
             )}
           </div>
           {isOwnProfile && (
-            <Link
+            <Button
               to="/settings/account"
+              variant="quiet"
+              size="icon"
               aria-label="Edit account"
               title="Edit account"
-              className="ml-auto inline-flex shrink-0 items-center justify-center self-center rounded-soft p-2.5 text-muted hover:bg-powder hover:text-ink"
             >
               <Pencil className="h-5 w-5" aria-hidden="true" />
-            </Link>
+            </Button>
           )}
         </div>
 
-        {!isOwnProfile && (
-          <div className="mt-4">
+        <div className="mt-5 flex flex-col gap-3 border-t-2 border-dashed border-stone pt-4 sm:flex-row sm:items-center">
+          <div className="flex flex-1 gap-1">
+            <Stat value={profile.reviewerCount || 0} label="Reviewers" ariaLabel={`${profile.reviewerCount || 0} reviewers`} />
+            <Stat value={followerCount} label="Followers" to={`/profile/${profile.id}/followers`} ariaLabel={`View followers, ${followerCount}`} />
+            <Stat value={profile.followingCount || 0} label="Following" to={`/profile/${profile.id}/following`} ariaLabel={`View following, ${profile.followingCount || 0}`} />
+          </div>
+          {!isOwnProfile && (
             <FollowButton
               userId={profile.id}
               initialFollowing={following}
               initialFollowerCount={followerCount}
               onToggle={handleFollowToggle}
             />
-          </div>
-        )}
-
-        {/* Stats */}
-        <div className="mt-5 flex gap-1 sm:gap-3">
-          <div className="flex-1 rounded-soft px-2 py-1.5 text-center" aria-label={`${profile.reviewerCount || 0} reviewers`}>
-            <span className="block font-display text-lg font-bold text-ink md:text-xl">{profile.reviewerCount || 0}</span>
-            <span className="text-[11px] font-extrabold uppercase tracking-widest text-muted">Reviewers</span>
-          </div>
-          <Link
-            to={`/profile/${profile.id}/followers`}
-            className="flex-1 rounded-soft px-2 py-1.5 text-center transition-colors hover:bg-stone/40"
-            aria-label={`View followers, ${followerCount}`}
-          >
-            <span className="block font-display text-lg font-bold text-ink md:text-xl">{followerCount}</span>
-            <span className="text-[11px] font-extrabold uppercase tracking-widest text-muted">Followers</span>
-          </Link>
-          <Link
-            to={`/profile/${profile.id}/following`}
-            className="flex-1 rounded-soft px-2 py-1.5 text-center transition-colors hover:bg-stone/40"
-            aria-label={`View following, ${profile.followingCount || 0}`}
-          >
-            <span className="block font-display text-lg font-bold text-ink md:text-xl">{profile.followingCount || 0}</span>
-            <span className="text-[11px] font-extrabold uppercase tracking-widest text-muted">Following</span>
-          </Link>
+          )}
         </div>
         {isOwnProfile && SHOW_FOCUS_STATS && <FocusStats />}
-      </div>
+      </Card>
 
-      {/* Tabs */}
-      <div className="mt-6 flex gap-2 rounded-soft border-2 border-stone bg-paper p-1.5" role="tablist" aria-label="Profile collections">
-        {tabs.map(({ value, label, icon: Icon }) => (
-          <button
-            key={value}
-            type="button"
-            role="tab"
-            aria-selected={activeTab === value}
-            aria-label={label}
-            title={label}
-            onClick={() => setActiveTab(value)}
-            className={`flex flex-1 items-center justify-center gap-2 rounded-soft px-4 py-2.5 text-sm font-extrabold transition-colors ${activeTab === value ? 'border-2 border-accent bg-blush text-ink' : 'border-2 border-transparent text-muted hover:bg-powder hover:text-ink'}`}
-          >
-            <Icon className="h-4 w-4" aria-hidden="true" /> <span className="hidden sm:inline">{label}</span>
-          </button>
-        ))}
-      </div>
+      <Tabs
+        label="Profile collections"
+        idBase="profile"
+        tabs={tabs}
+        value={activeTab}
+        onChange={setActiveTab}
+        className="mt-6"
+      />
 
-      {/* Tab panels */}
-      <div className="mt-4" role="tabpanel">
+      <div className="mt-4" role="tabpanel" id={panelIds.panel} aria-labelledby={panelIds.tab}>
         {listLoading ? (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {[0, 1].map((i) => (
-              <div key={i} className="h-32 animate-pulse rounded-soft border-2 border-stone bg-stone/40" aria-hidden="true" />
-            ))}
-          </div>
+          <ReviewerGridSkeleton count={2} />
         ) : visibleReviewers.length === 0 ? (
-          <div className="rounded-soft border-2 border-dashed border-stone bg-paper px-5 py-10 text-center">
-            <p className="font-display text-lg font-bold text-ink">
-              {activeTab === 'saved' ? 'No Saved Reviewers Yet' : isOwnProfile ? 'No Reviewers Yet' : 'No Public Reviewers Yet'}
-            </p>
-            <p className="mt-1 text-sm text-muted">
-              {activeTab === 'saved'
-                ? 'Tap the bookmark on any reviewer to keep it here.'
-                : isOwnProfile ? 'Create your first study guide to get started.' : 'Check back once they share something.'}
-            </p>
-            {isOwnProfile && activeTab === 'reviewers' && (
-              <Link to="/create" className="mt-4 inline-block rounded-soft border-2 border-accent bg-accent px-5 py-2 text-sm font-extrabold text-paper">
-                Create a reviewer
-              </Link>
+          <EmptyState
+            title={activeTab === 'saved' ? 'No Saved Reviewers Yet' : isOwnProfile ? 'No Reviewers Yet' : 'No Public Reviewers Yet'}
+            action={isOwnProfile && activeTab === 'reviewers' && (
+              <Button to="/create" variant="primary"><Plus className="h-4 w-4" aria-hidden="true" /> Create a reviewer</Button>
             )}
-          </div>
+          >
+            {activeTab === 'saved'
+              ? 'Tap the bookmark on any reviewer to keep it here.'
+              : isOwnProfile ? 'Create your first study guide to get started.' : 'Check back once they share something.'}
+          </EmptyState>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
             {visibleReviewers.map((reviewer) => (
@@ -359,9 +411,28 @@ const Profile = () => {
             ))}
           </div>
         )}
+
+        {visibleHasMore && (
+          <div className="mt-5 flex justify-center">
+            <Button onClick={() => loadMore(activeTab)} disabled={loadingMore === activeTab}>
+              {loadingMore === activeTab
+                ? 'Loading…'
+                : activeTab === 'saved'
+                  ? 'Load more saved reviewers'
+                  : 'Load more reviewers'}
+            </Button>
+          </div>
+        )}
       </div>
     </PageContainer>
   )
 }
 
-export default Profile
+// Remount per profile so a slow response for the previous profile can never
+// land on the next one (its setState calls go to the unmounted instance).
+const ProfileRoute = () => {
+  const { userId } = useParams()
+  return <Profile key={userId || 'me'} />
+}
+
+export default ProfileRoute

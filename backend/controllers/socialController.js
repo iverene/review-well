@@ -33,7 +33,15 @@ const saveReviewer = async (req, res) => {
       return res.status(400).json({ error: 'Already saved' })
     }
 
-    await saveModel.create(userId, reviewerId)
+    try {
+      await saveModel.create(userId, reviewerId)
+    } catch (createError) {
+      // Lost a race with another save request for the same pair.
+      if (createError?.code === 'P2002') {
+        return res.status(400).json({ error: 'Already saved' })
+      }
+      throw createError
+    }
     await notificationModel.createSaveNotification(reviewer.authorId, userId, reviewerId)
     notifyEvent({ actionType: 'save', actorId: userId, recipientIds: [reviewer.authorId], reviewerId })
     delPrefix('social:')
@@ -76,8 +84,10 @@ const getSaveStatus = async (req, res) => {
     const { reviewerId } = req.params
     const userId = req.user?.id
 
-    const saveCount = await saveModel.countByReviewer(reviewerId)
-    const saved = userId ? await saveModel.hasUserSaved(userId, reviewerId) : false
+    const [saveCount, saved] = await Promise.all([
+      saveModel.countByReviewer(reviewerId),
+      userId ? saveModel.hasUserSaved(userId, reviewerId) : false,
+    ])
 
     res.json({ saved, saveCount })
   } catch (error) {
@@ -88,10 +98,17 @@ const getSaveStatus = async (req, res) => {
 
 const getSavedReviewers = async (req, res) => {
   try {
-    const saves = await saveModel.findByUser(req.user.id)
+    const { page, skip, take } = parsePagination(req.query)
+    const result = await saveModel.findByUser(req.user.id, { skip, take })
 
     res.json({
-      reviewers: saves.map((save) => save.reviewer).filter(Boolean),
+      reviewers: result.saves.map((save) => save.reviewer).filter(Boolean),
+      pagination: {
+        page,
+        limit: take,
+        total: result.total,
+        hasMore: skip + result.saves.length < result.total,
+      },
     })
   } catch (error) {
     console.error('Get saved reviewers error:', error)
@@ -170,9 +187,11 @@ const getFollowStatus = async (req, res) => {
     const { userId: targetUserId } = req.params
     const followerId = req.user?.id
 
-    const followerCount = await followModel.countFollowers(targetUserId)
-    const followingCount = await followModel.countFollowing(targetUserId)
-    const following = followerId ? await followModel.isFollowing(followerId, targetUserId) : false
+    const [followerCount, followingCount, following] = await Promise.all([
+      followModel.countFollowers(targetUserId),
+      followModel.countFollowing(targetUserId),
+      followerId ? followModel.isFollowing(followerId, targetUserId) : false,
+    ])
 
     res.json({ following, followerCount, followingCount })
   } catch (error) {
@@ -187,9 +206,39 @@ const getNotifications = async (req, res) => {
     const { skip, take } = parsePagination(req.query)
 
     const result = await notificationModel.findByRecipient(req.user.id, { skip, take })
+    const notifications = result.notifications || []
+
+    const reviewerIds = [...new Set(
+      notifications.map((notification) => notification.reviewerId).filter(Boolean)
+    )]
+    const followActorIds = [...new Set(
+      notifications
+        .filter((notification) => notification.actionType === 'follow')
+        .map((notification) => notification.actorId)
+        .filter(Boolean)
+    )]
+
+    const [savedIds, followedIds] = await Promise.all([
+      saveModel.savedReviewerIdsFor(req.user.id, reviewerIds),
+      followModel.followingIdsFor(req.user.id, followActorIds),
+    ])
+    const savedSet = savedIds || new Set()
+    const followedSet = followedIds || new Set()
+
+    const decorated = notifications.map((notification) => {
+      const next = { ...notification }
+      if (notification.reviewerId) {
+        next.isSaved = savedSet.has(notification.reviewerId)
+        next.saveCount = notification.reviewer?._count?.saves ?? 0
+      }
+      if (notification.actionType === 'follow' && notification.actorId) {
+        next.isFollowing = followedSet.has(notification.actorId)
+      }
+      return next
+    })
 
     res.json({
-      notifications: result.notifications,
+      notifications: decorated,
       total: result.total,
     })
   } catch (error) {
@@ -245,8 +294,16 @@ const getFollowers = async (req, res) => {
   try {
     const { userId } = req.params
     const rows = await followModel.getFollowers(userId)
+    const users = rows.map((row) => row.follower).filter(Boolean)
+    const followingIds = await followModel.followingIdsFor(
+      req.user?.id,
+      users.map((user) => user.id)
+    )
+    const followingSet = followingIds || new Set()
 
-    res.json({ users: rows.map((row) => row.follower).filter(Boolean) })
+    res.json({
+      users: users.map((user) => ({ ...user, isFollowing: followingSet.has(user.id) })),
+    })
   } catch (error) {
     console.error('Get followers error:', error)
     res.status(500).json({ error: 'Failed to get followers' })
@@ -257,8 +314,16 @@ const getFollowing = async (req, res) => {
   try {
     const { userId } = req.params
     const rows = await followModel.getFollowing(userId)
+    const users = rows.map((row) => row.following).filter(Boolean)
+    const followingIds = await followModel.followingIdsFor(
+      req.user?.id,
+      users.map((user) => user.id)
+    )
+    const followingSet = followingIds || new Set()
 
-    res.json({ users: rows.map((row) => row.following).filter(Boolean) })
+    res.json({
+      users: users.map((user) => ({ ...user, isFollowing: followingSet.has(user.id) })),
+    })
   } catch (error) {
     console.error('Get following error:', error)
     res.status(500).json({ error: 'Failed to get following' })

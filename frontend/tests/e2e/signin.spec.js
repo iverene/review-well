@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test'
 
+import { dismissAnnouncements } from './helpers'
+
 // Google OAuth itself cannot run headless (Google blocks automated browsers
 // and the flow needs real credentials), so these tests verify the full
 // sign-in journey around it: initiation hits the backend endpoint, and the
@@ -38,6 +40,10 @@ const mockLibrary = (page) => page.route('**/api/reviewers/**', (route) => route
 }))
 
 test.describe('Google sign-in journey', () => {
+  test.beforeEach(async ({ page }) => {
+    await dismissAnnouncements(page)
+  })
+
   test('sign-in button requests the backend OAuth endpoint', async ({ page }) => {
     await mockSession(page, null, 401)
     // Stay in-app: observe the outbound OAuth request without following it to Google
@@ -46,7 +52,7 @@ test.describe('Google sign-in journey', () => {
 
     const [request] = await Promise.all([
       page.waitForRequest('**/api/auth/google'),
-      page.getByRole('button', { name: 'Sign in with Google' }).click(),
+      page.getByRole('main').getByRole('button', { name: 'Sign in with Google' }).click(),
     ])
 
     expect(request.url()).toContain('/api/auth/google')
@@ -65,6 +71,29 @@ test.describe('Google sign-in journey', () => {
       await expect(page.getByRole('button', { name: 'User menu' })).toBeVisible()
       await expect(page.getByRole('button', { name: 'Sign in with Google' })).toHaveCount(0)
     })
+  })
+
+  test('returns to the reviewer the user signed in from', async ({ page }) => {
+    await mockSession(page, null, 401)
+    await page.route('**/api/auth/google', (route) => route.abort())
+    await page.goto('/login?returnTo=%2Freviewer%2Fr1')
+    await Promise.all([
+      page.waitForRequest('**/api/auth/google'),
+      page.getByRole('main').getByRole('button', { name: 'Sign in with Google' }).click(),
+    ])
+
+    // Google redirects back to the callback with a live session.
+    await page.unroute('**/api/auth/me')
+    await mockSession(page, completeUser)
+    await page.route('**/api/reviewers/r1', (route) => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({ reviewer: { id: 'r1', title: 'Photosynthesis', authorId: 'someone', visibility: 'public', fileUrl: null, cards: [], prompts: [], quota: {} } }),
+    }))
+    await page.goto('/auth/callback')
+
+    await expect(page).toHaveURL('/reviewer/r1')
+    await expect(page.getByRole('heading', { name: 'Photosynthesis' })).toBeVisible()
   })
 
   test('callback with an incomplete profile routes to onboarding', async ({ page }) => {

@@ -1,4 +1,5 @@
 import passport from 'passport'
+
 import * as userModel from '../models/userModel.js'
 import { getFrontendRedirect } from '../config/urls.js'
 

@@ -34,6 +34,35 @@ describe('Reviewer Model', () => {
     expect(result.hasMore).toBe(false)
   })
 
+  it('reports the full public count and whether another page exists', async () => {
+    clearAll()
+    mockPrismaInstance.reviewer.count.mockResolvedValueOnce(25)
+
+    const firstPage = await reviewerModel.findPublic({ skip: 0, take: 20 })
+
+    expect(firstPage.total).toBe(25)
+    expect(firstPage.hasMore).toBe(true)
+    expect(mockPrismaInstance.reviewer.count).toHaveBeenCalledWith({
+      where: expect.objectContaining({ visibility: 'public', isDraft: false }),
+    })
+
+    mockPrismaInstance.reviewer.count.mockResolvedValueOnce(22)
+    const lastPage = await reviewerModel.findPublic({ skip: 20, take: 20 })
+
+    expect(lastPage.total).toBe(22)
+    expect(lastPage.hasMore).toBe(false)
+  })
+
+  it('reports the full count for an author list', async () => {
+    clearAll()
+    mockPrismaInstance.reviewer.count.mockResolvedValueOnce(7)
+
+    const result = await reviewerModel.findByAuthor('user-123', { skip: 0, take: 5 })
+
+    expect(result.total).toBe(7)
+    expect(result.hasMore).toBe(true)
+  })
+
   it('should filter by search term', async () => {
     await reviewerModel.findPublic({ skip: 0, take: 20, search: 'math' })
 
@@ -98,6 +127,17 @@ describe('Reviewer Model', () => {
     await reviewerModel.findPublic({ skip: 0, take: 5 })
 
     expect(mockPrismaInstance.reviewer.findMany).toHaveBeenCalledTimes(1)
-    expect(mockPrismaInstance.reviewer.count).not.toHaveBeenCalled()
+    expect(mockPrismaInstance.reviewer.count).toHaveBeenCalledTimes(1)
+  })
+
+  it('selects isDraft for readable-id checks so drafts are never reported readable', async () => {
+    mockPrismaInstance.reviewer.findMany.mockResolvedValueOnce([])
+
+    await reviewerModel.findByIds(['r1'])
+
+    expect(mockPrismaInstance.reviewer.findMany).toHaveBeenCalledWith({
+      where: { id: { in: ['r1'] } },
+      select: expect.objectContaining({ id: true, visibility: true, authorId: true, isDraft: true }),
+    })
   })
 })

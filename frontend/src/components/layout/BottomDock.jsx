@@ -46,7 +46,7 @@ const BottomDock = () => {
   ]
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 border-t-2 border-stone bg-paper/95 px-3 pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_0_rgba(96,74,58,0.06)] backdrop-blur">
+    <div className="fixed bottom-0 left-0 right-0 z-40 border-t-2 border-stone bg-paper/95 px-3 pb-[env(safe-area-inset-bottom)] shadow-[0_-3px_0_rgb(var(--ink)/0.06)] backdrop-blur">
       <nav className="flex w-full items-center justify-evenly gap-0 py-2" aria-label="Mobile navigation">
         {navItems.map((item) => {
           const isActive = location.pathname === item.to
@@ -57,10 +57,10 @@ const BottomDock = () => {
               to={item.to}
               aria-label={item.label}
               title={item.label}
-              className={`flex min-w-0 flex-1 items-center justify-center rounded-soft px-1 py-2.5 transition-colors ${
+              className={`flex min-h-11 min-w-0 flex-1 items-center justify-center rounded-soft px-1 py-2 transition-colors duration-150 ${
                 isActive
-                  ? 'bg-accent text-paper'
-                  : 'text-muted hover:bg-powder hover:text-ink'
+                  ? 'bg-blush text-accent'
+                  : 'text-muted hover:bg-cream hover:text-ink'
               }`}
               aria-current={isActive ? 'page' : undefined}
             >

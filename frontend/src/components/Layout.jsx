@@ -12,7 +12,7 @@ function Layout({ children }) {
         Skip to main content
       </a>
       <ErrorAlert className="mx-auto mt-4 max-w-6xl px-4 md:px-8">{error}</ErrorAlert>
-      <div id="main-content" className="mx-auto max-w-6xl px-4 py-8 md:px-8" role="main">
+      <div className="mx-auto max-w-6xl px-4 py-8 md:px-8">
         {children}
       </div>
     </NavigationShell>

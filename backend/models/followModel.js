@@ -76,4 +76,13 @@ const isFollowing = async (followerId, followingId) => {
   return !!follow
 }
 
-export { findByUsers, create, remove, getFollowers, getFollowing, countFollowers, countFollowing, isFollowing }
+const followingIdsFor = async (followerId, followingIds = []) => {
+  if (!followerId || followingIds.length === 0) return new Set()
+  const rows = await prisma.follow.findMany({
+    where: { followerId, followingId: { in: followingIds } },
+    select: { followingId: true },
+  })
+  return new Set(rows.map((row) => row.followingId))
+}
+
+export { findByUsers, create, remove, getFollowers, getFollowing, countFollowers, countFollowing, isFollowing, followingIdsFor }

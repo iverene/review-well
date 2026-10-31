@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import axios from 'axios'
 import { Megaphone, Sparkles } from 'lucide-react'
 
-import characterWaving from '../assets/character-waving.png'
+import characterWaving from '../assets/character-waving.webp'
 import { useAuth } from '../contexts/AuthContext'
 import useAuthStore from '../stores/authStore'
+
+import Button from './common/Button'
+import Modal from './common/Modal'
 
 // Bump this id for every new announcement. Everyone (signed-in users on any
 // browser, guests per browser) sees each id exactly once: guests via
@@ -28,8 +32,13 @@ const COMING_SOON_FEATURES = [
 // First-visit announcement per announcement id. Dismissal persists in this
 // browser (guests and signed-in users) and, for signed-in users, on the
 // server — so closing it here never resurfaces it on another browser.
+// Sign-in and onboarding are focused flows; the announcement waits until
+// the user reaches the app proper.
+const QUIET_PATHS = ['/login', '/auth/callback', '/onboarding']
+
 const AnnouncementModal = () => {
   const { user, isAuthenticated } = useAuth()
+  const { pathname } = useLocation()
   const [dismissed, setDismissed] = useState(() => {
     try {
       return window.localStorage.getItem(STORAGE_KEY) === 'dismissed'
@@ -82,52 +91,35 @@ const AnnouncementModal = () => {
     setDismissed(true)
   }
 
-  if (dismissed) return null
+  if (dismissed || QUIET_PATHS.includes(pathname)) return null
 
   return (
-    <>
-      <div className="fixed inset-0 z-40 bg-ink/30" aria-hidden="true" onClick={close} />
-      <div className="fixed inset-0 z-50 flex items-end justify-center p-0 pb-[env(safe-area-inset-bottom)] sm:items-center sm:p-4" role="dialog" aria-modal="true" aria-labelledby="announcement-title">
-        <div className="w-full rounded-t-2xl border-2 border-b-0 border-stone bg-paper p-6 club-shadow club-rise sm:mx-auto sm:max-w-md sm:rounded-soft sm:border-b-2 sm:p-8">
-          <img src={characterWaving} alt="Waving student illustration" className="mx-auto mb-3 h-24 w-28 object-contain object-center" />
-          <div className="flex items-center gap-2 text-accent" aria-hidden="true">
-            <Megaphone className="h-5 w-5" />
-          </div>
-          <h2 id="announcement-title" className="mt-2 font-display text-2xl font-bold text-ink">
-            What’s New in Review Well
-          </h2>
-          <p className="mt-2 text-sm leading-relaxed text-muted">
-            Fresh in this update:
-          </p>
-          <ul className="mt-3 space-y-1.5 text-sm font-semibold text-ink">
-            {NEW_FEATURES.map((feature) => (
-              <li key={feature} className="flex items-start gap-2">
-                <span className="text-accent" aria-hidden="true">*</span> {feature}
-              </li>
-            ))}
-          </ul>
-          <p className="mt-5 flex items-center gap-2 text-sm font-extrabold text-ink">
-            <Sparkles className="h-4 w-4 text-accent" aria-hidden="true" /> Coming Soon
-          </p>
-          <ul className="mt-2 space-y-1.5 text-sm font-semibold text-ink">
-            {COMING_SOON_FEATURES.map((feature) => (
-              <li key={feature} className="flex items-start gap-2">
-                <span className="text-accent" aria-hidden="true">~</span> {feature}
-              </li>
-            ))}
-          </ul>
-          <div className="mt-6 flex justify-end">
-            <button
-              type="button"
-              onClick={close}
-              className="rounded-soft border-2 border-accent bg-accent px-6 py-2.5 text-sm font-extrabold text-paper hover:-translate-y-0.5"
-            >
-              Got It
-            </button>
-          </div>
-        </div>
+    <Modal open onClose={close} title="What’s New in Review Well" size="md">
+      <img src={characterWaving} alt="" aria-hidden="true" width="273" height="229" className="mx-auto -mt-2 mb-2 h-24 w-28 object-contain" />
+      <p className="flex items-center gap-2 text-sm font-extrabold text-ink">
+        <Megaphone className="h-4 w-4 text-accent" aria-hidden="true" /> Fresh in this update
+      </p>
+      <ul className="mt-2 space-y-1.5 text-sm font-semibold text-ink">
+        {NEW_FEATURES.map((feature) => (
+          <li key={feature} className="flex items-start gap-2">
+            <span className="text-accent" aria-hidden="true">*</span> {feature}
+          </li>
+        ))}
+      </ul>
+      <p className="mt-5 flex items-center gap-2 text-sm font-extrabold text-ink">
+        <Sparkles className="h-4 w-4 text-accent" aria-hidden="true" /> Coming Soon
+      </p>
+      <ul className="mt-2 space-y-1.5 text-sm font-semibold text-muted">
+        {COMING_SOON_FEATURES.map((feature) => (
+          <li key={feature} className="flex items-start gap-2">
+            <span className="text-accent" aria-hidden="true">~</span> {feature}
+          </li>
+        ))}
+      </ul>
+      <div className="mt-6 flex justify-end">
+        <Button variant="primary" onClick={close}>Got It</Button>
       </div>
-    </>
+    </Modal>
   )
 }
 

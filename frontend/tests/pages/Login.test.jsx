@@ -11,7 +11,7 @@ vi.mock('../../src/contexts/AuthContext', () => ({
 }))
 
 vi.mock('../../src/components/auth/LoginButton', () => ({
-  default: () => <button type="button">Sign in with Google</button>,
+  default: ({ returnTo }) => <button type="button" data-return-to={returnTo}>Sign in with Google</button>,
 }))
 
 describe('Login', () => {
@@ -42,6 +42,11 @@ describe('Login', () => {
       </Routes>
     </MemoryRouter>
   )
+
+  it('carries ?returnTo= into Google sign-in', () => {
+    renderAt('/login?returnTo=%2Freviewer%2Fr1')
+    expect(screen.getByRole('button', { name: 'Sign in with Google' })).toHaveAttribute('data-return-to', '/reviewer/r1')
+  })
 
   it('sends signed-in users to ?returnTo= instead of home', () => {
     useAuth.mockReturnValue({

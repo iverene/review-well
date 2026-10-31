@@ -12,12 +12,18 @@ const NotificationBadge = () => {
   useEffect(() => {
     if (!isAuthenticated) return
     refresh()
-    // Live delivery without page restarts: poll plus refresh on window focus
-    const interval = setInterval(refresh, 20000)
+    // Live delivery without page restarts: poll plus refresh on window focus.
+    // Background tabs skip polls and catch up as soon as they are visible.
+    const refreshIfVisible = () => {
+      if (!document.hidden) refresh()
+    }
+    const interval = setInterval(refreshIfVisible, 20000)
     window.addEventListener('focus', refresh)
+    document.addEventListener('visibilitychange', refreshIfVisible)
     return () => {
       clearInterval(interval)
       window.removeEventListener('focus', refresh)
+      document.removeEventListener('visibilitychange', refreshIfVisible)
     }
   }, [isAuthenticated, refresh])
 
@@ -26,9 +32,10 @@ const NotificationBadge = () => {
   return (
     <Link
       to="/notifications"
-      className="relative rounded-full p-2 text-ink hover:bg-butter"
+      aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : 'Notifications'}
+      className="relative flex h-10 w-10 items-center justify-center rounded-full text-ink transition-colors duration-150 hover:bg-butter"
     >
-      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -37,7 +44,7 @@ const NotificationBadge = () => {
         />
       </svg>
       {unreadCount > 0 && (
-        <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs font-bold text-paper">
+        <span className="absolute -right-0.5 -top-0.5 flex h-5 min-w-5 items-center justify-center rounded-full border-2 border-page bg-accent px-1 text-xs font-bold text-paper" aria-hidden="true">
           {unreadCount > 99 ? '99+' : unreadCount}
         </span>
       )}

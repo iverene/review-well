@@ -71,7 +71,7 @@ const Contact = () => {
             <button
               type="button"
               onClick={() => setSent(false)}
-              className="mt-4 rounded-soft border-2 border-stone bg-paper px-4 py-2 text-sm font-extrabold text-ink hover:bg-powder"
+              className="mt-4 rounded-soft border-2 border-stone bg-paper px-4 py-2 text-sm font-extrabold text-ink hover:bg-cream"
             >
               Send another
             </button>

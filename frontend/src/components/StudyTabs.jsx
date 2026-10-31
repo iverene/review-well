@@ -1,9 +1,33 @@
-import { useState } from 'react'
+import { lazy, Suspense, useState } from 'react'
+import { FileUp } from 'lucide-react'
 
-import FlashcardDeck from './FlashcardDeck'
-import BlurtingMode from './BlurtingMode'
-import PomodoroDock from './PomodoroDock'
-import PdfViewer from './PdfViewer'
+import Button from './common/Button'
+import EmptyState from './common/EmptyState'
+
+// pdf.js is ~470 kB minified, so the viewer loads on demand instead of
+// riding in the Reviewer route chunk. The parked study modes stay out of the
+// bundle until they are re-enabled.
+const loadPdfViewer = () => import('./PdfViewer')
+const PdfViewer = lazy(loadPdfViewer)
+const FlashcardDeck = lazy(() => import('./FlashcardDeck'))
+const BlurtingMode = lazy(() => import('./BlurtingMode'))
+const PomodoroDock = lazy(() => import('./PomodoroDock'))
+
+// Start fetching the viewer while the reviewer detail request is in flight,
+// so the two downloads overlap instead of running back to back.
+export const preloadPdfViewer = () => {
+  loadPdfViewer().catch(() => {
+    // Offline or a stale deploy: the lazy boundary retries on render.
+  })
+}
+
+// Same footprint as the viewer frame so swapping it in causes no layout shift.
+const PdfViewerFallback = () => (
+  <div className="overflow-hidden rounded-soft border-2 border-stone bg-paper" role="status" aria-label="Loading document">
+    <div className="h-12 border-b-2 border-stone bg-cream" />
+    <div className="h-[62vh] animate-pulse bg-cream/50 md:h-[72vh]" />
+  </div>
+)
 
 const TABS = [
   { value: 'source', label: 'Source' },
@@ -78,31 +102,50 @@ const StudyTabs = ({
       {tab === 'source' && (
         <div role="tabpanel" aria-label="Source">
           {!hasFile && isOwner && (
-            <p data-testid="study-upload-banner">
-              Please upload the source file to enable study modes
-            </p>
+            <div data-testid="study-upload-banner">
+              <EmptyState
+                title="Add your source file"
+                action={(
+                  <Button to={`/create?edit=${reviewer?.id}`} variant="primary">
+                    <FileUp className="h-4 w-4" aria-hidden="true" /> Upload a PDF or PPTX
+                  </Button>
+                )}
+              >
+                Upload your slides so you and your classmates can study from them here.
+              </EmptyState>
+            </div>
           )}
           {!hasFile && !isOwner && (
-            <p data-testid="study-no-source">No source file yet.</p>
+            <div data-testid="study-no-source">
+              <EmptyState title="No source file yet">
+                The creator hasn’t uploaded slides for this reviewer. Check back soon.
+              </EmptyState>
+            </div>
           )}
           {fileType === 'pdf' && (
-            <PdfViewer fileUrl={fileUrl} title={reviewer?.title} />
+            <Suspense fallback={<PdfViewerFallback />}>
+              <PdfViewer fileUrl={fileUrl} title={reviewer?.title} />
+            </Suspense>
           )}
           {fileType === 'pptx' && (
             <iframe
               src={pptxEmbed}
               title="Source presentation"
               data-testid="study-source-pptx"
+              loading="lazy"
+              allowFullScreen
+              className="block aspect-video max-h-[72vh] w-full rounded-soft border-2 border-stone bg-paper"
             />
           )}
           {hasFile && !fileType && (
-            <a href={fileUrl} data-testid="study-source-link">
+            <Button href={fileUrl} data-testid="study-source-link" target="_blank" rel="noopener noreferrer">
               Open source file
-            </a>
+            </Button>
           )}
         </div>
       )}
 
+      <Suspense fallback={null}>
       {tab === 'flashcards' && ENABLED_STUDY_MODES.includes('flashcards') && (
         <div role="tabpanel" aria-label="Flashcards">
           <FlashcardDeck
@@ -137,6 +180,7 @@ const StudyTabs = ({
       {ENABLED_STUDY_MODES.includes('pomodoro') && (
         <PomodoroDock reviewerId={reviewer?.id} guest={guest} />
       )}
+      </Suspense>
     </div>
   )
 }
