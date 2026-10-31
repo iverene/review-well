@@ -13,8 +13,12 @@ const AuthCallback = () => {
   const [error, setError] = useState(null)
 
   useEffect(() => {
+    // A superseded run (StrictMode's double effect, or a re-render while the
+    // session check is in flight) must not navigate or consume returnTo.
+    let cancelled = false
     const handleCallback = async () => {
       const authenticated = await refreshUser()
+      if (cancelled) return
       if (authenticated) {
         // First-time users finish onboarding first; it consumes the
         // remembered page when they enter the app.
@@ -30,6 +34,9 @@ const AuthCallback = () => {
 
     if (!loading) {
       handleCallback()
+    }
+    return () => {
+      cancelled = true
     }
   }, [refreshUser, navigate, loading])
 
