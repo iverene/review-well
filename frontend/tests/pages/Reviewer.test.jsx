@@ -90,7 +90,7 @@ describe('Reviewer', () => {
   it('renders the source-only hub with no study-mode tabs', async () => {
     renderReviewer()
     expect(await screen.findByLabelText('Study hub')).toBeInTheDocument()
-    expect(screen.getByTestId('study-source-pdf')).toBeInTheDocument()
+    expect(await screen.findByTestId('study-source-pdf')).toBeInTheDocument()
     expect(screen.queryByRole('tablist', { name: 'Study modes' })).toBeNull()
     expect(screen.queryByRole('tab', { name: 'Flashcards' })).toBeNull()
     expect(screen.queryByRole('tab', { name: 'Blurting' })).toBeNull()

@@ -16,8 +16,9 @@ describe('StudyTabs source panel', () => {
     expect(frame).toHaveClass('w-full', 'aspect-video')
   })
 
-  it('renders the PDF viewer for PDF sources', () => {
+  it('loads the PDF viewer on demand for PDF sources', async () => {
     render(<StudyTabs reviewer={{ title: 'Notes', fileUrl: 'https://storage.example.com/u/r1/v1.pdf' }} />)
-    expect(screen.getByTestId('study-source-pdf')).toBeInTheDocument()
+    expect(screen.getByRole('status', { name: 'Loading document' })).toBeInTheDocument()
+    expect(await screen.findByTestId('study-source-pdf')).toBeInTheDocument()
   })
 })

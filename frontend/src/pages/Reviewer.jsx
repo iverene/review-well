@@ -20,7 +20,7 @@ import {
 
 import { useAuth } from '../contexts/AuthContext'
 import SaveButton from '../components/social/SaveButton'
-import StudyTabs from '../components/StudyTabs'
+import StudyTabs, { preloadPdfViewer } from '../components/StudyTabs'
 import ErrorAlert from '../components/common/ErrorAlert'
 import PageContainer from '../components/common/PageContainer'
 import useCachedGet from '../hooks/useCachedGet'
@@ -95,6 +95,10 @@ const Reviewer = () => {
   const [cards, setCards] = useState(() => (Array.isArray(detailData?.reviewer?.cards) ? detailData.reviewer.cards : []))
 
   useEffect(() => () => clearTimeout(copiedTimerRef.current), [])
+
+  useEffect(() => {
+    preloadPdfViewer()
+  }, [])
 
   useEffect(() => {
     const loadedReviewer = detailData?.reviewer
