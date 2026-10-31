@@ -3,6 +3,7 @@ import axios from 'axios'
 
 import useAuthStore from '../stores/authStore'
 import { getApiErrorMessage } from '../utils/apiError'
+import { rememberReturnTo } from '../utils/returnTo'
 
 const AuthContext = createContext(null)
 
@@ -48,7 +49,8 @@ export const AuthProvider = ({ children }) => {
     checkAuth()
   }, [checkAuth])
 
-  const signInWithGoogle = () => {
+  const signInWithGoogle = (returnTo) => {
+    rememberReturnTo(returnTo)
     window.location.href = '/api/auth/google'
   }
 

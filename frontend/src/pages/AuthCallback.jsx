@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext'
 import AuthLoading from '../components/auth/AuthLoading'
 import ErrorAlert from '../components/common/ErrorAlert'
 import { isProfileComplete } from '../utils/profile'
+import { takeReturnTo } from '../utils/returnTo'
 
 const AuthCallback = () => {
   const { refreshUser, loading } = useAuth()
@@ -15,10 +16,13 @@ const AuthCallback = () => {
     const handleCallback = async () => {
       const authenticated = await refreshUser()
       if (authenticated) {
-        navigate(isProfileComplete(authenticated) ? '/' : '/onboarding', {
-          replace: true,
-          state: { onboarding: !isProfileComplete(authenticated) },
-        })
+        // First-time users finish onboarding first; it consumes the
+        // remembered page when they enter the app.
+        if (isProfileComplete(authenticated)) {
+          navigate(takeReturnTo() || '/', { replace: true })
+        } else {
+          navigate('/onboarding', { replace: true, state: { onboarding: true } })
+        }
       } else {
         setError('We could not complete Google sign-in. Please try again.')
       }

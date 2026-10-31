@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext'
 import ErrorAlert from '../components/common/ErrorAlert'
 import { getApiErrorMessage } from '../utils/apiError'
 import useQueryCache from '../stores/queryCache'
+import { takeReturnTo } from '../utils/returnTo'
 
 const steps = [
   { title: 'Make It Yours', fields: ['displayName'] },
@@ -211,7 +212,7 @@ const Onboarding = () => {
             <p className="mt-3 text-muted">Your study space is ready. Let&apos;s make something worth reviewing.</p>
             <button
               type="button"
-              onClick={() => navigate('/', { replace: true })}
+              onClick={() => navigate(takeReturnTo() || '/', { replace: true })}
               className="mt-7 rounded-soft border-2 border-mint bg-mint px-6 py-3 text-sm font-extrabold text-ink hover:bg-butter"
             >
               Enter Review Well

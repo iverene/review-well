@@ -4,6 +4,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { Skeleton } from '../components/common/Skeleton'
 import LoginButton from '../components/auth/LoginButton'
+import { safeInternalPath } from '../utils/returnTo'
 
 // Protected routes (mirrors App.jsx guards) that a guest must never be sent
 // to — bouncing there re-triggers ProtectedRoute and loops the browser into
@@ -38,9 +39,7 @@ const Login = () => {
   // hash); older entries may hold a location object — accept both.
   const stateFrom = location.state?.from
   const statePath = typeof stateFrom === 'string' ? stateFrom : stateFrom?.pathname
-  const from = (returnTo?.startsWith('/') && !returnTo.startsWith('//'))
-    ? returnTo
-    : statePath || '/'
+  const from = safeInternalPath(returnTo) || safeInternalPath(statePath) || '/'
 
   useEffect(() => {
     // Authenticated users bounce straight through. Guests always see this
@@ -74,7 +73,7 @@ const Login = () => {
           <div className="rounded-soft border-2 border-stone bg-paper p-4 text-center">
             <p className="font-extrabold text-ink">Full Access</p>
             <p className="mt-1 text-sm text-muted">Create, edit, save, and use AI study tools.</p>
-            <div className="mt-3 flex justify-center"><LoginButton /></div>
+            <div className="mt-3 flex justify-center"><LoginButton returnTo={from} /></div>
           </div>
           <button
             onClick={() => {
