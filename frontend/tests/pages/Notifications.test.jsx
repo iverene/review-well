@@ -64,6 +64,42 @@ describe('Notifications', () => {
     expect(screen.getAllByText(/Ann Lee/).length).toBeGreaterThanOrEqual(2)
   })
 
+  it('counts notifications that arrive on the first refresh after load', async () => {
+    axios.get.mockImplementation(() => Promise.resolve({ data: { notifications: [notification('n1')], total: 1 } }))
+
+    render(<MemoryRouter><Notifications /></MemoryRouter>)
+    expect(await screen.findByText('started following you')).toBeInTheDocument()
+
+    axios.get.mockImplementation(() => Promise.resolve({
+      data: { notifications: [notification('n2', 'new_reviewer'), notification('n1')], total: 2 },
+    }))
+    await act(async () => {
+      window.dispatchEvent(new Event('focus'))
+    })
+
+    expect(await screen.findByText('published a new reviewer')).toBeInTheDocument()
+    expect(useNotificationStore.getState().unreadCount).toBe(1)
+  })
+
+  it('ignores refreshes until the first page has loaded', async () => {
+    let resolveFirst
+    axios.get.mockImplementationOnce(() => new Promise((resolve) => { resolveFirst = resolve }))
+    axios.get.mockImplementation(() => Promise.resolve({ data: { notifications: [notification('n1')], total: 1 } }))
+
+    render(<MemoryRouter><Notifications /></MemoryRouter>)
+    await act(async () => {
+      window.dispatchEvent(new Event('focus'))
+    })
+    await act(async () => {
+      resolveFirst({ data: { notifications: [notification('n1')], total: 1 } })
+    })
+
+    expect(await screen.findByText('started following you')).toBeInTheDocument()
+    expect(useNotificationStore.getState().unreadCount).toBe(0)
+    const listCalls = axios.get.mock.calls.filter(([url]) => url === '/api/social/notifications')
+    expect(listCalls).toHaveLength(1)
+  })
+
   it('polls for new notifications on a 20 second interval', async () => {
     axios.get.mockImplementation((url) => {
       if (String(url).includes('/save')) {

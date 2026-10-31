@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import axios from 'axios'
 
 import NotificationItem from '../components/notifications/NotificationItem'
@@ -23,6 +23,9 @@ const Notifications = () => {
   const bumpUnread = useNotificationStore((state) => state.bumpUnread)
   const markOneRead = useNotificationStore((state) => state.markOneRead)
   const markAllRead = useNotificationStore((state) => state.markAllRead)
+  // Refreshes compare against the loaded list, so they wait for page 1;
+  // before that every notification would look new and be counted twice.
+  const loadedRef = useRef(false)
 
   useEffect(() => {
     fetchNotifications()
@@ -32,23 +35,14 @@ const Notifications = () => {
   // notifications to the top of the list, on an interval and on focus —
   // and toast once per batch so arrivals surface above the fold.
   useEffect(() => {
-    let firstRun = true
     const fetchLatest = async () => {
+      if (!loadedRef.current) return
       try {
         const response = await axios.get('/api/social/notifications', {
           params: { page: 1, limit: 20 },
           withCredentials: true,
         })
         const fresh = response.data.notifications || []
-        if (firstRun) {
-          firstRun = false
-          setNotifications((prev) => {
-            const known = new Set(prev.map((n) => n.id))
-            const unseen = fresh.filter((n) => !known.has(n.id))
-            return unseen.length > 0 ? [...unseen, ...prev] : prev
-          })
-          return
-        }
         setNotifications((prev) => {
           const known = new Set(prev.map((n) => n.id))
           const unseen = fresh.filter((n) => !known.has(n.id))
@@ -81,6 +75,7 @@ const Notifications = () => {
       setNotifications((prev) =>
         page === 1 ? fresh : appendUnique(prev, fresh)
       )
+      loadedRef.current = true
       const total = Number(response.data.total)
       setHasMore(
         Number.isFinite(total)
