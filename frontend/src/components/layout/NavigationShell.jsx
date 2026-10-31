@@ -29,7 +29,7 @@ const NavigationShell = ({ children }) => {
           <div className="flex items-center gap-4">
             <Link to="/" className={`flex min-w-0 items-center text-xl font-bold text-ink ${isAuthenticated ? 'md:hidden' : ''}`} aria-label="Review Well home">
               <img src="/logo.webp" alt="" className="h-8 w-8 object-contain" />
-              <img src="/word-logo.webp" alt="Review Well" width="430" height="112" className="ml-2 h-6 w-auto max-w-[130px] object-contain sm:max-w-none" />
+              <img src="/word-logo.webp" alt="Review Well" width="430" height="112" className="wordmark ml-2 h-6 w-auto max-w-[130px] object-contain sm:max-w-none" />
             </Link>
           </div>
           <nav className="flex items-center gap-4">

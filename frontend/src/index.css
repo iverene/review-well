@@ -82,6 +82,12 @@ button, a, input, textarea, select {
   border-radius: 12px;
 }
 
+/* The wordmark artwork is cocoa ink; on the dark theme it would vanish, so
+   render it as warm off-white there. */
+[data-theme='dark'] .wordmark {
+  filter: brightness(0) invert(0.92) sepia(0.25);
+}
+
 /* One visible focus ring everywhere (Berry, >= 3:1 on every surface). */
 :where(button, a, input, textarea, select, summary, [tabindex]):focus-visible {
   outline: 2px solid rgb(var(--accent));

@@ -20,7 +20,7 @@ const Sidebar = () => {
     <aside className="flex h-full w-64 shrink-0 flex-col border-r-2 border-stone bg-paper px-4 py-5" aria-label="Sidebar navigation">
       <Link to="/" className="mb-10 flex items-center px-2" aria-label="Review Well home">
         <img src="/logo.webp" alt="" className="h-10 w-10 object-contain" />
-        <img src="/word-logo.webp" alt="Review Well" width="430" height="112" className="ml-2 h-7 w-auto max-w-[150px] object-contain" />
+        <img src="/word-logo.webp" alt="Review Well" width="430" height="112" className="wordmark ml-2 h-7 w-auto max-w-[150px] object-contain" />
       </Link>
 
       <nav className="space-y-2" aria-label="Primary navigation">
