@@ -287,7 +287,9 @@ describe('Reviewer', () => {
 
   it('keeps the source viewer after a visibility change', async () => {
     // The update endpoint returns the bare row: no fileUrl, cards, or quota.
-    const { fileUrl, cards, prompts, quota, _count, ...row } = mockReviewer
+    const row = Object.fromEntries(
+      Object.entries(mockReviewer).filter(([key]) => !['fileUrl', 'cards', 'prompts', 'quota', '_count'].includes(key))
+    )
     mockPut.mockResolvedValue({ data: { reviewer: { ...row, visibility: 'unlisted', isDraft: false } } })
     renderReviewer()
     await screen.findByTestId('study-source-pdf')
