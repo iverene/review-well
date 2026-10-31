@@ -30,6 +30,9 @@ const mockAuthed = (page) => Promise.all([
 ])
 
 const expectNoHorizontalOverflow = async (page) => {
+  // Measure the settled page, not the boot skeleton or entry animations.
+  await page.waitForLoadState('networkidle')
+  await page.locator('main h1').first().waitFor()
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)
   expect(overflow).toBeLessThanOrEqual(0)
 }
