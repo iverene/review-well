@@ -100,6 +100,25 @@ describe('Notifications', () => {
     expect(listCalls).toHaveLength(1)
   })
 
+  it('does not poll the list while the tab is hidden', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    axios.get.mockImplementation(() => Promise.resolve({ data: { notifications: [notification('n1')], total: 1 } }))
+    render(<MemoryRouter><Notifications /></MemoryRouter>)
+    expect(await screen.findByText('started following you')).toBeInTheDocument()
+
+    Object.defineProperty(document, 'hidden', { value: true, configurable: true })
+    try {
+      const before = axios.get.mock.calls.filter(([url]) => url === '/api/social/notifications').length
+      await act(async () => {
+        vi.advanceTimersByTime(60000)
+      })
+      const after = axios.get.mock.calls.filter(([url]) => url === '/api/social/notifications').length
+      expect(after).toBe(before)
+    } finally {
+      Object.defineProperty(document, 'hidden', { value: false, configurable: true })
+    }
+  })
+
   it('polls for new notifications on a 20 second interval', async () => {
     axios.get.mockImplementation((url) => {
       if (String(url).includes('/save')) {

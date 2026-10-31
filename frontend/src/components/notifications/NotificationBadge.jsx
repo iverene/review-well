@@ -12,12 +12,18 @@ const NotificationBadge = () => {
   useEffect(() => {
     if (!isAuthenticated) return
     refresh()
-    // Live delivery without page restarts: poll plus refresh on window focus
-    const interval = setInterval(refresh, 20000)
+    // Live delivery without page restarts: poll plus refresh on window focus.
+    // Background tabs skip polls and catch up as soon as they are visible.
+    const refreshIfVisible = () => {
+      if (!document.hidden) refresh()
+    }
+    const interval = setInterval(refreshIfVisible, 20000)
     window.addEventListener('focus', refresh)
+    document.addEventListener('visibilitychange', refreshIfVisible)
     return () => {
       clearInterval(interval)
       window.removeEventListener('focus', refresh)
+      document.removeEventListener('visibilitychange', refreshIfVisible)
     }
   }, [isAuthenticated, refresh])
 

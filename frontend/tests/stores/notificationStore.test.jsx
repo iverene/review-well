@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { render, screen, act } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 
@@ -56,5 +56,35 @@ describe('NotificationBadge', () => {
       useNotificationStore.getState().markAllRead()
     })
     expect(screen.queryByText('4')).toBeNull()
+  })
+
+  describe('while the tab is hidden', () => {
+    const setHidden = (hidden) => {
+      Object.defineProperty(document, 'hidden', { value: hidden, configurable: true })
+    }
+
+    afterEach(() => {
+      setHidden(false)
+      vi.useRealTimers()
+    })
+
+    it('skips interval polls and catches up when the tab is visible again', async () => {
+      vi.useFakeTimers()
+      render(<MemoryRouter><NotificationBadge /></MemoryRouter>)
+      await act(async () => {})
+      expect(axios.get).toHaveBeenCalledTimes(1)
+
+      setHidden(true)
+      await act(async () => {
+        vi.advanceTimersByTime(60000)
+      })
+      expect(axios.get).toHaveBeenCalledTimes(1)
+
+      setHidden(false)
+      await act(async () => {
+        document.dispatchEvent(new Event('visibilitychange'))
+      })
+      expect(axios.get).toHaveBeenCalledTimes(2)
+    })
   })
 })

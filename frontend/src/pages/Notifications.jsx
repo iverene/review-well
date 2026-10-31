@@ -57,7 +57,10 @@ const Notifications = () => {
         // Keep the stale list; the badge poll still surfaces the count
       }
     }
-    const interval = setInterval(fetchLatest, 20000)
+    // Background tabs skip polls; the focus listener catches up on return.
+    const interval = setInterval(() => {
+      if (!document.hidden) fetchLatest()
+    }, 20000)
     window.addEventListener('focus', fetchLatest)
     return () => {
       clearInterval(interval)
