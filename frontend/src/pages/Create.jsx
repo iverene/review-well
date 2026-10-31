@@ -151,8 +151,15 @@ const Create = () => {
         if (sourceFile) {
           const payload = new FormData()
           payload.append('file', sourceFile)
-          await axios.put(`/api/reviewer-files/${editReviewerId}`, payload, { withCredentials: true })
-          useQueryCache.getState().invalidate('GET /api/reviewers')
+          try {
+            await axios.put(`/api/reviewer-files/${editReviewerId}`, payload, { withCredentials: true })
+            useQueryCache.getState().invalidate('GET /api/reviewers')
+          } catch (replaceError) {
+            // Nothing to replace yet (the hub asks owners of file-less
+            // reviewers to upload one): add it as the first version instead.
+            if (replaceError.response?.status !== 404) throw replaceError
+            await uploadSourceFile(editReviewerId, sourceFile)
+          }
         }
         toast.success('Reviewer Updated')
         navigate(`/reviewer/${editReviewerId}`)
