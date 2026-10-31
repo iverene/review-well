@@ -121,7 +121,7 @@ const findByIds = async (ids) => {
   if (!ids.length) return []
   return prisma.reviewer.findMany({
     where: { id: { in: ids } },
-    select: { id: true, visibility: true, authorId: true },
+    select: { id: true, visibility: true, authorId: true, isDraft: true },
   })
 }
 

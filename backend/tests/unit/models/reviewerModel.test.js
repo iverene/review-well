@@ -129,4 +129,15 @@ describe('Reviewer Model', () => {
     expect(mockPrismaInstance.reviewer.findMany).toHaveBeenCalledTimes(1)
     expect(mockPrismaInstance.reviewer.count).toHaveBeenCalledTimes(1)
   })
+
+  it('selects isDraft for readable-id checks so drafts are never reported readable', async () => {
+    mockPrismaInstance.reviewer.findMany.mockResolvedValueOnce([])
+
+    await reviewerModel.findByIds(['r1'])
+
+    expect(mockPrismaInstance.reviewer.findMany).toHaveBeenCalledWith({
+      where: { id: { in: ['r1'] } },
+      select: expect.objectContaining({ id: true, visibility: true, authorId: true, isDraft: true }),
+    })
+  })
 })
