@@ -14,7 +14,7 @@ const NotFound = () => (
       <Link to="/" className="inline-flex items-center gap-2 rounded-soft border-2 border-accent bg-accent px-5 py-2.5 text-sm font-extrabold text-paper hover:-translate-y-0.5">
         <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back home
       </Link>
-      <Link to="/reviewer/public" className="inline-flex items-center gap-2 rounded-soft border-2 border-stone bg-paper px-5 py-2.5 text-sm font-extrabold text-ink hover:bg-powder">
+      <Link to="/reviewer/public" className="inline-flex items-center gap-2 rounded-soft border-2 border-stone bg-paper px-5 py-2.5 text-sm font-extrabold text-ink hover:bg-cream">
         <LibraryBig className="h-4 w-4" aria-hidden="true" /> Public reviewers
       </Link>
     </div>

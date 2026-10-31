@@ -99,7 +99,7 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
             type="button"
             onClick={handleAvatarClick}
             disabled={uploading}
-            className="inline-flex items-center gap-2 rounded-soft border-2 border-stone bg-paper px-4 py-2 text-sm font-extrabold text-ink hover:bg-powder disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-soft border-2 border-stone bg-paper px-4 py-2 text-sm font-extrabold text-ink hover:bg-cream disabled:opacity-60"
           >
             <Camera className="h-4 w-4" aria-hidden="true" />
             {uploading ? 'Uploading…' : 'Change Avatar'}
@@ -128,7 +128,7 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
           name="displayName"
           value={formData.displayName}
           onChange={handleChange}
-          className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-2.5 text-ink focus:border-accent focus:outline-none"
+          className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
           required
         />
       </div>
@@ -145,7 +145,7 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
           value={formData.school}
           onChange={handleChange}
           required
-          className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-2.5 text-ink focus:border-accent focus:outline-none"
+          className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
           placeholder="e.g., MIT, Stanford, etc."
         />
       </div>
@@ -162,7 +162,7 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
           value={formData.program}
           onChange={handleChange}
           required
-          className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-2.5 text-ink focus:border-accent focus:outline-none"
+          className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
           placeholder="e.g., Computer Science, Biology, etc."
         />
       </div>
@@ -179,7 +179,7 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
           value={formData.major}
           onChange={handleChange}
           required
-          className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-2.5 text-ink focus:border-accent focus:outline-none"
+          className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
           placeholder="e.g., Software Engineering, etc."
         />
       </div>
@@ -195,7 +195,7 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
           value={formData.yearLevel}
           onChange={handleChange}
           required
-          className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-2.5 text-ink focus:border-accent focus:outline-none"
+          className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
         >
           <option value="">Select Year Level</option>
           {yearLevels.map((level) => (

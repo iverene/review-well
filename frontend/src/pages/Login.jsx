@@ -82,7 +82,7 @@ const Login = () => {
               // there re-triggers ProtectedRoute and loops navigation.
               navigate(isGuestSafePath(from) ? from : '/', { replace: true })
             }}
-            className="rounded-soft border-2 border-stone bg-powder px-4 py-3 text-sm font-extrabold text-ink transition-transform hover:-translate-y-0.5 hover:bg-powder"
+            className="rounded-soft border-2 border-stone bg-powder px-4 py-3 text-sm font-extrabold text-ink transition-transform hover:-translate-y-0.5 hover:bg-cream"
           >
             Browse as Guest
           </button>

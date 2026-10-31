@@ -60,7 +60,7 @@ const FindFriends = () => {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by name or school…"
             aria-label="Search friends"
-            className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-3 pr-11 text-ink focus:border-accent focus:outline-none"
+            className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 pr-11 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
           />
           {query && (
             <button

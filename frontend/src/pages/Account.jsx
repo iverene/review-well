@@ -80,7 +80,7 @@ const Account = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-paper"><ProfileSkeleton /></div>
+      <ProfileSkeleton />
     )
   }
 

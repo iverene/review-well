@@ -118,7 +118,7 @@ const Onboarding = () => {
               value={formData.displayName}
               onChange={updateField}
               autoFocus
-              className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-3 text-ink focus:border-accent focus:outline-none"
+              className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
               placeholder="Your Display Name"
             />
             <p className="mt-2 text-sm text-muted">This is how your study club friends will see you.</p>
@@ -136,7 +136,7 @@ const Onboarding = () => {
                 value={formData.school}
                 onChange={updateField}
                 autoFocus
-                className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-3 text-ink focus:border-accent focus:outline-none"
+                className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
                 placeholder="e.g. University of Toronto"
               />
             </div>
@@ -148,7 +148,7 @@ const Onboarding = () => {
                 type="text"
                 value={formData.program}
                 onChange={updateField}
-                className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-3 text-ink focus:border-accent focus:outline-none"
+                className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
                 placeholder="e.g. Computer Science"
               />
             </div>
@@ -166,7 +166,7 @@ const Onboarding = () => {
                 value={formData.major}
                 onChange={updateField}
                 autoFocus
-                className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-3 text-ink focus:border-accent focus:outline-none"
+                className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
                 placeholder="e.g. Software Engineering"
               />
             </div>
@@ -177,7 +177,7 @@ const Onboarding = () => {
                 name="yearLevel"
                 value={formData.yearLevel}
                 onChange={updateField}
-                className="w-full rounded-soft border-2 border-stone bg-paper px-4 py-3 text-ink focus:border-accent focus:outline-none"
+                className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
               >
                 <option value="">Select Your Year Level</option>
                 {yearLevels.map((level) => <option key={level.value} value={level.value}>{level.label}</option>)}
