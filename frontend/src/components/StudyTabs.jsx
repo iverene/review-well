@@ -93,6 +93,9 @@ const StudyTabs = ({
               src={pptxEmbed}
               title="Source presentation"
               data-testid="study-source-pptx"
+              loading="lazy"
+              allowFullScreen
+              className="block aspect-video max-h-[72vh] w-full rounded-soft border-2 border-stone bg-paper"
             />
           )}
           {hasFile && !fileType && (
