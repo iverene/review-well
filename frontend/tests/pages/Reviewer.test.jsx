@@ -332,4 +332,14 @@ describe('Reviewer', () => {
     expect(entry).not.toHaveProperty('cards')
     expect(entry).not.toHaveProperty('quota')
   })
+
+  it('uses the saved state from the detail payload instead of fetching it', async () => {
+    mockGet.mockImplementation((url) => {
+      if (String(url).includes('/save')) return Promise.resolve({ data: { saved: false, saveCount: 3 } })
+      return Promise.resolve({ data: { reviewer: { ...mockReviewer, isSaved: true } } })
+    })
+    renderReviewer()
+    expect(await screen.findByRole('button', { name: 'Remove bookmark' })).toHaveAttribute('aria-pressed', 'true')
+    expect(mockGet.mock.calls.some(([url]) => String(url).includes('/save'))).toBe(false)
+  })
 })

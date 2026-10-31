@@ -3,6 +3,7 @@ import * as followModel from '../models/followModel.js'
 import * as notificationModel from '../models/notificationModel.js'
 import * as reviewerFileModel from '../models/reviewerFileModel.js'
 import * as flashcardModel from '../models/flashcardModel.js'
+import * as saveModel from '../models/saveModel.js'
 import { getRemainingQuota, getRemainingGrades, GRADE_LIMIT } from '../models/aiQuotaModel.js'
 import { DECK_QUOTA_LIMIT } from '../constants/quotas.js'
 import { createStorageAdapter } from '../services/adapters/storage.js'
@@ -164,7 +165,8 @@ const getReviewerById = async (req, res) => {
     // file stays unserved (fileUrl: null, which the hub already handles).
     // Independent enrichment fetches run concurrently so detail loads in
     // a single round of parallel queries instead of a sequential chain.
-    const [file, cards, quota] = await Promise.all([
+    // isSaved spares the hub a separate save-status request per visit.
+    const [file, cards, quota, isSaved] = await Promise.all([
       reviewerFileModel.findByReviewerId(id),
       flashcardModel.findByReviewer(id),
       req.user
@@ -173,6 +175,7 @@ const getReviewerById = async (req, res) => {
             getRemainingGrades(req.user.id, GRADE_LIMIT),
           ]).then(([decksLeft, gradesLeft]) => ({ decksLeft, gradesLeft }))
         : Promise.resolve({ decksLeft: 0, gradesLeft: 0 }),
+      req.user ? saveModel.hasUserSaved(req.user.id, id) : Promise.resolve(false),
     ])
 
     let fileUrl = null
@@ -187,7 +190,7 @@ const getReviewerById = async (req, res) => {
 
     const prompts = Array.isArray(reviewer.aiPrompts) ? reviewer.aiPrompts : []
 
-    res.json({ reviewer: { ...reviewer, fileUrl, cards, prompts, quota } })
+    res.json({ reviewer: { ...reviewer, fileUrl, cards, prompts, quota, isSaved } })
   } catch (error) {
     console.error('Get reviewer error:', error)
     res.status(500).json({ error: 'Failed to fetch reviewer' })

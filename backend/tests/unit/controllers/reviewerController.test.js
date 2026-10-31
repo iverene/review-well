@@ -80,6 +80,7 @@ import * as followModel from '../../../models/followModel.js'
 import * as notificationModel from '../../../models/notificationModel.js'
 import * as reviewerFileModel from '../../../models/reviewerFileModel.js'
 import * as flashcardModel from '../../../models/flashcardModel.js'
+import * as saveModel from '../../../models/saveModel.js'
 import { createStorageAdapter } from '../../../services/adapters/storage.js'
 import * as cache from '../../../utils/cache.js'
 import { createMockRequest, createMockResponse } from '../../helpers/mocks.js'
@@ -150,6 +151,7 @@ describe('Reviewer Controller', () => {
       reviewerModel.findById.mockResolvedValue(mockReviewer)
       reviewerFileModel.findByReviewerId.mockResolvedValue(null)
       flashcardModel.findByReviewer.mockResolvedValue([])
+      saveModel.hasUserSaved.mockResolvedValue(false)
 
       await getReviewerById(req, res)
 
@@ -161,7 +163,39 @@ describe('Reviewer Controller', () => {
           cards: [],
           prompts: [],
           quota: { decksLeft: undefined, gradesLeft: undefined },
+          isSaved: false,
         },
+      })
+    })
+
+    it('reports guests as not having saved, without a save lookup', async () => {
+      const req = createMockRequest({ params: { id: '1' }, user: null })
+      const res = createMockResponse()
+
+      reviewerModel.findById.mockResolvedValue({ id: '1', visibility: 'public', isDraft: false, authorId: 'author-1' })
+      reviewerFileModel.findByReviewerId.mockResolvedValue(null)
+      flashcardModel.findByReviewer.mockResolvedValue([])
+
+      await getReviewerById(req, res)
+
+      expect(saveModel.hasUserSaved).not.toHaveBeenCalled()
+      expect(res.json).toHaveBeenCalledWith({ reviewer: expect.objectContaining({ isSaved: false }) })
+    })
+
+    it("includes the viewer's saved state so the hub needs no extra request", async () => {
+      const req = createMockRequest({ params: { id: '1' }, user: { id: 'viewer-1' } })
+      const res = createMockResponse()
+
+      reviewerModel.findById.mockResolvedValue({ id: '1', visibility: 'public', isDraft: false, authorId: 'author-1' })
+      reviewerFileModel.findByReviewerId.mockResolvedValue(null)
+      flashcardModel.findByReviewer.mockResolvedValue([])
+      saveModel.hasUserSaved.mockResolvedValue(true)
+
+      await getReviewerById(req, res)
+
+      expect(saveModel.hasUserSaved).toHaveBeenCalledWith('viewer-1', '1')
+      expect(res.json).toHaveBeenCalledWith({
+        reviewer: expect.objectContaining({ id: '1', isSaved: true }),
       })
     })
 

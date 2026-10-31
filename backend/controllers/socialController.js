@@ -84,8 +84,10 @@ const getSaveStatus = async (req, res) => {
     const { reviewerId } = req.params
     const userId = req.user?.id
 
-    const saveCount = await saveModel.countByReviewer(reviewerId)
-    const saved = userId ? await saveModel.hasUserSaved(userId, reviewerId) : false
+    const [saveCount, saved] = await Promise.all([
+      saveModel.countByReviewer(reviewerId),
+      userId ? saveModel.hasUserSaved(userId, reviewerId) : false,
+    ])
 
     res.json({ saved, saveCount })
   } catch (error) {
@@ -185,9 +187,11 @@ const getFollowStatus = async (req, res) => {
     const { userId: targetUserId } = req.params
     const followerId = req.user?.id
 
-    const followerCount = await followModel.countFollowers(targetUserId)
-    const followingCount = await followModel.countFollowing(targetUserId)
-    const following = followerId ? await followModel.isFollowing(followerId, targetUserId) : false
+    const [followerCount, followingCount, following] = await Promise.all([
+      followModel.countFollowers(targetUserId),
+      followModel.countFollowing(targetUserId),
+      followerId ? followModel.isFollowing(followerId, targetUserId) : false,
+    ])
 
     res.json({ following, followerCount, followingCount })
   } catch (error) {
