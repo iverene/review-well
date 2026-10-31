@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { Home, LibraryBig, Globe2, UserPlus, UserRound, Plus } from 'lucide-react'
 
 import { useAuth } from '../../contexts/AuthContext'
+import Button from '../common/Button'
 
 const Sidebar = () => {
   const location = useLocation()
@@ -27,10 +28,10 @@ const Sidebar = () => {
           <Link
             key={to}
             to={to}
-            className={`group relative flex min-h-12 items-center gap-3 overflow-hidden rounded-soft px-4 py-3 text-sm font-extrabold transition-all ${active ? 'border-2 border-accent bg-blush text-ink club-shadow before:absolute before:bottom-2 before:left-0 before:top-2 before:w-1 before:rounded-r-full before:bg-accent' : 'border-2 border-transparent text-muted hover:bg-powder hover:text-ink'}`}
+            className={`group relative flex min-h-11 items-center gap-3 rounded-soft border-2 px-3 py-2 text-sm font-extrabold transition-colors duration-150 ${active ? 'border-stone bg-blush text-ink shadow-sticker-sm' : 'border-transparent text-muted hover:bg-cream hover:text-ink'}`}
             aria-current={active ? 'page' : undefined}
           >
-            <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${active ? 'bg-accent text-paper' : 'bg-paper text-muted group-hover:bg-blush group-hover:text-ink'}`}>
+            <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${active ? 'bg-paper text-accent' : 'text-muted group-hover:text-ink'}`}>
               {label === 'Profile' && user?.avatarUrl ? (
                 <img src={user.avatarUrl} alt="" className="h-full w-full rounded-full object-cover" />
               ) : (
@@ -43,14 +44,16 @@ const Sidebar = () => {
       </nav>
 
       <div className="mt-auto border-t-2 border-stone pt-5">
-        <Link
+        <Button
           to="/create"
-          className={`flex min-h-12 w-full items-center justify-center gap-2 rounded-soft border-2 px-4 py-3 text-sm font-extrabold transition-colors ${location.pathname === '/create' ? 'border-accent bg-accent text-paper' : 'border-stone bg-paper text-ink hover:border-powder hover:bg-powder'}`}
+          variant="primary"
+          size="lg"
+          block
           aria-current={location.pathname === '/create' ? 'page' : undefined}
         >
           <Plus className="h-5 w-5" strokeWidth={2.8} aria-hidden="true" />
-          <span>New</span>
-        </Link>
+          <span>New Reviewer</span>
+        </Button>
       </div>
     </aside>
   )

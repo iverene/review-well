@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
+import { render as rtlRender, screen, fireEvent, waitFor } from '@testing-library/react'
 import axios from 'axios'
 
 import AnnouncementModal, { STORAGE_KEY, ANNOUNCEMENT_ID } from '../../src/components/AnnouncementModal'
@@ -14,6 +15,8 @@ vi.mock('axios', () => ({
 vi.mock('../../src/contexts/AuthContext', () => ({
   useAuth: vi.fn(),
 }))
+
+const render = (ui, path = '/') => rtlRender(<MemoryRouter initialEntries={[path]}>{ui}</MemoryRouter>)
 
 describe('AnnouncementModal', () => {
   beforeEach(() => {
@@ -85,5 +88,21 @@ describe('AnnouncementModal', () => {
       { withCredentials: true }
     ))
     expect(useAuthStore.getState().user?.announcementSeenId).toBe(ANNOUNCEMENT_ID)
+  })
+
+  it('waits until sign-in and onboarding are finished', () => {
+    for (const path of ['/login', '/auth/callback', '/onboarding']) {
+      const { unmount } = render(<AnnouncementModal />, path)
+      expect(screen.queryByRole('dialog')).toBeNull()
+      unmount()
+    }
+    render(<AnnouncementModal />, '/')
+    expect(screen.getByRole('dialog', { name: 'What’s New in Review Well' })).toBeInTheDocument()
+  })
+
+  it('closes with Escape like any dialog', () => {
+    render(<AnnouncementModal />)
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(screen.queryByRole('dialog')).toBeNull()
   })
 })

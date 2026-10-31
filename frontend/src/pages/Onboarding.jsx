@@ -7,6 +7,9 @@ import ErrorAlert from '../components/common/ErrorAlert'
 import { getApiErrorMessage } from '../utils/apiError'
 import useQueryCache from '../stores/queryCache'
 import { takeReturnTo } from '../utils/returnTo'
+import Button from '../components/common/Button'
+import Modal from '../components/common/Modal'
+import characterWaving from '../assets/character-waving.webp'
 
 const steps = [
   { title: 'Make It Yours', fields: ['displayName'] },
@@ -27,6 +30,7 @@ const Onboarding = () => {
   const [stepIndex, setStepIndex] = useState(0)
   const [saving, setSaving] = useState(false)
   const [completed, setCompleted] = useState(false)
+  const enterApp = () => navigate(takeReturnTo() || '/', { replace: true })
   const [error, setError] = useState(null)
   const [formData, setFormData] = useState({
     displayName: user?.displayName || '',
@@ -202,24 +206,13 @@ const Onboarding = () => {
         </div>
       </section>
 
-      {completed && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 p-4" role="dialog" aria-modal="true" aria-labelledby="welcome-title">
-          <div className="w-full max-w-md rounded-soft border-2 border-stone bg-paper p-8 text-center club-shadow">
-            <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full border-2 border-stone bg-mint text-3xl font-extrabold text-ink" aria-hidden="true">
-              OK
-            </div>
-            <h2 id="welcome-title" className="text-2xl font-extrabold text-ink md:text-3xl">Welcome to Review Well!</h2>
-            <p className="mt-3 text-muted">Your study space is ready. Let&apos;s make something worth reviewing.</p>
-            <button
-              type="button"
-              onClick={() => navigate(takeReturnTo() || '/', { replace: true })}
-              className="mt-7 rounded-soft border-2 border-mint bg-mint px-6 py-3 text-sm font-extrabold text-ink hover:bg-butter"
-            >
-              Enter Review Well
-            </button>
-          </div>
+      <Modal open={completed} onClose={enterApp} title="Welcome to Review Well!" size="md">
+        <img src={characterWaving} alt="" aria-hidden="true" width="273" height="229" className="mx-auto mt-2 h-24 w-28 object-contain" />
+        <p className="mt-3 text-center text-muted">Your study space is ready. Let&apos;s make something worth reviewing.</p>
+        <div className="mt-6 flex justify-center">
+          <Button variant="primary" size="lg" onClick={enterApp}>Enter Review Well</Button>
         </div>
-      )}
+      </Modal>
     </div>
   )
 }

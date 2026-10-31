@@ -42,7 +42,7 @@ const AvatarDropdown = () => {
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 rounded-full border-2 border-stone bg-paper p-1 transition-transform hover:-translate-y-0.5 hover:bg-blush"
+        className="flex items-center gap-2 rounded-full border-2 border-stone bg-paper p-1 transition-colors duration-150 hover:border-line hover:bg-blush"
         aria-expanded={isOpen}
         aria-haspopup="true"
         aria-label="User menu"
@@ -62,7 +62,7 @@ const AvatarDropdown = () => {
 
       {isOpen && (
         <div
-          className="absolute right-0 z-[100] mt-2 w-64 rounded-soft border-2 border-stone bg-paper club-shadow"
+          className="absolute right-0 z-[100] mt-2 w-64 rounded-club border-2 border-stone bg-paper shadow-sticker club-rise"
           role="menu"
           aria-orientation="vertical"
           aria-labelledby="user-menu-button"
@@ -73,7 +73,7 @@ const AvatarDropdown = () => {
           <div className="p-1" role="none">
             <Link
               to="/profile"
-              className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-ink hover:bg-powder"
+              className="flex items-center gap-3 rounded-soft px-3 py-2.5 text-sm font-semibold text-ink hover:bg-cream"
               role="menuitem"
               onClick={() => setIsOpen(false)}
             >
@@ -82,7 +82,7 @@ const AvatarDropdown = () => {
             </Link>
             <Link
               to="/settings"
-              className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-ink hover:bg-mint"
+              className="flex items-center gap-3 rounded-soft px-3 py-2.5 text-sm font-semibold text-ink hover:bg-cream"
               role="menuitem"
               onClick={() => setIsOpen(false)}
             >
@@ -91,7 +91,7 @@ const AvatarDropdown = () => {
             </Link>
             <Link
               to="/about"
-              className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-ink hover:bg-butter"
+              className="flex items-center gap-3 rounded-soft px-3 py-2.5 text-sm font-semibold text-ink hover:bg-cream"
               role="menuitem"
               onClick={() => setIsOpen(false)}
             >
@@ -100,7 +100,7 @@ const AvatarDropdown = () => {
             </Link>
             <Link
               to="/contact"
-              className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-ink hover:bg-powder"
+              className="flex items-center gap-3 rounded-soft px-3 py-2.5 text-sm font-semibold text-ink hover:bg-cream"
               role="menuitem"
               onClick={() => setIsOpen(false)}
             >
@@ -114,7 +114,7 @@ const AvatarDropdown = () => {
                 logout()
                 setIsOpen(false)
               }}
-              className="flex w-full items-center gap-3 rounded-soft px-3 py-2.5 text-left text-sm font-extrabold text-accent hover:bg-blush"
+              className="flex w-full items-center gap-3 rounded-soft px-3 py-2.5 text-left text-sm font-extrabold text-accent hover:bg-blush/50"
               role="menuitem"
             >
               <LogOut className="h-4 w-4" aria-hidden="true" />
