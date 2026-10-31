@@ -29,6 +29,7 @@ const FindFriends = lazy(() => import('./pages/FindFriends'))
 const Followers = lazy(() => import('./pages/Followers'))
 const Privacy = lazy(() => import('./pages/Privacy'))
 const Terms = lazy(() => import('./pages/Terms'))
+const NotFound = lazy(() => import('./pages/NotFound'))
 
 // Loading component
 const PageLoader = () => (
@@ -134,6 +135,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
         </Layout>
