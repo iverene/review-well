@@ -46,7 +46,7 @@ const Settings = () => {
         Settings
       </h1>
 
-      <section className="mt-4 rounded-soft border-2 border-stone bg-paper p-6 club-shadow" aria-label="Account">
+      <section className="mt-4 rounded-soft border border-stone bg-paper p-6 club-shadow" aria-label="Account">
         <h2 className="flex items-center gap-2 font-display text-xl font-bold text-ink">
           <UserRound className="h-5 w-5 text-accent" aria-hidden="true" /> Account
         </h2>
@@ -69,7 +69,7 @@ const Settings = () => {
         </div>
       </section>
 
-      <section className="mt-4 rounded-soft border-2 border-stone bg-paper p-6 club-shadow" aria-label="Appearance">
+      <section className="mt-4 rounded-soft border border-stone bg-paper p-6 club-shadow" aria-label="Appearance">
         <h2 className="flex items-center gap-2 font-display text-xl font-bold text-ink">
           <Palette className="h-5 w-5 text-accent" aria-hidden="true" /> Appearance
         </h2>
@@ -86,7 +86,7 @@ const Settings = () => {
                 onClick={() => setTheme(value)}
                 className={`flex flex-col items-start gap-1 rounded-soft border-2 p-3 text-left transition-colors ${selected ? 'border-accent bg-blush/40' : 'border-stone hover:bg-stone/20'}`}
               >
-                <span className="inline-flex items-center gap-2 text-sm font-extrabold text-ink">
+                <span className="inline-flex items-center gap-2 text-sm font-bold text-ink">
                   <Icon className="h-4 w-4 text-accent" aria-hidden="true" /> {label}
                 </span>
                 <span className="text-xs font-semibold text-muted">{description}</span>
@@ -96,7 +96,7 @@ const Settings = () => {
         </div>
       </section>
 
-      <section className="mt-4 rounded-soft border-2 border-stone bg-paper p-6 club-shadow" aria-label="Notifications">
+      <section className="mt-4 rounded-soft border border-stone bg-paper p-6 club-shadow" aria-label="Notifications">
         <h2 className="flex items-center gap-2 font-display text-xl font-bold text-ink">
           <BellRing className="h-5 w-5 text-accent" aria-hidden="true" /> Notifications
         </h2>
@@ -105,7 +105,7 @@ const Settings = () => {
         </div>
       </section>
 
-      <section className="mt-4 rounded-soft border-2 border-stone bg-paper p-6 club-shadow" aria-label="Legal">
+      <section className="mt-4 rounded-soft border border-stone bg-paper p-6 club-shadow" aria-label="Legal">
         <h2 className="flex items-center gap-2 font-display text-xl font-bold text-ink">
           <ShieldCheck className="h-5 w-5 text-accent" aria-hidden="true" /> Legal
         </h2>
@@ -119,7 +119,7 @@ const Settings = () => {
         <button
           onClick={handleSignOut}
           disabled={signingOut}
-          className="inline-flex items-center gap-2 rounded-soft border-2 border-stone bg-paper px-4 py-2 text-sm font-extrabold text-ink hover:bg-blush disabled:opacity-60"
+          className="inline-flex items-center gap-2 rounded-soft border border-stone bg-paper px-4 py-2 text-sm font-bold text-ink hover:bg-blush disabled:opacity-60"
         >
           <LogOut className="h-4 w-4" aria-hidden="true" />
           {signingOut ? 'Signing out…' : 'Sign out'}

@@ -93,7 +93,7 @@ const Account = () => {
             <Mail className="h-4 w-4 text-ink" />
           </span>
           <span>
-            <span className="block text-xs font-extrabold uppercase tracking-widest text-muted">Signed in as</span>
+            <span className="block text-xs font-bold uppercase tracking-widest text-muted">Signed in as</span>
             <span className="block text-sm font-bold text-ink">{user.email}</span>
           </span>
         </div>
@@ -113,7 +113,7 @@ const Account = () => {
       )}
 
       {profile && (
-        <section className="mt-5 rounded-soft border-2 border-stone bg-paper p-4 club-shadow sm:p-8" aria-label="Edit account">
+        <section className="mt-5 rounded-soft border border-stone bg-paper p-4 club-shadow sm:p-8" aria-label="Edit account">
           <EditProfile
             profile={profile}
             onSave={handleSave}

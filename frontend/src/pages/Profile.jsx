@@ -10,7 +10,7 @@ import Button from '../components/common/Button'
 import Card from '../components/common/Card'
 import EmptyState from '../components/common/EmptyState'
 import Tabs, { tabIds } from '../components/common/Tabs'
-import Tag from '../components/common/Tag'
+import ReviewerCard from '../components/reviewer/ReviewerCard'
 import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
 import { formatYearLevel } from '../utils/profile'
@@ -85,7 +85,7 @@ const FocusStats = () => {
   const labels = WEEKDAY_LABELS.map((_, i) => WEEKDAY_LABELS[(todayIdx - 6 + i + 14) % 7])
 
   return (
-    <section aria-label="Focus stats" className="mt-6 rounded-soft border-2 border-stone bg-paper p-4">
+    <section aria-label="Focus stats" className="mt-6 rounded-soft border border-stone bg-paper p-4">
       <div className="flex items-center justify-between gap-2">
         <h2 className="font-display text-lg font-bold text-ink">Focus</h2>
       </div>
@@ -103,7 +103,7 @@ const FocusStats = () => {
         ))}
       </div>
       <div className="mt-3 flex items-center gap-2">
-        <label htmlFor="focus-goal" className="text-xs font-extrabold uppercase tracking-widest text-muted">
+        <label htmlFor="focus-goal" className="text-xs font-bold uppercase tracking-widest text-muted">
           Daily Goal (Min)
         </label>
         <input
@@ -113,13 +113,13 @@ const FocusStats = () => {
           step="1"
           value={goalInput}
           onChange={(e) => setGoalInput(e.target.value)}
-          className="w-20 rounded-soft border-2 border-stone bg-paper px-2 py-1 text-sm font-bold text-ink"
+          className="w-20 rounded-soft border border-stone bg-paper px-2 py-1 text-sm font-bold text-ink"
         />
         <button
           type="button"
           onClick={handleGoalSave}
           disabled={savingGoal}
-          className="rounded-soft border-2 border-accent bg-accent px-3 py-1 text-xs font-extrabold text-paper disabled:opacity-50"
+          className="rounded-soft border-2 border-accent bg-accent px-3 py-1 text-xs font-bold text-paper disabled:opacity-50"
         >
           {savingGoal ? 'Saving…' : 'Save'}
         </button>
@@ -129,29 +129,11 @@ const FocusStats = () => {
   )
 }
 
-const VISIBILITY_TONES = { public: 'mint', unlisted: 'powder', private: 'neutral' }
-
-const ReviewerTile = ({ reviewer, showVisibility }) => (
-  <Card to={`/reviewer/${reviewer.id}`} className="flex flex-col">
-    <div className="flex flex-wrap items-center gap-2">
-      {reviewer.courseCode && <Tag mono>{reviewer.courseCode}</Tag>}
-      {showVisibility && reviewer.visibility && (
-        <Tag tone={VISIBILITY_TONES[reviewer.visibility] || 'neutral'} className="capitalize">{reviewer.visibility}</Tag>
-      )}
-    </div>
-    <p className="mt-3 line-clamp-2 break-words font-display text-lg font-bold leading-snug text-ink">{reviewer.title}</p>
-    <span className="mt-auto inline-flex items-center gap-1 pt-4 text-xs font-semibold text-muted">
-      <Bookmark className="h-3.5 w-3.5" aria-hidden="true" />
-      {reviewer._count?.saves || 0} saves
-    </span>
-  </Card>
-)
-
 const Stat = ({ value, label, to, ariaLabel }) => {
   const body = (
     <>
       <span className="block font-display text-xl font-bold text-ink">{value}</span>
-      <span className="text-xs font-extrabold uppercase tracking-wider text-muted">{label}</span>
+      <span className="text-xs font-bold uppercase tracking-wider text-muted">{label}</span>
     </>
   )
   const classes = 'flex-1 rounded-soft px-2 py-2 text-center'
@@ -334,10 +316,10 @@ const Profile = () => {
             <img
               src={profile.avatarUrl}
               alt={profile.displayName}
-              className="h-16 w-16 shrink-0 rounded-full border-2 border-stone object-cover md:h-20 md:w-20"
+              className="h-16 w-16 shrink-0 rounded-full border border-stone object-cover md:h-20 md:w-20"
             />
           ) : (
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 border-stone bg-blush font-display text-2xl font-bold text-ink md:h-20 md:w-20" aria-hidden="true">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-stone bg-blush font-display text-2xl font-bold text-ink md:h-20 md:w-20" aria-hidden="true">
               {profile.displayName?.charAt(0).toUpperCase() || 'U'}
             </div>
           )}
@@ -405,9 +387,9 @@ const Profile = () => {
               : isOwnProfile ? 'Create your first study guide to get started.' : 'Check back once they share something.'}
           </EmptyState>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-5 sm:grid-cols-2">
             {visibleReviewers.map((reviewer) => (
-              <ReviewerTile key={reviewer.id} reviewer={reviewer} showVisibility={isOwnProfile} />
+              <ReviewerCard key={reviewer.id} reviewer={reviewer} showVisibility={isOwnProfile} />
             ))}
           </div>
         )}

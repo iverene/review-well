@@ -467,7 +467,7 @@ const PdfViewer = ({ fileUrl, title = 'Document' }) => {
   }
 
   return (
-    <div data-testid="study-source-pdf" className="study-source-pdf overflow-hidden rounded-soft border-2 border-stone bg-paper">
+    <div data-testid="study-source-pdf" className="study-source-pdf overflow-hidden rounded-soft border border-stone bg-paper">
       <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-1 px-2 py-2 sm:gap-2 sm:px-3 border-b-2 border-stone bg-cream">
         <div />
         <div className="flex items-center gap-1 justify-self-center">

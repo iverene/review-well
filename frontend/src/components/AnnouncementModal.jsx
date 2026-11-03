@@ -96,7 +96,7 @@ const AnnouncementModal = () => {
   return (
     <Modal open onClose={close} title="What’s New in Review Well" size="md">
       <img src={characterWaving} alt="" aria-hidden="true" width="273" height="229" className="mx-auto -mt-2 mb-2 h-24 w-28 object-contain" />
-      <p className="flex items-center gap-2 text-sm font-extrabold text-ink">
+      <p className="flex items-center gap-2 text-sm font-bold text-ink">
         <Megaphone className="h-4 w-4 text-accent" aria-hidden="true" /> Fresh in this update
       </p>
       <ul className="mt-2 space-y-1.5 text-sm font-semibold text-ink">
@@ -106,7 +106,7 @@ const AnnouncementModal = () => {
           </li>
         ))}
       </ul>
-      <p className="mt-5 flex items-center gap-2 text-sm font-extrabold text-ink">
+      <p className="mt-5 flex items-center gap-2 text-sm font-bold text-ink">
         <Sparkles className="h-4 w-4 text-accent" aria-hidden="true" /> Coming Soon
       </p>
       <ul className="mt-2 space-y-1.5 text-sm font-semibold text-muted">

@@ -42,7 +42,7 @@ const AvatarDropdown = () => {
       <button
         ref={buttonRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 rounded-full border-2 border-stone bg-paper p-1 transition-colors duration-150 hover:border-line hover:bg-blush"
+        className="flex items-center gap-2 rounded-full border border-stone bg-paper p-1 transition-colors duration-150 hover:border-line hover:bg-blush"
         aria-expanded={isOpen}
         aria-haspopup="true"
         aria-label="User menu"
@@ -54,7 +54,7 @@ const AvatarDropdown = () => {
             className="h-8 w-8 rounded-full object-cover"
           />
         ) : (
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blush font-extrabold text-ink" aria-hidden="true">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blush font-bold text-ink" aria-hidden="true">
             {user.displayName?.charAt(0).toUpperCase() || 'U'}
           </div>
         )}
@@ -62,13 +62,13 @@ const AvatarDropdown = () => {
 
       {isOpen && (
         <div
-          className="absolute right-0 z-[100] mt-2 w-64 rounded-club border-2 border-stone bg-paper shadow-sticker club-rise"
+          className="absolute right-0 z-[100] mt-2 w-64 rounded-club border border-stone bg-paper shadow-soft club-rise"
           role="menu"
           aria-orientation="vertical"
           aria-labelledby="user-menu-button"
         >
           <div className="border-b-2 border-stone px-4 py-3">
-            <p className="truncate whitespace-nowrap font-extrabold text-ink" title={user.displayName}>{user.displayName}</p>
+            <p className="truncate whitespace-nowrap font-bold text-ink" title={user.displayName}>{user.displayName}</p>
           </div>
           <div className="p-1" role="none">
             <Link
@@ -114,7 +114,7 @@ const AvatarDropdown = () => {
                 logout()
                 setIsOpen(false)
               }}
-              className="flex w-full items-center gap-3 rounded-soft px-3 py-2.5 text-left text-sm font-extrabold text-accent hover:bg-blush/50"
+              className="flex w-full items-center gap-3 rounded-soft px-3 py-2.5 text-left text-sm font-bold text-accent hover:bg-blush/50"
               role="menuitem"
             >
               <LogOut className="h-4 w-4" aria-hidden="true" />

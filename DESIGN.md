@@ -29,15 +29,17 @@ The logo combines a soft cream background, cocoa-brown outlines, a cute student 
 
 Define the visual system with CSS variables so the palette remains consistent:
 
-- **Cream `#FFF7E8`:** primary page and card surface.
-- **Cocoa `#604A3A`:** primary text, outlines, and logo-aligned dark tone.
-- **Blush `#F6C6D2`:** active tabs, friendly emphasis, and social moments.
-- **Powder `#C9E6F2`:** links, information, and calm secondary actions.
-- **Mint `#CDE8D2`:** saved, complete, and positive states.
-- **Butter `#F9E4A8`:** AI tools, study prompts, and highlights.
-- **Berry `#B04F69`:** primary actions, focus rings, and important emphasis. (Deepened from `#C96A83`, which failed AA as text and under white button labels.)
+- **White `#FFFFFF`:** page and card surface in the light theme, so the pastels and artwork read clean and bright.
+- **Cream `#FFF6F3`:** blush-tinted inset for fields, rows, secondary buttons, and hovers.
+- **Cocoa `#4A3A30`:** primary text, outlines, and logo-aligned dark tone.
+- **Blush `#FAD8E1`:** active tabs, friendly emphasis, and social moments.
+- **Powder `#D3EBF7`:** links, information, and calm secondary actions.
+- **Peach `#FFE3D3`:** warm companion pastel for card bands and illustrations.
+- **Mint `#D3EFDD`:** saved, complete, and positive states.
+- **Butter `#FCEDBC`:** AI tools, study prompts, and highlights.
+- **Berry `#B04F69`:** primary actions, active tabs and dock item, focus rings. Berry *text* belongs on white or cream only; on a pastel it drops to 3.8–4.3:1, so use Cocoa there.
 
-Cream and cocoa form the foundation. Pastels should be used as accents, tags, headers, illustration details, and selected surfaces. Maintain readable contrast and never communicate state with color alone.
+White and cocoa form the foundation, with Cream for quiet insets. Pastels should be used as accents, tags, headers, illustration details, and selected surfaces. Maintain readable contrast and never communicate state with color alone.
 
 Do not default to a dark interface. Do not use large gradients, floating color orbs, bokeh, or a one-color screen.
 
@@ -47,32 +49,32 @@ Colors live as RGB triplets in `frontend/src/index.css` (light `:root`, `[data-t
 
 | Token | Light | Role |
 | --- | --- | --- |
-| `page` | Cream `#FFF7E8` | The canvas behind everything (body, shell). |
-| `paper` | `#FFFCF6` | Sheets on the page: cards, dialogs, sidebar, dock. |
-| `cream` | `#FFF7E8` | Insets inside a sheet: toolbars, dropzones, hovers. |
-| `ink` | Cocoa `#604A3A` | Body text, headings, icons. |
-| `muted` | `#6A5646` | Secondary text and labels. |
+| `page` | White `#FFFFFF` | The canvas behind everything (body, shell). |
+| `paper` | White `#FFFFFF` | Sheets on the page: cards, dialogs, header, dock (set apart by 1px Stone borders and soft shadows). |
+| `cream` | `#FFF6F3` | Insets inside a sheet: toolbars, dropzones, hovers. |
+| `ink` | Cocoa `#4A3A30` | Body text, headings, icons. |
+| `muted` | `#6B5A4F` | Secondary text and labels. |
 | `accent` | Berry `#B04F69` | Primary actions, focus, eyebrows, links. |
-| `line` | `#96826E` | Form-field borders (>= 3:1 on `page` and `paper`). |
-| `stone` | `#DED3BE` | Decorative borders, dividers, dashed empties. |
-| `blush` / `powder` / `mint` / `butter` | pastels | Tags, selected states, feature tints. |
+| `line` | `#9C8579` | Form-field borders (>= 3:1 on `page` and `paper`). |
+| `stone` | `#F1E4DE` | Decorative borders, dividers, dashed empties. |
+| `blush` / `peach` / `powder` / `mint` / `butter` | pastels | Tags, selected states, feature tints. |
 
 **Contrast rule:** `ink` and `muted` must stay >= 4.5:1 on `page`, `paper`, `cream`, and every pastel; `accent` must be >= 4.5:1 as text on `page`/`paper` and under `paper` button labels; `line` >= 3:1. All three themes currently pass. Re-check any value change with a WCAG contrast calculator before shipping.
 
 ## 4. Typography
 
-The supplied wordmark is expressive and hand-drawn, so the surrounding typography should support it rather than compete with it.
+The hand-drawn wordmark carries the personality; the type around it stays modern, geometric, and calm.
 
-- **Display:** a rounded, friendly display face such as Fredoka, Baloo 2, or Nunito ExtraBold for page titles and welcoming moments.
-- **Interface:** a warm, highly readable sans such as Nunito, Plus Jakarta Sans, or Atkinson Hyperlegible.
-- **Study metadata:** JetBrains Mono for course codes, counts, and compact labels only.
+- **Display: Outfit** (500–700) for page titles, section headings, card titles, and welcoming moments. Slight negative tracking (-0.01em).
+- **Interface: DM Sans** (400–700) for body text, labels, and controls. It tops out at 700, so `font-bold` is the heaviest interface weight.
+- **Study metadata: DM Mono** for course codes, counts, and compact labels only.
 
-Use friendly weight and generous line height instead of extreme size. Keep text legible on pastel surfaces. Do not use a formal editorial serif as the dominant page-heading style, since it conflicts with the hand-drawn logo personality.
+Loaded from Google Fonts in `frontend/index.html`; mapped to Tailwind `font-display`, `font-sans`, and `font-mono`. Use friendly weight and generous line height instead of extreme size.
 
 ## 5. Shape, Texture, and Components
 
-- Use rounded corners from 10px to 16px for cards, buttons, inputs, avatars, and study surfaces.
-- Use soft cocoa borders, occasional offset outlines, and tiny sticker-like labels to create a handmade feel.
+- **Soft Pop shapes:** pill (`rounded-full`) buttons, tabs, chips, single-line fields, and the dock; 26px cards (`rounded-club`), 32px banners and dialogs, 16px for textareas and inner rows (`rounded-soft`).
+- Use 1px Stone borders and soft, blurred, Berry-tinted shadows (`shadow-soft`, `shadow-soft-sm`, `shadow-float` for the dock). Never offset or hard shadows.
 - Use subtle notebook dots, paper grain, washi-tape strips, and star marks as low-contrast texture.
 - Keep decorative elements sparse and anchored to nearby content.
 - Reserve cards for repeated content, dialogs, study tools, and framed tools. Do not nest cards inside cards.
@@ -86,8 +88,9 @@ Buttons should feel like friendly stationery labels, not pills floating in space
 Build screens from `frontend/src/components/common` instead of hand-assembling classes:
 
 - **Button** (`primary`, `secondary`, `quiet`, `danger`; sizes `sm`, `md`, `lg`, `icon`). Pass `to` for router links and `href` for plain links. Use `buttonClasses()` when another component must render its own element.
-- **Card:** a Paper sheet with a 16px radius, Stone border, and sticker shadow. With `to`, it becomes a whole-card link with a small lift on hover.
-- **Tag:** sticker labels for course codes (`mono`), visibility (`mint` public, `powder` unlisted, `neutral` private), and small states such as "New".
+- **Card:** a Paper sheet with a 26px radius, 1px Stone border, and soft shadow. With `to`, it becomes a whole-card link with a small lift on hover.
+- **ReviewerCard** (`components/reviewer`): pastel band (stable colour per course code via `pastelFor`) with the course pill, then title and footer. Use it for every reviewer grid.
+- **Tag:** pill labels for course codes (`mono`), visibility (`mint` public, `powder` unlisted, `neutral` private), and small states such as "New".
 - **Field** (`Label`, `Input`, `Select`, `Textarea`): uses `line` borders and muted placeholders.
 - **Modal:** every dialog. It is a bottom sheet on phones and a centred card from `sm` up. The visible title names it; it traps Tab, closes on Escape or a backdrop press, and returns focus to the trigger. Confirmations pass `role="alertdialog"` and focus the safe choice.
 - **Tabs:** a segmented tablist with roving focus and Left/Right/Home/End.
@@ -104,9 +107,9 @@ The header should resemble the top of a decorated study notebook:
 - Authenticated users see profile, notifications, and creation actions.
 - Guests see a clear Google sign-in action (labelled "Sign in" on phones so the header never wraps; the accessible name stays "Sign in with Google").
 
-### Desktop Navigation
+### Desktop and Mobile Navigation
 
-Use a friendly sidebar with rounded active markers and small subject-colored icons. The sidebar should feel like labeled tabs in a personal binder, with generous breathing room and no dense enterprise styling.
+One shell for every screen size: a light header (logo and wordmark, search that opens the public library with `?q=`, New reviewer, notifications, account) and a floating pill dock fixed at the bottom centre. The current destination expands into a Berry pill with its label; the others are icons with accessible names. There is no sidebar.
 
 Authenticated destinations:
 
@@ -118,10 +121,6 @@ Authenticated destinations:
 - Create reviewer
 
 Guests receive browsing destinations only. Do not show creation, editing, notification, or private-profile actions to guests.
-
-### Mobile Navigation
-
-Use a bottom dock with a warm Paper surface and icon-only destinations (each with an accessible name). The active item matches the sidebar: a Blush sheet with a Berry icon. The create action can be a visually distinct elevated control for authenticated users. Guests should see public browsing and a compact Google sign-in route instead.
 
 ## 7. Login and Guest Experience
 
@@ -154,7 +153,7 @@ The public browsing path must work for both guests and Google users. Guest inter
 
 The reviewer detail view is a hub with the Source viewer, all in kawaii tokens:
 
-- Use a calm Cream page with a minimal reviewer header and no card chrome. Show the course-code tag and an owner-only visibility tag, then the title and description, then an inline details row (creator, assessment, semester, upload date). The details row is visible at every width.
+- Use a calm white page with a minimal reviewer header and no card chrome. Show the course-code tag and an owner-only visibility tag, then the title and description, then an inline details row (creator, assessment, semester, upload date). The details row is visible at every width.
 - Put the actions on one dashed rule below the header: Save, Download, and Share; owners also get Edit and Delete, which move into a "More actions" menu on phones.
 - **Source viewer:** the uploaded file at full content width. PDFs use the lazy-loaded viewer, PPTX files use a 16:9 Office embed. With no file, owners see an EmptyState that links to upload; everyone else sees a short note.
 - **Parked study modes:** Flashcards, Blurting, and the Pomodoro dock are hidden behind `ENABLED_STUDY_MODES` (components, tokens, and tests intact). When re-enabled: Butter accents for the AI deck action and quota states (`decksLeft`); Mint for known/complete states; Powder info surfaces for blurting grades; Mint/Butter companion panel for the dock.

@@ -219,7 +219,7 @@ const Create = () => {
   return (
     <div className="mx-auto max-w-4xl pb-6">
       <div className="mb-5 flex items-start gap-4">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-club border-2 border-stone bg-mint text-ink shadow-sticker-sm">
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-club border border-stone bg-mint text-ink shadow-soft-sm">
           <BookOpen className="h-6 w-6" aria-hidden="true" />
         </div>
         <div>
@@ -229,7 +229,7 @@ const Create = () => {
       </div>
 
       <form onSubmit={handleSubmit} className="grid gap-4 lg:grid-cols-[1fr_280px]">
-        <div className="rounded-club border-2 border-stone bg-paper p-4 shadow-sticker sm:p-8">
+        <div className="rounded-club border border-stone bg-paper p-4 shadow-soft sm:p-8">
           <ErrorAlert className="mb-6">{error}</ErrorAlert>
 
           {loadingEdit ? (
@@ -237,31 +237,31 @@ const Create = () => {
           ) : (
           <div className="space-y-6">
             <div>
-              <label htmlFor="title" className="mb-2 block text-sm font-extrabold text-ink">Title</label>
-              <input id="title" name="title" value={formData.title} onChange={updateField} required autoFocus placeholder="e.g. Data Structures Midterm Guide" className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none" />
+              <label htmlFor="title" className="mb-2 block text-sm font-bold text-ink">Title</label>
+              <input id="title" name="title" value={formData.title} onChange={updateField} required autoFocus placeholder="e.g. Data Structures Midterm Guide" className="w-full rounded-full border border-line bg-cream px-5 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none" />
             </div>
 
             <div>
-              <label htmlFor="courseDescription" className="mb-2 block text-sm font-extrabold text-ink">Course Description</label>
-              <input id="courseDescription" name="courseDescription" value={formData.courseDescription} onChange={updateField} required placeholder="e.g. Data Structures and Algorithms" className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none" />
+              <label htmlFor="courseDescription" className="mb-2 block text-sm font-bold text-ink">Course Description</label>
+              <input id="courseDescription" name="courseDescription" value={formData.courseDescription} onChange={updateField} required placeholder="e.g. Data Structures and Algorithms" className="w-full rounded-full border border-line bg-cream px-5 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none" />
             </div>
 
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
-                <label htmlFor="courseCode" className="mb-2 block text-sm font-extrabold text-ink">Course Code <span className="font-semibold text-muted">(Optional)</span></label>
-                <input id="courseCode" name="courseCode" value={formData.courseCode} onChange={updateField} placeholder="e.g. CS 201" className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none" />
+                <label htmlFor="courseCode" className="mb-2 block text-sm font-bold text-ink">Course Code <span className="font-semibold text-muted">(Optional)</span></label>
+                <input id="courseCode" name="courseCode" value={formData.courseCode} onChange={updateField} placeholder="e.g. CS 201" className="w-full rounded-full border border-line bg-cream px-5 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none" />
               </div>
               <div>
-                <label htmlFor="semester" className="mb-2 block text-sm font-extrabold text-ink">Semester</label>
-                <select id="semester" name="semester" value={formData.semester} onChange={updateField} required className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none">
+                <label htmlFor="semester" className="mb-2 block text-sm font-bold text-ink">Semester</label>
+                <select id="semester" name="semester" value={formData.semester} onChange={updateField} required className="w-full rounded-full border border-line bg-cream px-5 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none">
                   <option value="" disabled>Select Semester</option><option value="First Semester">First Semester</option><option value="Second Semester">Second Semester</option><option value="Summer">Summer</option>
                 </select>
               </div>
             </div>
 
             <div>
-              <label htmlFor="examType" className="mb-2 block text-sm font-extrabold text-ink">Assessment Type</label>
-              <select id="examType" name="examType" value={formData.examType} onChange={updateField} className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none">
+              <label htmlFor="examType" className="mb-2 block text-sm font-bold text-ink">Assessment Type</label>
+              <select id="examType" name="examType" value={formData.examType} onChange={updateField} className="w-full rounded-full border border-line bg-cream px-5 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none">
                 <option value="prelim">Prelim</option><option value="midterm">Midterm</option><option value="final">Finals</option><option value="quiz">Quiz</option>
               </select>
             </div>
@@ -272,7 +272,7 @@ const Create = () => {
               onDragLeave={() => setDragging(false)}
               onDrop={handleDrop}
             >
-              <label htmlFor="sourceFile" className="mb-2 flex items-center gap-2 text-sm font-extrabold text-ink">
+              <label htmlFor="sourceFile" className="mb-2 flex items-center gap-2 text-sm font-bold text-ink">
                 {editReviewerId ? <RefreshCcw className="h-4 w-4" aria-hidden="true" /> : <FileUp className="h-4 w-4" aria-hidden="true" />}
                 {editReviewerId ? 'Replace File (Optional)' : 'Source File'}
               </label>
@@ -283,7 +283,7 @@ const Create = () => {
                 accept=".pdf,.pptx"
                 onChange={handleFileChange}
                 required={!editReviewerId}
-                className="w-full rounded-soft border-2 border-line bg-paper px-3 py-2.5 text-sm text-ink file:mr-3 file:cursor-pointer file:rounded-soft file:border-2 file:border-stone file:bg-butter file:px-3 file:py-1 file:text-xs file:font-extrabold file:text-ink"
+                className="w-full rounded-soft border-2 border-line bg-paper px-3 py-2.5 text-sm text-ink file:mr-3 file:cursor-pointer file:rounded-soft file:border-2 file:border-stone file:bg-butter file:px-3 file:py-1 file:text-xs file:font-bold file:text-ink"
               />
               <p className="mt-2 text-xs text-muted">PDF or PPTX only, max 25 MB. {editReviewerId ? 'Swapping files may stale the AI deck.' : 'Drag and drop your file here, or browse to choose one.'}</p>
               {sourceFile && !fileError && (
@@ -306,7 +306,7 @@ const Create = () => {
         </div>
 
         <aside className="space-y-6">
-          <fieldset className="rounded-club border-2 border-stone bg-paper p-5 shadow-sticker">
+          <fieldset className="rounded-club border border-stone bg-paper p-5 shadow-soft">
             <legend className="sr-only">Visibility</legend>
             <h2 className="font-display text-xl font-bold text-ink" aria-hidden="true">Visibility</h2>
             <div className="mt-4 space-y-2">
@@ -314,7 +314,7 @@ const Create = () => {
                 <label key={value} className={`flex cursor-pointer gap-3 rounded-soft border-2 p-3 transition-colors duration-150 has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-accent ${formData.visibility === value ? 'border-accent/60 bg-blush/50' : 'border-transparent hover:bg-cream'}`}>
                   <input type="radio" name="visibility" value={value} checked={formData.visibility === value} onChange={updateField} className="sr-only" />
                   <Icon className={`mt-0.5 h-4 w-4 shrink-0 ${formData.visibility === value ? 'text-accent' : 'text-muted'}`} aria-hidden="true" />
-                  <span><span className="block text-sm font-extrabold text-ink">{label}</span><span className="mt-0.5 block text-xs text-muted">{description}</span></span>
+                  <span><span className="block text-sm font-bold text-ink">{label}</span><span className="mt-0.5 block text-xs text-muted">{description}</span></span>
                 </label>
               ))}
             </div>

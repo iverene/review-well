@@ -70,9 +70,9 @@ const NotificationItem = ({ notification, onMarkRead }) => {
       aria-label={`${actor?.displayName || 'Someone'} ${getActionText()}${isRead ? '' : ', unread'}`}
     >
       {actor?.avatarUrl ? (
-        <img src={actor.avatarUrl} alt="" className="h-10 w-10 shrink-0 rounded-full border-2 border-stone object-cover" />
+        <img src={actor.avatarUrl} alt="" className="h-10 w-10 shrink-0 rounded-full border border-stone object-cover" />
       ) : (
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-stone bg-powder font-display text-lg font-bold text-ink" aria-hidden="true">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-stone bg-powder font-display text-lg font-bold text-ink" aria-hidden="true">
           {initial}
         </div>
       )}
@@ -80,11 +80,11 @@ const NotificationItem = ({ notification, onMarkRead }) => {
       <div className="min-w-0 flex-1">
         <p className="text-sm text-ink">
           {actor?.id ? (
-            <Link to={`/profile/${actor.id}`} className="font-extrabold hover:underline" onClick={followLink}>
+            <Link to={`/profile/${actor.id}`} className="font-bold hover:underline" onClick={followLink}>
               {actor.displayName}
             </Link>
           ) : (
-            <span className="font-extrabold">{actor?.displayName || 'Someone'}</span>
+            <span className="font-bold">{actor?.displayName || 'Someone'}</span>
           )}{' '}
           {getActionText()}
         </p>

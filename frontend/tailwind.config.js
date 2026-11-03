@@ -18,25 +18,27 @@ export default {
         'accent': 'rgb(var(--accent) / <alpha-value>)',
         'muted': 'rgb(var(--muted) / <alpha-value>)',
         'blush': 'rgb(var(--blush) / <alpha-value>)',
+        'peach': 'rgb(var(--peach) / <alpha-value>)',
         'powder': 'rgb(var(--powder) / <alpha-value>)',
         'mint': 'rgb(var(--mint) / <alpha-value>)',
         'butter': 'rgb(var(--butter) / <alpha-value>)',
         'cream': 'rgb(var(--cream) / <alpha-value>)',
       },
       fontFamily: {
-        'sans': ['"Nunito"', 'sans-serif'],
-        'display': ['"Fredoka"', 'sans-serif'],
-        'serif': ['"Fredoka"', 'sans-serif'],
-        'mono': ['"JetBrains Mono"', 'monospace'],
+        'sans': ['"DM Sans"', 'system-ui', 'sans-serif'],
+        'display': ['"Outfit"', 'system-ui', 'sans-serif'],
+        'serif': ['"Outfit"', 'system-ui', 'sans-serif'],
+        'mono': ['"DM Mono"', 'ui-monospace', 'monospace'],
       },
       borderRadius: {
-        'club': '16px',
-        'soft': '12px',
+        'club': '26px',
+        'soft': '16px',
       },
       boxShadow: {
-        // Offset "sticker" shadows from DESIGN.md (cocoa, no blur).
-        'sticker': '4px 5px 0 rgb(var(--ink) / 0.10)',
-        'sticker-sm': '2px 3px 0 rgb(var(--ink) / 0.10)',
+        // Soft Pop depth: blurred, Berry-tinted, never offset.
+        'soft': '0 8px 24px rgb(var(--accent) / 0.10)',
+        'soft-sm': '0 3px 10px rgb(var(--accent) / 0.10)',
+        'float': '0 12px 32px rgb(var(--ink) / 0.16)',
       },
       transitionTimingFunction: {
         'out-soft': 'cubic-bezier(0.2, 0, 0, 1)',

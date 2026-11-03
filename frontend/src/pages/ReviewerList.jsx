@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import axios from 'axios'
-import { Bookmark, BookOpen, LibraryBig, Plus, Search, X } from 'lucide-react'
+import { Plus, Search, X } from 'lucide-react'
 
 import Filter from '../components/Filter'
 import { useToast } from '../contexts/ToastContext'
@@ -14,9 +14,8 @@ import useCachedGet from '../hooks/useCachedGet'
 import { cacheKey } from '../stores/queryCache'
 import { ReviewerGridSkeleton } from '../components/common/Skeleton'
 import Button from '../components/common/Button'
-import Card from '../components/common/Card'
 import EmptyState from '../components/common/EmptyState'
-import Tag from '../components/common/Tag'
+import ReviewerCard from '../components/reviewer/ReviewerCard'
 
 const ReviewerList = ({ mine = false }) => {
   const [reviewers, setReviewers] = useState([])
@@ -28,8 +27,17 @@ const ReviewerList = ({ mine = false }) => {
   const toast = useToast()
   const [searchParams] = useSearchParams()
   const sameCourseOnly = searchParams.get('course') === 'mine'
-  const [query, setQuery] = useState('')
-  const [debouncedQuery, setDebouncedQuery] = useState('')
+  // ?q= arrives from the header search.
+  const [query, setQuery] = useState(() => searchParams.get('q') || '')
+  const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('q') || '')
+  const urlQuery = searchParams.get('q') || ''
+
+  // A new header search while this page is open updates the query in place.
+  useEffect(() => {
+    setQuery(urlQuery)
+    setDebouncedQuery(urlQuery)
+    setPage(1)
+  }, [urlQuery])
   const [filters, setFilters] = useState({ examType: '', semester: '' })
 
   useEffect(() => {
@@ -102,7 +110,6 @@ const ReviewerList = ({ mine = false }) => {
   }, [listError])
 
   const title = mine ? 'My Reviewers' : sameCourseOnly ? 'Reviewers From the Same Course' : 'Public Reviewers'
-  const Icon = mine ? LibraryBig : BookOpen
 
   return (
     <PageContainer className="space-y-6">
@@ -172,19 +179,9 @@ const ReviewerList = ({ mine = false }) => {
           </EmptyState>
         )
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {reviewers.map((reviewer) => (
-            <Card key={reviewer.id} to={`/reviewer/${reviewer.id}`} className="group flex flex-col">
-              <div className="flex items-start justify-between gap-3">
-                {reviewer.courseCode ? <Tag mono>{reviewer.courseCode}</Tag> : <span />}
-                <Icon className="h-5 w-5 shrink-0 text-accent transition-transform duration-150 group-hover:-rotate-6" aria-hidden="true" />
-              </div>
-              <h2 className="mt-3 line-clamp-3 break-words font-display text-lg font-bold leading-snug text-ink">{reviewer.title}</h2>
-              <div className="mt-auto flex items-center justify-between gap-2 pt-4 text-xs font-semibold text-muted">
-                <span className="inline-flex items-center gap-1"><Bookmark className="h-3.5 w-3.5" aria-hidden="true" />{reviewer._count?.saves || 0}</span>
-                {mine && reviewer.visibility ? <span className="capitalize">{reviewer.visibility}</span> : reviewer.user?.displayName && <span className="truncate">by {reviewer.user.displayName}</span>}
-              </div>
-            </Card>
+            <ReviewerCard key={reviewer.id} reviewer={reviewer} saves="icon" showVisibility={mine} />
           ))}
         </div>
       )}
@@ -200,7 +197,7 @@ const ReviewerList = ({ mine = false }) => {
           to="/create"
           aria-label="New reviewer"
           title="New reviewer"
-          className="fixed bottom-24 right-4 z-30 inline-flex h-14 w-14 items-center justify-center rounded-full border-2 border-accent bg-accent text-paper shadow-sticker transition-transform duration-150 active:scale-95 sm:hidden"
+          className="fixed bottom-24 right-4 z-30 inline-flex h-14 w-14 items-center justify-center rounded-full border-2 border-accent bg-accent text-paper shadow-soft transition-transform duration-150 active:scale-95 sm:hidden"
         >
           <Plus className="h-6 w-6" aria-hidden="true" />
         </Link>

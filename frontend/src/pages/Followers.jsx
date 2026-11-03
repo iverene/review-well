@@ -37,12 +37,12 @@ const Followers = ({ type }) => {
 
   return (
     <PageContainer>
-      <Link to={`/profile/${userId}`} className="mb-3 inline-flex items-center gap-2 text-sm font-extrabold text-muted hover:text-ink">
+      <Link to={`/profile/${userId}`} className="mb-3 inline-flex items-center gap-2 text-sm font-bold text-muted hover:text-ink">
         <ArrowLeft className="h-4 w-4" aria-hidden="true" /> Back to Profile
       </Link>
       <PageHeader title={title} />
 
-      <div className="mt-5 rounded-soft border-2 border-stone bg-paper p-2 club-shadow sm:p-3" aria-live="polite">
+      <div className="mt-5 rounded-soft border border-stone bg-paper p-2 club-shadow sm:p-3" aria-live="polite">
         {loading && (
           <div className="space-y-2 p-2" aria-hidden="true">
             {[0, 1, 2].map((i) => (
@@ -61,12 +61,12 @@ const Followers = ({ type }) => {
               {person.avatarUrl ? (
                 <img src={person.avatarUrl} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />
               ) : (
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blush text-sm font-extrabold text-ink" aria-hidden="true">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blush text-sm font-bold text-ink" aria-hidden="true">
                   {person.displayName?.charAt(0).toUpperCase() || 'U'}
                 </span>
               )}
               <span className="min-w-0">
-                <span className="block truncate text-sm font-extrabold text-ink hover:underline">{person.displayName}</span>
+                <span className="block truncate text-sm font-bold text-ink hover:underline">{person.displayName}</span>
                 {person.school && <span className="block truncate text-xs text-muted">{person.school}</span>}
               </span>
             </Link>
