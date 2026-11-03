@@ -3,70 +3,44 @@ import { Home, LibraryBig, Globe2, UserPlus, UserRound } from 'lucide-react'
 
 import { useAuth } from '../../contexts/AuthContext'
 
+const NAV_ITEMS = [
+  { to: '/', label: 'Home', icon: Home, match: (path) => path === '/' },
+  { to: '/reviewer/my', label: 'My Reviewers', icon: LibraryBig, match: (path) => path.startsWith('/reviewer/my') },
+  { to: '/reviewer/public', label: 'Public', icon: Globe2, match: (path) => path === '/reviewer/public' },
+  { to: '/friends', label: 'Friends', icon: UserPlus, match: (path) => path.startsWith('/friends') },
+  { to: '/profile', label: 'Profile', icon: UserRound, match: (path) => path.startsWith('/profile') },
+]
+
+// Floating pill dock (Soft Pop): the active destination expands into a
+// Berry pill with its label; the rest stay as icons with accessible names.
 const BottomDock = () => {
-  const location = useLocation()
+  const { pathname } = useLocation()
   const { user } = useAuth()
 
-  const navItems = [
-    {
-      to: '/',
-      label: 'Home',
-      icon: (
-        <Home className="h-6 w-6" strokeWidth={2.4} aria-hidden="true" />
-      ),
-    },
-    {
-      to: '/reviewer/my',
-      label: 'My Reviewers',
-      icon: (
-        <LibraryBig className="h-6 w-6" strokeWidth={2.4} aria-hidden="true" />
-      ),
-    },
-    {
-      to: '/reviewer/public',
-      label: 'Public Reviewers',
-      icon: (
-        <Globe2 className="h-6 w-6" strokeWidth={2.4} aria-hidden="true" />
-      ),
-    },
-    {
-      to: '/friends',
-      label: 'Friends',
-      icon: (
-        <UserPlus className="h-6 w-6" strokeWidth={2.4} aria-hidden="true" />
-      ),
-    },
-    {
-      to: '/profile',
-      label: 'Profile',
-      icon: (
-        <UserRound className="h-6 w-6" strokeWidth={2.4} aria-hidden="true" />
-      ),
-    },
-  ]
-
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-40 border-t-2 border-stone bg-paper/95 px-3 pb-[env(safe-area-inset-bottom)] shadow-[0_-3px_0_rgb(var(--ink)/0.06)] backdrop-blur">
-      <nav className="flex w-full items-center justify-evenly gap-0 py-2" aria-label="Mobile navigation">
-        {navItems.map((item) => {
-          const isActive = location.pathname === item.to
-            || (item.to === '/reviewer/my' && location.pathname.startsWith('/reviewer/my'))
+    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 flex justify-center px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
+      <nav
+        aria-label="Primary navigation"
+        className="pointer-events-auto flex items-center gap-1 rounded-full border border-stone bg-paper/95 p-1.5 shadow-float backdrop-blur"
+      >
+        {NAV_ITEMS.map(({ to, label, icon: Icon, match }) => {
+          const active = match(pathname)
+          const avatar = label === 'Profile' && user?.avatarUrl
           return (
             <Link
-              key={item.to}
-              to={item.to}
-              aria-label={item.label}
-              title={item.label}
-              className={`flex min-h-11 min-w-0 flex-1 items-center justify-center rounded-soft px-1 py-2 transition-colors duration-150 ${
-                isActive
-                  ? 'bg-blush text-accent'
-                  : 'text-muted hover:bg-cream hover:text-ink'
-              }`}
-              aria-current={isActive ? 'page' : undefined}
+              key={to}
+              to={to}
+              aria-label={label}
+              title={label}
+              aria-current={active ? 'page' : undefined}
+              className={`flex h-11 items-center justify-center gap-2 rounded-full transition-[background-color,color,padding] duration-200 ease-out-soft ${active ? 'bg-accent px-4 text-paper shadow-soft-sm' : 'w-11 text-muted hover:bg-cream hover:text-ink'}`}
             >
-              {item.label === 'Profile' && user?.avatarUrl ? (
+              {avatar ? (
                 <img src={user.avatarUrl} alt="" className="h-6 w-6 rounded-full object-cover" />
-              ) : item.icon}
+              ) : (
+                <Icon className="h-5 w-5 shrink-0" strokeWidth={2.2} aria-hidden="true" />
+              )}
+              {active && <span className="whitespace-nowrap text-sm font-bold">{label}</span>}
             </Link>
           )
         })}

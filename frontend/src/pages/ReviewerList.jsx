@@ -28,8 +28,17 @@ const ReviewerList = ({ mine = false }) => {
   const toast = useToast()
   const [searchParams] = useSearchParams()
   const sameCourseOnly = searchParams.get('course') === 'mine'
-  const [query, setQuery] = useState('')
-  const [debouncedQuery, setDebouncedQuery] = useState('')
+  // ?q= arrives from the header search.
+  const [query, setQuery] = useState(() => searchParams.get('q') || '')
+  const [debouncedQuery, setDebouncedQuery] = useState(() => searchParams.get('q') || '')
+  const urlQuery = searchParams.get('q') || ''
+
+  // A new header search while this page is open updates the query in place.
+  useEffect(() => {
+    setQuery(urlQuery)
+    setDebouncedQuery(urlQuery)
+    setPage(1)
+  }, [urlQuery])
   const [filters, setFilters] = useState({ examType: '', semester: '' })
 
   useEffect(() => {
