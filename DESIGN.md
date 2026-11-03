@@ -29,15 +29,16 @@ The logo combines a soft cream background, cocoa-brown outlines, a cute student 
 
 Define the visual system with CSS variables so the palette remains consistent:
 
-- **Cream `#FFF7E8`:** primary page and card surface.
-- **Cocoa `#604A3A`:** primary text, outlines, and logo-aligned dark tone.
-- **Blush `#F6C6D2`:** active tabs, friendly emphasis, and social moments.
-- **Powder `#C9E6F2`:** links, information, and calm secondary actions.
-- **Mint `#CDE8D2`:** saved, complete, and positive states.
-- **Butter `#F9E4A8`:** AI tools, study prompts, and highlights.
+- **White `#FFFFFF`:** page and card surface in the light theme, so the pastels and artwork read clean and bright.
+- **Cream `#F8F4F1`:** soft warm inset for toolbars, dropzones, and hover states.
+- **Cocoa `#5B4638`:** primary text, outlines, and logo-aligned dark tone.
+- **Blush `#FAD8E1`:** active tabs, friendly emphasis, and social moments.
+- **Powder `#D3EBF7`:** links, information, and calm secondary actions.
+- **Mint `#D3EFDD`:** saved, complete, and positive states.
+- **Butter `#FCEDBC`:** AI tools, study prompts, and highlights.
 - **Berry `#B04F69`:** primary actions, focus rings, and important emphasis. (Deepened from `#C96A83`, which failed AA as text and under white button labels.)
 
-Cream and cocoa form the foundation. Pastels should be used as accents, tags, headers, illustration details, and selected surfaces. Maintain readable contrast and never communicate state with color alone.
+White and cocoa form the foundation, with Cream for quiet insets. Pastels should be used as accents, tags, headers, illustration details, and selected surfaces. Maintain readable contrast and never communicate state with color alone.
 
 Do not default to a dark interface. Do not use large gradients, floating color orbs, bokeh, or a one-color screen.
 
@@ -47,14 +48,14 @@ Colors live as RGB triplets in `frontend/src/index.css` (light `:root`, `[data-t
 
 | Token | Light | Role |
 | --- | --- | --- |
-| `page` | Cream `#FFF7E8` | The canvas behind everything (body, shell). |
-| `paper` | `#FFFCF6` | Sheets on the page: cards, dialogs, sidebar, dock. |
-| `cream` | `#FFF7E8` | Insets inside a sheet: toolbars, dropzones, hovers. |
-| `ink` | Cocoa `#604A3A` | Body text, headings, icons. |
-| `muted` | `#6A5646` | Secondary text and labels. |
+| `page` | White `#FFFFFF` | The canvas behind everything (body, shell). |
+| `paper` | White `#FFFFFF` | Sheets on the page: cards, dialogs, sidebar, dock (set apart by Stone borders and sticker shadows). |
+| `cream` | `#F8F4F1` | Insets inside a sheet: toolbars, dropzones, hovers. |
+| `ink` | Cocoa `#5B4638` | Body text, headings, icons. |
+| `muted` | `#69584C` | Secondary text and labels. |
 | `accent` | Berry `#B04F69` | Primary actions, focus, eyebrows, links. |
-| `line` | `#96826E` | Form-field borders (>= 3:1 on `page` and `paper`). |
-| `stone` | `#DED3BE` | Decorative borders, dividers, dashed empties. |
+| `line` | `#948478` | Form-field borders (>= 3:1 on `page` and `paper`). |
+| `stone` | `#E8E0D8` | Decorative borders, dividers, dashed empties. |
 | `blush` / `powder` / `mint` / `butter` | pastels | Tags, selected states, feature tints. |
 
 **Contrast rule:** `ink` and `muted` must stay >= 4.5:1 on `page`, `paper`, `cream`, and every pastel; `accent` must be >= 4.5:1 as text on `page`/`paper` and under `paper` button labels; `line` >= 3:1. All three themes currently pass. Re-check any value change with a WCAG contrast calculator before shipping.
@@ -154,7 +155,7 @@ The public browsing path must work for both guests and Google users. Guest inter
 
 The reviewer detail view is a hub with the Source viewer, all in kawaii tokens:
 
-- Use a calm Cream page with a minimal reviewer header and no card chrome. Show the course-code tag and an owner-only visibility tag, then the title and description, then an inline details row (creator, assessment, semester, upload date). The details row is visible at every width.
+- Use a calm white page with a minimal reviewer header and no card chrome. Show the course-code tag and an owner-only visibility tag, then the title and description, then an inline details row (creator, assessment, semester, upload date). The details row is visible at every width.
 - Put the actions on one dashed rule below the header: Save, Download, and Share; owners also get Edit and Delete, which move into a "More actions" menu on phones.
 - **Source viewer:** the uploaded file at full content width. PDFs use the lazy-loaded viewer, PPTX files use a 16:9 Office embed. With no file, owners see an EmptyState that links to upload; everyone else sees a short note.
 - **Parked study modes:** Flashcards, Blurting, and the Pomodoro dock are hidden behind `ENABLED_STUDY_MODES` (components, tokens, and tests intact). When re-enabled: Butter accents for the AI deck action and quota states (`decksLeft`); Mint for known/complete states; Powder info surfaces for blurting grades; Mint/Butter companion panel for the dock.

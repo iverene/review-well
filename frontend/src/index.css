@@ -4,9 +4,9 @@
 
 /* Theme tokens (RGB triplets so Tailwind opacity modifiers keep working).
    :root is the default light theme; Settings switches data-theme.
-   page   = the canvas behind everything (Cream in light)
+   page   = the canvas behind everything (white in light)
    paper  = sheets that sit on the page: cards, dialogs, nav
-   cream  = inset areas inside a sheet (toolbars, dropzones)
+   cream  = soft warm inset inside a sheet (toolbars, dropzones, hovers)
    line   = form-field borders (>= 3:1 against page and paper)
    stone  = decorative borders and dividers
    Every text pairing below meets WCAG AA (4.5:1): ink and muted on page,
@@ -14,18 +14,18 @@
    on accent. Re-run the contrast check in DESIGN.md when changing values. */
 :root {
   color-scheme: light;
-  --page: 255 247 232;
-  --paper: 255 252 246;
-  --cream: 255 247 232;
-  --ink: 96 74 58;
-  --muted: 106 86 70;
+  --page: 255 255 255;
+  --paper: 255 255 255;
+  --cream: 248 244 241;
+  --ink: 91 70 56;
+  --muted: 105 88 76;
   --accent: 176 79 105;
-  --stone: 222 211 190;
-  --line: 150 130 110;
-  --blush: 246 198 210;
-  --powder: 201 230 242;
-  --mint: 205 232 210;
-  --butter: 249 228 168;
+  --stone: 232 224 216;
+  --line: 148 132 120;
+  --blush: 250 216 225;
+  --powder: 211 235 247;
+  --mint: 211 239 221;
+  --butter: 252 237 188;
 }
 
 [data-theme='dark'] {
