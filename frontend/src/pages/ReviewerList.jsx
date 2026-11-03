@@ -200,7 +200,7 @@ const ReviewerList = ({ mine = false }) => {
           to="/create"
           aria-label="New reviewer"
           title="New reviewer"
-          className="fixed bottom-24 right-4 z-30 inline-flex h-14 w-14 items-center justify-center rounded-full border-2 border-accent bg-accent text-paper shadow-sticker transition-transform duration-150 active:scale-95 sm:hidden"
+          className="fixed bottom-24 right-4 z-30 inline-flex h-14 w-14 items-center justify-center rounded-full border-2 border-accent bg-accent text-paper shadow-soft transition-transform duration-150 active:scale-95 sm:hidden"
         >
           <Plus className="h-6 w-6" aria-hidden="true" />
         </Link>

@@ -60,7 +60,7 @@ const FindFriends = () => {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by name or school…"
             aria-label="Search friends"
-            className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 pr-11 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
+            className="w-full rounded-full border border-line bg-cream px-5 py-2.5 pr-11 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
           />
           {query && (
             <button
@@ -88,7 +88,7 @@ const FindFriends = () => {
         {loading && (
           <div className="space-y-3" aria-hidden="true">
             {[0, 1, 2].map((i) => (
-              <div key={i} className="h-20 animate-pulse rounded-soft border-2 border-stone bg-stone/40" />
+              <div key={i} className="h-20 animate-pulse rounded-soft border border-stone bg-stone/40" />
             ))}
           </div>
         )}
@@ -100,7 +100,7 @@ const FindFriends = () => {
           </div>
         )}
         {!loading && users.map((person) => (
-          <div key={person.id} className="flex items-center gap-3 rounded-soft border-2 border-stone bg-paper p-3">
+          <div key={person.id} className="flex items-center gap-3 rounded-soft border border-stone bg-paper p-3">
             <Link to={`/profile/${person.id}`} className="flex min-w-0 flex-1 items-center gap-2.5">
               {person.avatarUrl ? (
                 <img src={person.avatarUrl} alt="" className="h-10 w-10 shrink-0 rounded-full object-cover" />

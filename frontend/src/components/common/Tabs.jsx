@@ -26,7 +26,7 @@ const Tabs = ({ label, tabs, value, onChange, idBase, className = '' }) => {
   }
 
   return (
-    <div role="tablist" aria-label={label} className={`flex gap-1 rounded-club border-2 border-stone bg-paper p-1 ${className}`}>
+    <div role="tablist" aria-label={label} className={`flex gap-1 rounded-full bg-cream p-1 ${className}`}>
       {tabs.map(({ value: tabValue, label: tabLabel, icon: Icon, count }, index) => {
         const selected = tabValue === value
         const ids = tabIds(idBase, tabValue)
@@ -42,7 +42,7 @@ const Tabs = ({ label, tabs, value, onChange, idBase, className = '' }) => {
             tabIndex={selected ? 0 : -1}
             onClick={() => onChange(tabValue)}
             onKeyDown={(event) => onKeyDown(event, index)}
-            className={`flex min-h-10 flex-1 items-center justify-center gap-2 rounded-soft px-3 py-2 text-sm font-extrabold transition-colors duration-150 ${selected ? 'bg-blush text-ink shadow-sticker-sm' : 'text-muted hover:bg-cream hover:text-ink'}`}
+            className={`flex min-h-11 flex-1 items-center justify-center gap-2 rounded-full px-4 py-2 text-sm font-bold transition-colors duration-150 ${selected ? 'bg-accent text-paper shadow-soft-sm' : 'text-muted hover:bg-blush/50 hover:text-ink'}`}
           >
             {Icon && <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />}
             <span>{tabLabel}</span>

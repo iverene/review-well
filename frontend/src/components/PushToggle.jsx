@@ -99,7 +99,7 @@ const PushToggle = () => {
   return (
     <div className="flex items-center justify-between gap-3">
       <div className="min-w-0">
-        <p className="flex items-center gap-2 text-sm font-extrabold text-ink">
+        <p className="flex items-center gap-2 text-sm font-bold text-ink">
           {enabled ? (
             <BellRing className="h-4 w-4 text-accent" aria-hidden="true" />
           ) : (

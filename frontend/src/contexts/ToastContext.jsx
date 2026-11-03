@@ -70,7 +70,7 @@ export const ToastProvider = ({ children }) => {
           <div
             key={toast.id}
             role="status"
-            className="flex items-center gap-3 rounded-soft border-2 border-stone bg-paper px-4 py-3 club-shadow"
+            className="flex items-center gap-3 rounded-soft border border-stone bg-paper px-4 py-3 club-shadow"
           >
             <span className={`h-8 w-1.5 shrink-0 rounded-full ${bar}`} aria-hidden="true" />
             <Icon className={`h-5 w-5 shrink-0 ${icon}`} aria-hidden="true" />

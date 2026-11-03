@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { BookOpen, FileText, ShieldCheck, Sparkles, Users } from 'lucide-react'
 
 const Feature = ({ icon: Icon, title, children }) => (
-  <div className="rounded-soft border-2 border-stone bg-paper p-5">
+  <div className="rounded-soft border border-stone bg-paper p-5">
     <span className="flex h-10 w-10 items-center justify-center rounded-full bg-blush" aria-hidden="true">
       <Icon className="h-5 w-5 text-ink" />
     </span>
@@ -43,7 +43,7 @@ const About = () => (
       </Feature>
     </div>
 
-      <section className="mt-6 rounded-soft border-2 border-stone bg-paper p-4 club-shadow sm:p-6" aria-label="More from Review Well">
+      <section className="mt-6 rounded-soft border border-stone bg-paper p-4 club-shadow sm:p-6" aria-label="More from Review Well">
       <h2 className="font-display text-xl font-bold text-ink">More from Review Well</h2>
       <div className="mt-3 flex flex-col gap-1 text-sm font-bold">
         <Link to="/guide" className="rounded-soft px-2 py-2 text-ink hover:bg-cream">Review Well Guide</Link>

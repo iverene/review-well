@@ -10,7 +10,7 @@ const Terms = () => (
 
     <h1 className="mt-1 font-display text-3xl font-bold text-ink md:text-4xl">Terms and Conditions</h1>
 
-    <div className="mt-4 rounded-soft border-2 border-stone bg-paper p-4 club-shadow sm:p-8">
+    <div className="mt-4 rounded-soft border border-stone bg-paper p-4 club-shadow sm:p-8">
       <Section title="The study club">
         <p>
           Review Well is a cozy place to collect notes, discover public reviewers, and build

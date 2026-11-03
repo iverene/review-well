@@ -23,7 +23,7 @@ export const preloadPdfViewer = () => {
 
 // Same footprint as the viewer frame so swapping it in causes no layout shift.
 const PdfViewerFallback = () => (
-  <div className="overflow-hidden rounded-soft border-2 border-stone bg-paper" role="status" aria-label="Loading document">
+  <div className="overflow-hidden rounded-soft border border-stone bg-paper" role="status" aria-label="Loading document">
     <div className="h-12 border-b-2 border-stone bg-cream" />
     <div className="h-[62vh] animate-pulse bg-cream/50 md:h-[72vh]" />
   </div>
@@ -134,7 +134,7 @@ const StudyTabs = ({
               data-testid="study-source-pptx"
               loading="lazy"
               allowFullScreen
-              className="block aspect-video max-h-[72vh] w-full rounded-soft border-2 border-stone bg-paper"
+              className="block aspect-video max-h-[72vh] w-full rounded-soft border border-stone bg-paper"
             />
           )}
           {hasFile && !fileType && (

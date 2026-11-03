@@ -82,13 +82,13 @@ const Onboarding = () => {
 
   return (
     <div className="mx-auto flex min-h-[70vh] max-w-xl items-center justify-center">
-      <section className="w-full rounded-soft border-2 border-stone bg-paper p-6 club-shadow sm:p-8" aria-labelledby="onboarding-title">
+      <section className="w-full rounded-soft border border-stone bg-paper p-6 club-shadow sm:p-8" aria-labelledby="onboarding-title">
         <div className="mb-8 flex items-center justify-between gap-4">
           <div>
-            <p className="text-xs font-extrabold uppercase tracking-widest text-accent">
+            <p className="text-xs font-bold uppercase tracking-widest text-accent">
               Step {stepIndex + 1} of {steps.length}
             </p>
-            <h1 id="onboarding-title" className="mt-2 text-2xl font-extrabold text-ink md:text-3xl">
+            <h1 id="onboarding-title" className="mt-2 text-2xl font-bold text-ink md:text-3xl">
               {currentStep.title}
             </h1>
           </div>
@@ -108,7 +108,7 @@ const Onboarding = () => {
 
         {stepIndex === 0 && (
           <div>
-            <label htmlFor="displayName" className="mb-2 block text-sm font-extrabold text-ink">
+            <label htmlFor="displayName" className="mb-2 block text-sm font-bold text-ink">
               What Should We Call You?
             </label>
             <input
@@ -118,7 +118,7 @@ const Onboarding = () => {
               value={formData.displayName}
               onChange={updateField}
               autoFocus
-              className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
+              className="w-full rounded-full border border-line bg-cream px-5 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
               placeholder="Your Display Name"
             />
             <p className="mt-2 text-sm text-muted">This is how your study club friends will see you.</p>
@@ -128,7 +128,7 @@ const Onboarding = () => {
         {stepIndex === 1 && (
           <div className="space-y-5">
             <div>
-              <label htmlFor="school" className="mb-2 block text-sm font-extrabold text-ink">School</label>
+              <label htmlFor="school" className="mb-2 block text-sm font-bold text-ink">School</label>
               <input
                 id="school"
                 name="school"
@@ -136,19 +136,19 @@ const Onboarding = () => {
                 value={formData.school}
                 onChange={updateField}
                 autoFocus
-                className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
+                className="w-full rounded-full border border-line bg-cream px-5 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
                 placeholder="e.g. University of Toronto"
               />
             </div>
             <div>
-              <label htmlFor="program" className="mb-2 block text-sm font-extrabold text-ink">Program or Course</label>
+              <label htmlFor="program" className="mb-2 block text-sm font-bold text-ink">Program or Course</label>
               <input
                 id="program"
                 name="program"
                 type="text"
                 value={formData.program}
                 onChange={updateField}
-                className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
+                className="w-full rounded-full border border-line bg-cream px-5 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
                 placeholder="e.g. Computer Science"
               />
             </div>
@@ -158,7 +158,7 @@ const Onboarding = () => {
         {stepIndex === 2 && (
           <div className="space-y-5">
             <div>
-              <label htmlFor="major" className="mb-2 block text-sm font-extrabold text-ink">Major or Specialization</label>
+              <label htmlFor="major" className="mb-2 block text-sm font-bold text-ink">Major or Specialization</label>
               <input
                 id="major"
                 name="major"
@@ -166,18 +166,18 @@ const Onboarding = () => {
                 value={formData.major}
                 onChange={updateField}
                 autoFocus
-                className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
+                className="w-full rounded-full border border-line bg-cream px-5 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
                 placeholder="e.g. Software Engineering"
               />
             </div>
             <div>
-              <label htmlFor="yearLevel" className="mb-2 block text-sm font-extrabold text-ink">Year Level</label>
+              <label htmlFor="yearLevel" className="mb-2 block text-sm font-bold text-ink">Year Level</label>
               <select
                 id="yearLevel"
                 name="yearLevel"
                 value={formData.yearLevel}
                 onChange={updateField}
-                className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
+                className="w-full rounded-full border border-line bg-cream px-5 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
               >
                 <option value="">Select Your Year Level</option>
                 {yearLevels.map((level) => <option key={level.value} value={level.value}>{level.label}</option>)}
@@ -191,7 +191,7 @@ const Onboarding = () => {
             type="button"
             onClick={() => setStepIndex((previous) => previous - 1)}
             disabled={stepIndex === 0 || saving}
-            className="rounded-soft border-2 border-stone px-5 py-3 text-sm font-extrabold text-ink hover:bg-stone disabled:invisible"
+            className="rounded-soft border border-stone px-5 py-3 text-sm font-bold text-ink hover:bg-stone disabled:invisible"
           >
             Back
           </button>
@@ -199,7 +199,7 @@ const Onboarding = () => {
             type="button"
             onClick={handleNext}
             disabled={saving}
-            className="rounded-soft border-2 border-mint bg-mint px-6 py-3 text-sm font-extrabold text-ink hover:bg-butter disabled:opacity-60"
+            className="rounded-soft border-2 border-mint bg-mint px-6 py-3 text-sm font-bold text-ink hover:bg-butter disabled:opacity-60"
           >
             {saving ? 'Saving...' : isLastStep ? 'Finish Profile' : 'Continue'}
           </button>

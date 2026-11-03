@@ -85,7 +85,7 @@ const FocusStats = () => {
   const labels = WEEKDAY_LABELS.map((_, i) => WEEKDAY_LABELS[(todayIdx - 6 + i + 14) % 7])
 
   return (
-    <section aria-label="Focus stats" className="mt-6 rounded-soft border-2 border-stone bg-paper p-4">
+    <section aria-label="Focus stats" className="mt-6 rounded-soft border border-stone bg-paper p-4">
       <div className="flex items-center justify-between gap-2">
         <h2 className="font-display text-lg font-bold text-ink">Focus</h2>
       </div>
@@ -103,7 +103,7 @@ const FocusStats = () => {
         ))}
       </div>
       <div className="mt-3 flex items-center gap-2">
-        <label htmlFor="focus-goal" className="text-xs font-extrabold uppercase tracking-widest text-muted">
+        <label htmlFor="focus-goal" className="text-xs font-bold uppercase tracking-widest text-muted">
           Daily Goal (Min)
         </label>
         <input
@@ -113,13 +113,13 @@ const FocusStats = () => {
           step="1"
           value={goalInput}
           onChange={(e) => setGoalInput(e.target.value)}
-          className="w-20 rounded-soft border-2 border-stone bg-paper px-2 py-1 text-sm font-bold text-ink"
+          className="w-20 rounded-soft border border-stone bg-paper px-2 py-1 text-sm font-bold text-ink"
         />
         <button
           type="button"
           onClick={handleGoalSave}
           disabled={savingGoal}
-          className="rounded-soft border-2 border-accent bg-accent px-3 py-1 text-xs font-extrabold text-paper disabled:opacity-50"
+          className="rounded-soft border-2 border-accent bg-accent px-3 py-1 text-xs font-bold text-paper disabled:opacity-50"
         >
           {savingGoal ? 'Saving…' : 'Save'}
         </button>
@@ -151,7 +151,7 @@ const Stat = ({ value, label, to, ariaLabel }) => {
   const body = (
     <>
       <span className="block font-display text-xl font-bold text-ink">{value}</span>
-      <span className="text-xs font-extrabold uppercase tracking-wider text-muted">{label}</span>
+      <span className="text-xs font-bold uppercase tracking-wider text-muted">{label}</span>
     </>
   )
   const classes = 'flex-1 rounded-soft px-2 py-2 text-center'
@@ -334,10 +334,10 @@ const Profile = () => {
             <img
               src={profile.avatarUrl}
               alt={profile.displayName}
-              className="h-16 w-16 shrink-0 rounded-full border-2 border-stone object-cover md:h-20 md:w-20"
+              className="h-16 w-16 shrink-0 rounded-full border border-stone object-cover md:h-20 md:w-20"
             />
           ) : (
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border-2 border-stone bg-blush font-display text-2xl font-bold text-ink md:h-20 md:w-20" aria-hidden="true">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-stone bg-blush font-display text-2xl font-bold text-ink md:h-20 md:w-20" aria-hidden="true">
               {profile.displayName?.charAt(0).toUpperCase() || 'U'}
             </div>
           )}

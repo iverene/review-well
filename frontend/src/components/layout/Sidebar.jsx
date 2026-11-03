@@ -28,7 +28,7 @@ const Sidebar = () => {
           <Link
             key={to}
             to={to}
-            className={`group relative flex min-h-11 items-center gap-3 rounded-soft border-2 px-3 py-2 text-sm font-extrabold transition-colors duration-150 ${active ? 'border-stone bg-blush text-ink shadow-sticker-sm' : 'border-transparent text-muted hover:bg-cream hover:text-ink'}`}
+            className={`group relative flex min-h-11 items-center gap-3 rounded-soft border-2 px-3 py-2 text-sm font-bold transition-colors duration-150 ${active ? 'border-stone bg-blush text-ink shadow-soft-sm' : 'border-transparent text-muted hover:bg-cream hover:text-ink'}`}
             aria-current={active ? 'page' : undefined}
           >
             <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${active ? 'bg-paper text-accent' : 'text-muted group-hover:text-ink'}`}>

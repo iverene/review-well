@@ -58,7 +58,7 @@ const FilterSelect = ({ id, label, allLabel, value, options, onPick, openName, s
         <ul
           role="listbox"
           aria-label={label}
-          className="absolute left-0 z-50 mt-1.5 max-h-56 w-44 overflow-y-auto rounded-soft border-2 border-stone bg-paper p-1 shadow-xl"
+          className="absolute left-0 z-50 mt-1.5 max-h-56 w-44 overflow-y-auto rounded-soft border border-stone bg-paper p-1 shadow-xl"
         >
           <li role="option" aria-selected={!value}>
             <button
@@ -119,7 +119,7 @@ const Filter = ({ examType = '', semester = '', onChange, onClear }) => {
           {activeCount > 0 && (
             <span
               data-testid="filter-active-count-mobile"
-              className="absolute -right-1.5 -top-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-xs font-extrabold text-paper"
+              className="absolute -right-1.5 -top-1.5 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1 text-xs font-bold text-paper"
             >
               {activeCount}
             </span>
@@ -127,13 +127,13 @@ const Filter = ({ examType = '', semester = '', onChange, onClear }) => {
         </button>
       </div>
       <div className={`${open ? 'mt-2 flex' : 'hidden'} flex-wrap items-center gap-2 sm:flex`} aria-label="Filter reviewers">
-      <span className="hidden items-center gap-1.5 text-sm font-extrabold text-muted sm:inline-flex">
+      <span className="hidden items-center gap-1.5 text-sm font-bold text-muted sm:inline-flex">
         <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
         Filter
         {activeCount > 0 && (
           <span
             data-testid="filter-active-count"
-            className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-xs font-extrabold text-paper"
+            className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-xs font-bold text-paper"
           >
             {activeCount}
           </span>
@@ -170,7 +170,7 @@ const Filter = ({ examType = '', semester = '', onChange, onClear }) => {
           type="button"
           onClick={onClear}
           aria-label="Clear filters"
-          className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-extrabold text-muted hover:bg-stone/40 hover:text-ink"
+          className="inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-bold text-muted hover:bg-stone/40 hover:text-ink"
         >
           <X className="h-3.5 w-3.5" aria-hidden="true" /> Clear
         </button>

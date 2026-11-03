@@ -47,7 +47,7 @@ const Section = ({ icon: Icon, title, to, children, empty }) => (
         <span className="flex h-8 w-8 items-center justify-center rounded-full bg-blush"><Icon className="h-4 w-4 text-accent" strokeWidth={2.4} aria-hidden="true" /></span>
         {title}
       </h2>
-      {to && <Link to={to} className="flex shrink-0 items-center gap-1 rounded-soft px-2 py-1 text-sm font-extrabold text-muted hover:bg-cream hover:text-ink">View all <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>}
+      {to && <Link to={to} className="flex shrink-0 items-center gap-1 rounded-soft px-2 py-1 text-sm font-bold text-muted hover:bg-cream hover:text-ink">View all <ArrowRight className="h-4 w-4" aria-hidden="true" /></Link>}
     </div>
     {children || empty}
   </section>
@@ -75,7 +75,7 @@ const Landing = () => (
     </section>
     <section className="grid gap-4 md:grid-cols-3" aria-label="Study club features">
       {FEATURES.map(({ mark, title, body, tone }) => (
-        <article key={title} className={`rounded-club border-2 border-stone p-5 shadow-sticker md:p-6 ${tone}`}>
+        <article key={title} className={`rounded-club border border-stone p-5 shadow-soft md:p-6 ${tone}`}>
           <div className="mb-3 font-display text-2xl text-accent" aria-hidden="true">{mark}</div>
           <h2 className="text-xl font-bold text-ink md:text-2xl">{title}</h2>
           <p className="mt-2 leading-relaxed text-ink/80">{body}</p>

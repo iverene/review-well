@@ -70,8 +70,8 @@ const Login = () => {
           <p className="mx-auto mt-3 max-w-sm leading-relaxed text-muted">Make an account for the full toolkit, or browse public guides as a guest.</p>
         </div>
         <div className="grid gap-3">
-          <div className="rounded-soft border-2 border-stone bg-paper p-4 text-center">
-            <p className="font-extrabold text-ink">Full Access</p>
+          <div className="rounded-soft border border-stone bg-paper p-4 text-center">
+            <p className="font-bold text-ink">Full Access</p>
             <p className="mt-1 text-sm text-muted">Create, edit, save, and use AI study tools.</p>
             <div className="mt-3 flex justify-center"><LoginButton returnTo={from} /></div>
           </div>
@@ -82,7 +82,7 @@ const Login = () => {
               // there re-triggers ProtectedRoute and loops navigation.
               navigate(isGuestSafePath(from) ? from : '/', { replace: true })
             }}
-            className="rounded-soft border-2 border-stone bg-powder px-4 py-3 text-sm font-extrabold text-ink transition-transform hover:-translate-y-0.5 hover:bg-cream"
+            className="rounded-soft border border-stone bg-powder px-4 py-3 text-sm font-bold text-ink transition-transform hover:-translate-y-0.5 hover:bg-cream"
           >
             Browse as Guest
           </button>

@@ -16,13 +16,14 @@
   color-scheme: light;
   --page: 255 255 255;
   --paper: 255 255 255;
-  --cream: 248 244 241;
-  --ink: 91 70 56;
-  --muted: 105 88 76;
+  --cream: 255 246 243;
+  --ink: 74 58 48;
+  --muted: 107 90 79;
   --accent: 176 79 105;
-  --stone: 232 224 216;
-  --line: 148 132 120;
+  --stone: 241 228 222;
+  --line: 156 133 121;
   --blush: 250 216 225;
+  --peach: 255 227 211;
   --powder: 211 235 247;
   --mint: 211 239 221;
   --butter: 252 237 188;
@@ -39,6 +40,7 @@
   --stone: 58 55 62;
   --line: 120 116 124;
   --blush: 74 47 56;
+  --peach: 78 54 42;
   --powder: 43 63 74;
   --mint: 47 74 55;
   --butter: 74 63 37;
@@ -55,13 +57,14 @@
   --stone: 214 202 174;
   --line: 138 120 94;
   --blush: 236 195 205;
+  --peach: 242 214 196;
   --powder: 196 221 230;
   --mint: 196 220 200;
   --butter: 242 221 158;
 }
 
 body {
-  font-family: 'Nunito', sans-serif;
+  font-family: 'DM Sans', system-ui, sans-serif;
   background-color: rgb(var(--page));
   background-image: radial-gradient(rgb(var(--stone)) 1px, transparent 1px);
   background-size: 18px 18px;
@@ -70,16 +73,16 @@ body {
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Fredoka', sans-serif;
-  letter-spacing: 0;
+  font-family: 'Outfit', system-ui, sans-serif;
+  letter-spacing: -0.01em;
 }
 
 code, pre {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'DM Mono', ui-monospace, monospace;
 }
 
 button, a, input, textarea, select {
-  border-radius: 12px;
+  border-radius: 16px;
 }
 
 /* The wordmark artwork is cocoa ink; on the dark theme it would vanish, so
@@ -95,14 +98,14 @@ button, a, input, textarea, select {
 }
 
 .club-surface {
-  border: 2px solid rgb(var(--stone));
-  border-radius: 16px;
+  border: 1px solid rgb(var(--stone));
+  border-radius: 28px;
   background: rgb(var(--paper));
-  box-shadow: 4px 5px 0 rgb(var(--ink) / 0.08);
+  box-shadow: 0 8px 24px rgb(var(--accent) / 0.08);
 }
 
 .club-shadow {
-  box-shadow: 5px 6px 0 rgb(var(--ink) / 0.12);
+  box-shadow: 0 8px 24px rgb(var(--accent) / 0.10);
 }
 
 @keyframes club-rise {
@@ -233,7 +236,7 @@ button, a, input, textarea, select {
 }
 .auth-logo {
   animation: auth-logo-pulse 1.8s ease-in-out infinite;
-  box-shadow: 4px 5px 0 rgb(var(--ink) / 0.12);
+  box-shadow: 0 8px 24px rgb(var(--accent) / 0.12);
 }
 .auth-fade {
   animation: desk-fade 240ms cubic-bezier(0.2, 0, 0, 1) both;

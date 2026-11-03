@@ -81,10 +81,10 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
             <img
               src={preview || profile.avatarUrl}
               alt={profile.displayName}
-              className="h-16 w-16 rounded-full border-2 border-stone object-cover md:h-20 md:w-20"
+              className="h-16 w-16 rounded-full border border-stone object-cover md:h-20 md:w-20"
             />
           ) : (
-            <div className="flex h-16 w-16 items-center justify-center rounded-full border-2 border-stone bg-blush font-display text-xl font-bold text-ink md:h-20 md:w-20 md:text-2xl" aria-hidden="true">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full border border-stone bg-blush font-display text-xl font-bold text-ink md:h-20 md:w-20 md:text-2xl" aria-hidden="true">
               {formData.displayName?.charAt(0).toUpperCase() || 'U'}
             </div>
           )}
@@ -99,7 +99,7 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
             type="button"
             onClick={handleAvatarClick}
             disabled={uploading}
-            className="inline-flex items-center gap-2 rounded-soft border-2 border-stone bg-paper px-4 py-2 text-sm font-extrabold text-ink hover:bg-cream disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-soft border border-stone bg-paper px-4 py-2 text-sm font-bold text-ink hover:bg-cream disabled:opacity-60"
           >
             <Camera className="h-4 w-4" aria-hidden="true" />
             {uploading ? 'Uploading…' : 'Change Avatar'}
@@ -119,7 +119,7 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
 
       {/* Display Name */}
       <div>
-        <label htmlFor="displayName" className="mb-1 block text-sm font-extrabold text-ink">
+        <label htmlFor="displayName" className="mb-1 block text-sm font-bold text-ink">
           Display Name
         </label>
         <input
@@ -128,14 +128,14 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
           name="displayName"
           value={formData.displayName}
           onChange={handleChange}
-          className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
+          className="w-full rounded-full border border-line bg-cream px-5 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
           required
         />
       </div>
 
       {/* School */}
       <div>
-        <label htmlFor="school" className="mb-1 block text-sm font-extrabold text-ink">
+        <label htmlFor="school" className="mb-1 block text-sm font-bold text-ink">
           School
         </label>
         <input
@@ -145,14 +145,14 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
           value={formData.school}
           onChange={handleChange}
           required
-          className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
+          className="w-full rounded-full border border-line bg-cream px-5 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
           placeholder="e.g., MIT, Stanford, etc."
         />
       </div>
 
       {/* Program */}
       <div>
-        <label htmlFor="program" className="mb-1 block text-sm font-extrabold text-ink">
+        <label htmlFor="program" className="mb-1 block text-sm font-bold text-ink">
           Program
         </label>
         <input
@@ -162,14 +162,14 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
           value={formData.program}
           onChange={handleChange}
           required
-          className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
+          className="w-full rounded-full border border-line bg-cream px-5 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
           placeholder="e.g., Computer Science, Biology, etc."
         />
       </div>
 
       {/* Major */}
       <div>
-        <label htmlFor="major" className="mb-1 block text-sm font-extrabold text-ink">
+        <label htmlFor="major" className="mb-1 block text-sm font-bold text-ink">
           Major
         </label>
         <input
@@ -179,14 +179,14 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
           value={formData.major}
           onChange={handleChange}
           required
-          className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
+          className="w-full rounded-full border border-line bg-cream px-5 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
           placeholder="e.g., Software Engineering, etc."
         />
       </div>
 
       {/* Year Level */}
       <div>
-        <label htmlFor="yearLevel" className="mb-1 block text-sm font-extrabold text-ink">
+        <label htmlFor="yearLevel" className="mb-1 block text-sm font-bold text-ink">
           Year Level
         </label>
         <select
@@ -195,7 +195,7 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
           value={formData.yearLevel}
           onChange={handleChange}
           required
-          className="w-full rounded-soft border-2 border-line bg-paper px-4 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
+          className="w-full rounded-full border border-line bg-cream px-5 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
         >
           <option value="">Select Year Level</option>
           {yearLevels.map((level) => (
@@ -211,7 +211,7 @@ const EditProfile = ({ profile, onSave, onAvatarUpload, saving }) => {
         <button
           type="submit"
           disabled={saving || uploading}
-          className="rounded-soft border-2 border-accent bg-accent px-6 py-2.5 text-sm font-extrabold text-paper hover:-translate-y-0.5 disabled:opacity-50"
+          className="rounded-soft border-2 border-accent bg-accent px-6 py-2.5 text-sm font-bold text-paper hover:-translate-y-0.5 disabled:opacity-50"
         >
           {saving ? 'Saving...' : 'Save Changes'}
         </button>

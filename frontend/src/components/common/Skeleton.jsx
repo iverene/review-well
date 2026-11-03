@@ -5,7 +5,7 @@ const Skeleton = ({ className = '' }) => (
 const ReviewerGridSkeleton = ({ count = 6 }) => (
   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3" role="status" aria-label="Loading reviewers">
     {Array.from({ length: count }, (_, index) => (
-      <div key={index} className="rounded-soft border-2 border-stone bg-paper p-4">
+      <div key={index} className="rounded-soft border border-stone bg-paper p-4">
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 space-y-2"><Skeleton className="h-5 w-4/5" /><Skeleton className="h-4 w-2/5" /></div>
           <Skeleton className="h-5 w-5 rounded-full" />
@@ -18,7 +18,7 @@ const ReviewerGridSkeleton = ({ count = 6 }) => (
 
 const ProfileSkeleton = () => (
   <div className="mx-auto w-full max-w-5xl space-y-6" role="status" aria-label="Loading profile">
-    <div className="rounded-club border-2 border-stone bg-paper p-5 sm:p-6">
+    <div className="rounded-club border border-stone bg-paper p-5 sm:p-6">
       <div className="flex items-start gap-4"><Skeleton className="h-16 w-16 rounded-full md:h-20 md:w-20" /><div className="flex-1 space-y-2"><Skeleton className="h-7 w-48" /><Skeleton className="h-4 w-56" /><Skeleton className="h-4 w-40" /></div></div>
       <div className="mt-5 flex gap-4 border-t-2 border-dashed border-stone pt-4"><Skeleton className="h-12 flex-1" /><Skeleton className="h-12 flex-1" /><Skeleton className="h-12 flex-1" /></div>
     </div>
@@ -41,7 +41,7 @@ const ReviewerSkeleton = () => (
     <Skeleton className="mt-3 h-4 w-1/3" />
     <div className="mt-6 flex flex-wrap gap-6">{[0, 1, 2, 3].map((i) => <div key={i} className="space-y-1.5"><Skeleton className="h-3 w-16" /><Skeleton className="h-4 w-24" /></div>)}</div>
     <div className="mt-5 flex gap-2 border-t-2 border-dashed border-stone pt-4"><Skeleton className="h-11 w-16" /><Skeleton className="h-11 w-28" /><Skeleton className="h-11 w-24" /></div>
-    <div className="mt-6 overflow-hidden rounded-soft border-2 border-stone bg-paper"><div className="h-12 border-b-2 border-stone bg-cream" /><Skeleton className="h-[62vh] w-full rounded-none md:h-[72vh]" /></div>
+    <div className="mt-6 overflow-hidden rounded-soft border border-stone bg-paper"><div className="h-12 border-b-2 border-stone bg-cream" /><Skeleton className="h-[62vh] w-full rounded-none md:h-[72vh]" /></div>
   </div>
 )
 

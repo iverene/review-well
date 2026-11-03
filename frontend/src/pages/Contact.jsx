@@ -37,7 +37,7 @@ const Contact = () => {
     return (
       <div className="mx-auto max-w-2xl pb-10">
         <h1 className="mt-1 font-display text-3xl font-bold text-ink md:text-4xl">Contact</h1>
-        <section className="mt-5 rounded-soft border-2 border-stone bg-paper p-4 text-center club-shadow sm:p-8" aria-label="Sign in required">
+        <section className="mt-5 rounded-soft border border-stone bg-paper p-4 text-center club-shadow sm:p-8" aria-label="Sign in required">
           <LogIn className="mx-auto h-10 w-10 text-accent" aria-hidden="true" />
           <p className="mt-3 font-display text-xl font-bold text-ink">Sign In to Send a Message</p>
           <p className="mt-1 text-sm text-muted">
@@ -45,7 +45,7 @@ const Contact = () => {
           </p>
           <Link
             to="/login"
-            className="mt-4 inline-flex items-center gap-2 rounded-soft border-2 border-accent bg-accent px-6 py-2.5 text-sm font-extrabold text-paper hover:-translate-y-0.5"
+            className="mt-4 inline-flex items-center gap-2 rounded-soft border-2 border-accent bg-accent px-6 py-2.5 text-sm font-bold text-paper hover:-translate-y-0.5"
           >
             <LogIn className="h-4 w-4" aria-hidden="true" /> Sign in with Google
           </Link>
@@ -62,7 +62,7 @@ const Contact = () => {
         in the developer inbox.
       </p>
 
-      <section className="mt-5 rounded-soft border-2 border-stone bg-paper p-4 club-shadow sm:p-8" aria-label="Contact form">
+      <section className="mt-5 rounded-soft border border-stone bg-paper p-4 club-shadow sm:p-8" aria-label="Contact form">
         {sent ? (
           <div className="py-6 text-center" role="status">
             <PartyPopper className="mx-auto h-10 w-10 text-accent" aria-hidden="true" />
@@ -71,7 +71,7 @@ const Contact = () => {
             <button
               type="button"
               onClick={() => setSent(false)}
-              className="mt-4 rounded-soft border-2 border-stone bg-paper px-4 py-2 text-sm font-extrabold text-ink hover:bg-cream"
+              className="mt-4 rounded-soft border border-stone bg-paper px-4 py-2 text-sm font-bold text-ink hover:bg-cream"
             >
               Send another
             </button>
@@ -79,7 +79,7 @@ const Contact = () => {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label htmlFor="contact-email" className="mb-1 block text-sm font-extrabold text-ink">
+              <label htmlFor="contact-email" className="mb-1 block text-sm font-bold text-ink">
                 Sending as
               </label>
               <input
@@ -89,12 +89,12 @@ const Contact = () => {
                 value={senderEmail}
                 aria-readonly="true"
                 title="Locked to your signed-in account"
-                className="w-full cursor-not-allowed rounded-soft border-2 border-stone bg-stone/40 px-4 py-2.5 text-muted focus:outline-none"
+                className="w-full cursor-not-allowed rounded-soft border border-stone bg-stone/40 px-4 py-2.5 text-muted focus:outline-none"
               />
               
             </div>
             <div>
-              <label htmlFor="contact-message" className="mb-1 block text-sm font-extrabold text-ink">
+              <label htmlFor="contact-message" className="mb-1 block text-sm font-bold text-ink">
                 Message
               </label>
               <textarea
@@ -105,7 +105,7 @@ const Contact = () => {
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="Tell us what is on your mind…"
-                className="w-full resize-y rounded-soft border-2 border-stone bg-paper px-4 py-2.5 text-ink focus:border-accent focus:outline-none"
+                className="w-full resize-y rounded-soft border border-line bg-cream px-5 py-2.5 text-ink placeholder:text-muted focus:border-accent focus:outline-none"
               />
               <p className="mt-1 text-right text-xs text-muted">{message.length}/2000</p>
             </div>
@@ -113,7 +113,7 @@ const Contact = () => {
               <button
                 type="submit"
                 disabled={sending}
-                className="inline-flex items-center gap-2 rounded-soft border-2 border-accent bg-accent px-6 py-2.5 text-sm font-extrabold text-paper hover:-translate-y-0.5 disabled:opacity-60"
+                className="inline-flex items-center gap-2 rounded-soft border-2 border-accent bg-accent px-6 py-2.5 text-sm font-bold text-paper hover:-translate-y-0.5 disabled:opacity-60"
               >
                 <Send className="h-4 w-4" aria-hidden="true" />
                 {sending ? 'Sending…' : 'Send Message'}

@@ -59,7 +59,7 @@ const StudyDetails = ({ reviewer }) => {
     <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 sm:flex sm:flex-wrap" aria-label="Study details">
       {items.map(([label, value]) => (
         <div key={label} className="min-w-0">
-          <dt className="text-xs font-extrabold uppercase tracking-wider text-muted">{label}</dt>
+          <dt className="text-xs font-bold uppercase tracking-wider text-muted">{label}</dt>
           <dd className="mt-0.5 truncate text-sm font-bold text-ink">{value}</dd>
         </div>
       ))}
@@ -403,11 +403,11 @@ const Reviewer = () => {
                 {moreOpen && (
                   <>
                     <div className="fixed inset-0 z-40" aria-hidden="true" onClick={() => setMoreOpen(false)} />
-                    <div className="absolute right-0 z-50 mt-2 w-44 rounded-club border-2 border-stone bg-paper p-1.5 shadow-sticker" role="menu" aria-label="More actions">
+                    <div className="absolute right-0 z-50 mt-2 w-44 rounded-club border border-stone bg-paper p-1.5 shadow-soft" role="menu" aria-label="More actions">
                       <Link
                         to={`/create?edit=${reviewer.id}`}
                         role="menuitem"
-                        className="flex w-full items-center gap-2 rounded-soft px-3 py-2.5 text-sm font-extrabold text-ink hover:bg-cream"
+                        className="flex w-full items-center gap-2 rounded-soft px-3 py-2.5 text-sm font-bold text-ink hover:bg-cream"
                       >
                         <Pencil className="h-4 w-4" aria-hidden="true" /> Edit
                       </Link>
@@ -415,7 +415,7 @@ const Reviewer = () => {
                         type="button"
                         role="menuitem"
                         onClick={() => { setMoreOpen(false); setConfirmingDelete(true) }}
-                        className="flex w-full items-center gap-2 rounded-soft px-3 py-2.5 text-sm font-extrabold text-accent hover:bg-blush/50"
+                        className="flex w-full items-center gap-2 rounded-soft px-3 py-2.5 text-sm font-bold text-accent hover:bg-blush/50"
                       >
                         <Trash2 className="h-4 w-4" aria-hidden="true" /> Delete
                       </button>
@@ -455,8 +455,8 @@ const Reviewer = () => {
         )}
         {isOwner && (
           <div className="mt-4">
-            <p className="text-xs font-extrabold uppercase tracking-wider text-muted">Visibility</p>
-            <div className="mt-2 grid grid-cols-3 gap-1 rounded-soft border-2 border-stone bg-cream p-1" role="radiogroup" aria-label="Visibility">
+            <p className="text-xs font-bold uppercase tracking-wider text-muted">Visibility</p>
+            <div className="mt-2 grid grid-cols-3 gap-1 rounded-soft border border-stone bg-cream p-1" role="radiogroup" aria-label="Visibility">
               {VISIBILITY_OPTIONS.map(({ value, label, icon: Icon }) => (
                 <button
                   key={value}
@@ -465,7 +465,7 @@ const Reviewer = () => {
                   aria-checked={reviewer.visibility === value}
                   onClick={() => handleVisibilityChange(value)}
                   disabled={visSaving}
-                  className={`flex items-center justify-center gap-1.5 rounded-soft px-2 py-2 text-xs font-extrabold transition-colors duration-150 disabled:opacity-60 ${reviewer.visibility === value ? 'bg-ink text-paper' : 'text-muted hover:bg-paper hover:text-ink'}`}
+                  className={`flex items-center justify-center gap-1.5 rounded-soft px-2 py-2 text-xs font-bold transition-colors duration-150 disabled:opacity-60 ${reviewer.visibility === value ? 'bg-ink text-paper' : 'text-muted hover:bg-paper hover:text-ink'}`}
                 >
                   <Icon className="h-3.5 w-3.5" aria-hidden="true" /> {label}
                 </button>

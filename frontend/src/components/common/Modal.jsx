@@ -81,7 +81,7 @@ const Modal = ({
 
   return createPortal(
     <div className="fixed inset-0 z-[60] flex items-end justify-center sm:items-center sm:p-4">
-      <div className="absolute inset-0 bg-ink/35" aria-hidden="true" data-testid="modal-backdrop" onMouseDown={() => onCloseRef.current?.()} />
+      <div className="absolute inset-0 bg-ink/30 backdrop-blur-[2px]" aria-hidden="true" data-testid="modal-backdrop" onMouseDown={() => onCloseRef.current?.()} />
       <div
         ref={panelRef}
         role={role}
@@ -89,7 +89,7 @@ const Modal = ({
         aria-labelledby={titleId}
         aria-describedby={describedBy}
         tabIndex={-1}
-        className={`relative max-h-[90dvh] w-full overflow-y-auto rounded-t-club border-2 border-b-0 border-stone p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-sticker club-rise focus:outline-none sm:mx-auto sm:rounded-club sm:border-b-2 sm:pb-5 ${TONES[tone] || TONES.paper} ${SIZES[size] || SIZES.sm}`}
+        className={`relative max-h-[90dvh] w-full overflow-y-auto rounded-t-[32px] border border-b-0 border-stone p-6 pb-[calc(1.25rem+env(safe-area-inset-bottom))] shadow-float club-rise focus:outline-none sm:mx-auto sm:rounded-[32px] sm:border-b sm:pb-6 ${TONES[tone] || TONES.paper} ${SIZES[size] || SIZES.sm}`}
       >
         <div className="flex items-start justify-between gap-3">
           <h2 id={titleId} className="font-display text-xl font-bold text-ink">{title}</h2>
@@ -98,7 +98,7 @@ const Modal = ({
               type="button"
               onClick={() => onCloseRef.current?.()}
               aria-label={closeLabel}
-              className="-mr-1 -mt-1 rounded-soft p-1.5 text-ink hover:bg-stone/50"
+              className="-mr-1 -mt-1 rounded-full p-2 text-ink hover:bg-cream"
             >
               <X className="h-4 w-4" aria-hidden="true" />
             </button>
