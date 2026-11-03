@@ -70,7 +70,7 @@ const NavigationShell = ({ children }) => {
         </div>
       </header>
 
-      <main id="main-content" className={`relative flex-1 overflow-y-auto show-scroll ${isAuthenticated ? 'pb-28' : 'pb-8'}`}>{children}</main>
+      <main id="main-content" className={`relative flex-1 overflow-y-auto show-scroll ${isAuthenticated ? 'pb-32' : 'pb-8'}`}>{children}</main>
 
       {isAuthenticated && <BottomDock />}
     </div>
