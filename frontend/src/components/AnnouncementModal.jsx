@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import axios from 'axios'
-import { Megaphone, Sparkles } from 'lucide-react'
+import { Palette, Sparkles, Zap } from 'lucide-react'
 
 import characterWaving from '../assets/character-waving.webp'
 import { useAuth } from '../contexts/AuthContext'
@@ -13,14 +13,21 @@ import Modal from './common/Modal'
 // Bump this id for every new announcement. Everyone (signed-in users on any
 // browser, guests per browser) sees each id exactly once: guests via
 // localStorage, signed-in users via the server-synced dismissal.
-const ANNOUNCEMENT_ID = 'v2-whats-new'
+const ANNOUNCEMENT_ID = 'v3-soft-pop'
 const STORAGE_KEY = `review-well-announcement-${ANNOUNCEMENT_ID}`
 
-const NEW_FEATURES = [
-  'Light, dark, and reading themes',
-  'Search and filters on public reviewers',
-  'Installable app with offline support',
-  'Push notifications and live badges',
+const NEW_LOOK = [
+  'A fresh Soft Pop design with friendlier fonts',
+  'A floating navigation dock that is always within reach',
+  'Search any reviewer right from the top bar',
+  'Clearer colors that are easier to read',
+]
+
+const FASTER = [
+  'Reviewer pages open much faster',
+  'Documents no longer reload while you are reading',
+  'Lighter images and less background data use',
+  'Sign in and land right back where you were',
 ]
 
 const COMING_SOON_FEATURES = [
@@ -96,13 +103,24 @@ const AnnouncementModal = () => {
   return (
     <Modal open onClose={close} title="What’s New in Review Well" size="md">
       <img src={characterWaving} alt="" aria-hidden="true" width="273" height="229" className="mx-auto -mt-2 mb-2 h-24 w-28 object-contain" />
-      <p className="flex items-center gap-2 text-sm font-bold text-ink">
-        <Megaphone className="h-4 w-4 text-accent" aria-hidden="true" /> Fresh in this update
+      <p className="text-center text-sm text-muted">Review Well just got a makeover and a speed boost.</p>
+      <p className="mt-5 flex items-center gap-2 text-sm font-bold text-ink">
+        <Palette className="h-4 w-4 text-accent" aria-hidden="true" /> A brand-new look
       </p>
       <ul className="mt-2 space-y-1.5 text-sm font-semibold text-ink">
-        {NEW_FEATURES.map((feature) => (
+        {NEW_LOOK.map((feature) => (
           <li key={feature} className="flex items-start gap-2">
             <span className="text-accent" aria-hidden="true">*</span> {feature}
+          </li>
+        ))}
+      </ul>
+      <p className="mt-5 flex items-center gap-2 text-sm font-bold text-ink">
+        <Zap className="h-4 w-4 text-accent" aria-hidden="true" /> Faster and smoother
+      </p>
+      <ul className="mt-2 space-y-1.5 text-sm font-semibold text-ink">
+        {FASTER.map((feature) => (
+          <li key={feature} className="flex items-start gap-2">
+            <span className="text-accent" aria-hidden="true">+</span> {feature}
           </li>
         ))}
       </ul>

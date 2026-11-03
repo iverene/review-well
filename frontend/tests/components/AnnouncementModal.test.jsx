@@ -31,7 +31,10 @@ describe('AnnouncementModal', () => {
   it('announces new updates with coming-soon intact on first visit', () => {
     render(<AnnouncementModal />)
     expect(screen.getByRole('dialog', { name: 'What’s New in Review Well' })).toBeInTheDocument()
-    expect(screen.getByText('Search and filters on public reviewers')).toBeInTheDocument()
+    expect(screen.getByText('A brand-new look')).toBeInTheDocument()
+    expect(screen.getByText('A fresh Soft Pop design with friendlier fonts')).toBeInTheDocument()
+    expect(screen.getByText('Faster and smoother')).toBeInTheDocument()
+    expect(screen.getByText('Reviewer pages open much faster')).toBeInTheDocument()
     expect(screen.getByText('AI Flashcards')).toBeInTheDocument()
     expect(screen.getByText('Pomodoro Technique')).toBeInTheDocument()
     expect(screen.getByText('Blurting')).toBeInTheDocument()
