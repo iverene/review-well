@@ -1,6 +1,6 @@
 // frontend/tests/pages/Home.test.jsx
 import { describe, it, expect, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import axios from 'axios'
 
@@ -130,27 +130,35 @@ describe('Home desk saves display', () => {
     expect(screen.queryByText('7 saves')).toBeNull()
   })
 
-  it('keeps recently viewed cards at a readable width and lets the rail scroll', async () => {
+  it('shows up to four recently viewed reviewers in a grid', async () => {
     window.localStorage.setItem(
       'review-well-recent-reviewers:user-1',
-      JSON.stringify([
-        deskReviewer('recent-1', 5),
-        deskReviewer('recent-2', 4),
-        deskReviewer('recent-3', 3),
-        deskReviewer('recent-4', 2),
-        deskReviewer('recent-5', 1),
-      ])
+      JSON.stringify([1, 2, 3, 4, 5].map((n) => deskReviewer(`recent-${n}`, n)))
     )
     render(<MemoryRouter><Home /></MemoryRouter>)
 
     const card = (await screen.findByText('Guide recent-1')).closest('a')
-    const rail = card.parentElement
+    expect(card.parentElement).toHaveClass('grid')
+    expect(screen.getByText('Guide recent-4')).toBeInTheDocument()
+    expect(screen.queryByText('Guide recent-5')).toBeNull()
+  })
 
-    expect(rail).toHaveClass('overflow-x-auto')
-    expect(rail).not.toHaveClass('show-scroll')
-    expect(card).toHaveClass('min-w-[250px]')
-    expect(card).toHaveClass('shrink-0')
-    expect(card).not.toHaveClass('md:min-w-0')
+  it('filters recently viewed reviewers by course', async () => {
+    window.localStorage.setItem(
+      'review-well-recent-reviewers:user-1',
+      JSON.stringify([
+        { ...deskReviewer('recent-1', 1), courseCode: 'CS 423' },
+        { ...deskReviewer('recent-2', 2), courseCode: 'IT 414' },
+      ])
+    )
+    render(<MemoryRouter><Home /></MemoryRouter>)
+    await screen.findByText('Guide recent-1')
+
+    fireEvent.click(screen.getByRole('button', { name: 'IT 414' }))
+
+    expect(screen.getByRole('button', { name: 'IT 414' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.queryByText('Guide recent-1')).toBeNull()
+    expect(screen.getByText('Guide recent-2')).toBeInTheDocument()
   })
 
   it('prunes deleted reviewers from Recently Viewed on load', async () => {

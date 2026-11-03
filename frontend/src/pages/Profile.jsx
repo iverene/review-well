@@ -10,7 +10,7 @@ import Button from '../components/common/Button'
 import Card from '../components/common/Card'
 import EmptyState from '../components/common/EmptyState'
 import Tabs, { tabIds } from '../components/common/Tabs'
-import Tag from '../components/common/Tag'
+import ReviewerCard from '../components/reviewer/ReviewerCard'
 import PageContainer from '../components/common/PageContainer'
 import { getApiErrorMessage } from '../utils/apiError'
 import { formatYearLevel } from '../utils/profile'
@@ -128,24 +128,6 @@ const FocusStats = () => {
     </section>
   )
 }
-
-const VISIBILITY_TONES = { public: 'mint', unlisted: 'powder', private: 'neutral' }
-
-const ReviewerTile = ({ reviewer, showVisibility }) => (
-  <Card to={`/reviewer/${reviewer.id}`} className="flex flex-col">
-    <div className="flex flex-wrap items-center gap-2">
-      {reviewer.courseCode && <Tag mono>{reviewer.courseCode}</Tag>}
-      {showVisibility && reviewer.visibility && (
-        <Tag tone={VISIBILITY_TONES[reviewer.visibility] || 'neutral'} className="capitalize">{reviewer.visibility}</Tag>
-      )}
-    </div>
-    <p className="mt-3 line-clamp-2 break-words font-display text-lg font-bold leading-snug text-ink">{reviewer.title}</p>
-    <span className="mt-auto inline-flex items-center gap-1 pt-4 text-xs font-semibold text-muted">
-      <Bookmark className="h-3.5 w-3.5" aria-hidden="true" />
-      {reviewer._count?.saves || 0} saves
-    </span>
-  </Card>
-)
 
 const Stat = ({ value, label, to, ariaLabel }) => {
   const body = (
@@ -405,9 +387,9 @@ const Profile = () => {
               : isOwnProfile ? 'Create your first study guide to get started.' : 'Check back once they share something.'}
           </EmptyState>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-5 sm:grid-cols-2">
             {visibleReviewers.map((reviewer) => (
-              <ReviewerTile key={reviewer.id} reviewer={reviewer} showVisibility={isOwnProfile} />
+              <ReviewerCard key={reviewer.id} reviewer={reviewer} showVisibility={isOwnProfile} />
             ))}
           </div>
         )}
